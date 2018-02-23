@@ -5,9 +5,10 @@
         <item>Share Device</item>
     </string-array>
 
-    <string-array name="device_type">
-        <item>COMPRESSOR</item>
-        <item>DISTRIBUTOR</item>
+
+    <string-array name="compression_method">
+        <item>Deflate</item>
+        <item>dcrz</item>
     </string-array>
 
     <string-array name="sr_priority">

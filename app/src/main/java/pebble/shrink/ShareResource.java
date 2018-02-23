@@ -19,6 +19,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.io.BufferedReader;
@@ -34,58 +36,42 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
     public static float batteryPercent;
     private static Intent batteryIntent;
     public String TAG = "Share Resource";
+
     private NotificationManager notificationManager;
     private NotificationCompat.Builder nBuilder;
+
     private WifiP2pDevice myDevice;
     private String goDeviceName;
-    private TextView logs, deviceName, my_ip;
-    private Button exit, join;
+
+    private static TextView logs, deviceName, freeSpace;
+    private static Spinner priority;
+    private static EditText mfreeSpace;
+    private static Button connect;
+
+    public static Socket client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.share_resource);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle(getResources().getString(R.string.share_resource));
-        setSupportActionBar(toolbar);
-
         logs = (TextView) findViewById(R.id.tvSRlogView);
         deviceName = (TextView) findViewById(R.id.tvSRdeviceName);
+        freeSpace = (TextView) findViewById(R.id.tvSRfreespace);
+        mfreeSpace = (EditText) findViewById(R.id.etSRsetFreespace);
+        connect = (Button) findViewById(R.id.btSRconnect);
+        priority = (Spinner) findViewById(R.id.spSRsetPriority);
 
-        join = (Button) findViewById(R.id.btSRconnect);
-
-        exit.setVisibility(View.GONE);
         setupNotification();
 
 
         Log.d(TAG, "Battery percent" + batteryPercent);
         P2pOperations.initNetwork(ShareResource.this);
-        P2pOperations.setDeviceName("DVZN_GM_" + P2pOperations.getBluetoothName());
     }
 
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_hide_view, menu);
-        return true;
-    }
-
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_hide:
-                notificationManager.notify(CHANNEL_ID, nBuilder.build());
-
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
 
     public void setupNotification() {
-        nBuilder = new NotificationCompat.Builder(this).setSmallIcon(R.drawable.android).setContentTitle("DVZN").setContentText("Running in background").setOngoing(true);
+        nBuilder = new NotificationCompat.Builder(this).setSmallIcon(R.drawable.android).setContentTitle("Shrink").setContentText("Running in background").setOngoing(true);
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         Intent intent = new Intent(this, ShareResource.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -117,30 +103,20 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
     }
 
     public void resetData() {
-        logs.setText("");
-        deviceName.setText("Device: NA");
-        my_ip.setText("IP address: NA");
+        deviceName.setText(getResources().getString(R.string.sr_device_name,"NA"));
+        freeSpace.setText(getResources().getString(R.string.sr_freespace,0));
+        mfreeSpace.setText(getResources().getString(R.string.empty));
 
     }
 
     public void updateThisDevice(WifiP2pDevice dev) {
         this.myDevice = dev;
         deviceName.setText(getResources().getString(R.string.device_name, dev.deviceName, P2pOperations.getDeviceStatus(dev.status)));
-        String tmp = P2pOperations.getMyIpAddress();
-        Log.d(TAG, "update device " + dev.deviceAddress + " tmp value " + tmp);
-        if (!tmp.equals("NA")) {
-            join.setVisibility(View.GONE);
-            exit.setVisibility(View.VISIBLE);
-            my_ip.setText(getResources().getString(R.string.ip_address, tmp, ((dev.isGroupOwner() == true) ? "GO" : "GM")));
-        } else {
-            exit.setVisibility(View.GONE);
-            join.setVisibility(View.VISIBLE);
-            my_ip.setText(getResources().getString(R.string.ip_address, tmp, ""));
-        }
+        Log.d(TAG, "update device " + dev.deviceAddress);
     }
 
     public void clickJoinGroup(View view) {
-        pebble.shrink.P2pOperations.initiateDiscovery();
+        P2pOperations.initiateDiscovery();
     }
 
     public void clickExitGroup(View view) {
@@ -174,7 +150,7 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
             if (!P2pOperations.isP2pOn) {
                 if (dev.deviceName.matches("DVZN_GO_.*")) {
                     goDeviceName = dev.deviceName;
-                    P2pOperations.connect(dev);
+                    P2pOperations.connect(dev,0);
                 } else {
                     goDeviceName = "NA";
                 }
@@ -185,9 +161,8 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
     @Override
     public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
         Log.d(TAG, "on connection info available " + wifiP2pInfo.toString());
-        exit.setVisibility(View.VISIBLE);
+        connect.setText(getResources().getString(R.string.sr_disconnect));
         P2pOperations.isP2pOn = true;
-
         logs.setText("Connected to " + goDeviceName);
         connectToGroup(wifiP2pInfo.groupOwnerAddress, Integer.parseInt(goDeviceName.split("_")[2]));
     }
@@ -197,7 +172,7 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
             @Override
             public void run() {
                 try {
-                    Socket client = new Socket(serverAddress, port);
+                    client = new Socket(serverAddress, port);
                     BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
                     PrintWriter out = new PrintWriter(client.getOutputStream());
                     out.flush();

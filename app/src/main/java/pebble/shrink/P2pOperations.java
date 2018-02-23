@@ -73,11 +73,11 @@ public class P2pOperations {
         });
     }
 
-    public static void connect(WifiP2pDevice device) {
+    public static void connect(WifiP2pDevice device,int goIntent) {
         P2pOperations.displayProgress(context, "Press back to cancel", "Connecting to: " + device.deviceName);
 
         WifiP2pConfig config = new WifiP2pConfig();
-        config.groupOwnerIntent = 1;
+        config.groupOwnerIntent = goIntent;
         config.deviceAddress = device.deviceAddress;
         config.wps.setup = WpsInfo.PBC;
 
