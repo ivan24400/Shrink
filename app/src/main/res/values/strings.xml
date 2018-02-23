@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">Shrink</string>
+
+    <!-- Shrink -->
+    <string name="app_title">Compression</string>
+    <string name="app_desc">This app distributes the task of compression among nearby devices.</string>
+    <string name="info">Info</string>
+
+    <!-- Compress file -->
+    <string name="cf_total_devices">Total Devices: %1$d</string>
+    <string name="cf_choose_file">Choose File</string>
+    <string name="cf_compress">Compress</string>
+
+    <!--Share Resource -->
+    <string name="sr_device_name">Device Name: %1$s</string>
+    <string name="sr_freespace_i">Free Space (input): %1$d</string>
+    <string name="sr_freespace">Free Space: %1$d</string>
+
+    <string name="sr_connect">Connect</string>
+    <string name="sr_disconnect">Disconnect</string>
+
+    <!--Misc-->
+    <string name="next">Next</string>
+    <string name="log">Logs:</string>
+    <string name="empty"></string>
+    <string name="hide">Hide</string>
+
+</resources>

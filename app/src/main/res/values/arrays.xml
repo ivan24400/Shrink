@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="task_choice">
+        <item>Compress Data</item>
+        <item>Share Device</item>
+    </string-array>
+
+    <string-array name="device_type">
+        <item>COMPRESSOR</item>
+        <item>DISTRIBUTOR</item>
+    </string-array>
+
+    <string-array name="sr_priority">
+        <item>Low</item>
+        <item>High</item>
+    </string-array>
+</resources>
