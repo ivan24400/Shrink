@@ -41,6 +41,8 @@ public class P2pOperations {
     private static String TAG = "P2pOperations";
     private static Context context;
 
+    public static File inputFile,outputFile;
+
     public static void initNetwork(Context c) {
 
         context = c;
@@ -73,7 +75,7 @@ public class P2pOperations {
         });
     }
 
-    public static void connect(WifiP2pDevice device,int goIntent) {
+    public static boolean connect(WifiP2pDevice device,int goIntent) {
         P2pOperations.displayProgress(context, "Press back to cancel", "Connecting to: " + device.deviceName);
 
         WifiP2pConfig config = new WifiP2pConfig();
@@ -95,6 +97,7 @@ public class P2pOperations {
                         Toast.LENGTH_SHORT).show();
             }
         });
+        return isP2pOn;
     }
 
     public static void createGroup() {
@@ -127,7 +130,7 @@ public class P2pOperations {
     }
 
     public static void removeGroup() {
-
+        // For Master Device
         if (isP2pOn) {
             Distributor.closeGroup();
             nManager.removeGroup(nChannel, new WifiP2pManager.ActionListener() {
@@ -143,6 +146,22 @@ public class P2pOperations {
                 }
             });
         }
+    }
+
+    public static void exitFromGroup(){
+        // For Slave Device
+        P2pOperations.nManager.removeGroup(P2pOperations.nChannel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onFailure(int reasonCode) {
+                Log.d(TAG, "Disconnect failed. Reason :" + P2pOperations.errToString(reasonCode));
+            }
+
+            @Override
+            public void onSuccess() {
+                P2pOperations.isP2pOn = false;
+                Log.d(TAG, "DisConnected Successfully");
+            }
+        });
     }
 
     public static void displayProgress(Context c, String title, String msg) {
@@ -254,26 +273,18 @@ public class P2pOperations {
     // deviceName, String ip, String cpu, String freeSpace, String battery
 
     public static String getDeviceInfo() {
-        try {
             //  Battery
             Intent batteryIntent = context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
             float batteryPercent = batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) / batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
 
-            // cpu in Ghz
-            RandomAccessFile file = new RandomAccessFile("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq", "r");
-            double cpuFreq = Double.parseDouble(file.readLine()) * Math.pow(10, -6);
 
-            // Free space in MB
-            File path = Environment.getDataDirectory();
-            StatFs stat = new StatFs(path.getPath());
-            double size = stat.getAvailableBlocks() * stat.getBlockSize();
-            size = size / Math.pow(1024, 2);
+            // Free space in Bytes
 
-            return DEVICE_NAME + "::" + getMyIpAddress() + "::" + Double.toString(cpuFreq) + "::" + Double.toString(size) + "::" + Float.toString(batteryPercent);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return "NA";
+            long freeSpace = 0;
+
+
+            Log.d(TAG,"Battery: "+batteryPercent+", FreeSpace: "+freeSpace);
+            return Double.toString(freeSpace) + "::" + Float.toString(batteryPercent);
     }
 
     public static String getBluetoothName() {

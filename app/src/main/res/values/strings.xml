@@ -12,7 +12,7 @@
     <string name="cf_compress">Compress</string>
 
     <!--Share Resource -->
-    <string name="sr_device_name">Device Name: %1$s</string>
+    <string name="sr_device_name">Device Name: %1$s &lt; %2$s &gt;</string>
     <string name="sr_freespace">Free Space: %1$d</string>
 
     <string name="sr_connect">Connect</string>

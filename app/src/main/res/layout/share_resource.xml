@@ -100,7 +100,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_columnSpan="2"
-            android:onClick="clickJoinGroup"
+            android:onClick="clickSRconnect"
             android:text="@string/sr_connect" />
 
     </GridLayout>

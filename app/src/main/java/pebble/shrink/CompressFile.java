@@ -1,5 +1,6 @@
 package pebble.shrink;
 
+import android.content.Intent;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
@@ -12,16 +13,15 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
-
-/**
- * Created by Ivan on 17-02-2018.
- */
+import android.widget.Toast;
 
 public class CompressFile extends AppCompatActivity implements WifiP2pManager.ConnectionInfoListener{
 
     public static TextView totalDevice, logView;
+    private static final int FILE_CHOOSE_REQUEST=9;
 
     private String TAG = "CompressFile";
+    public static String fileToCompress;
     private DeviceGroupListener dg;
 
     @Override
@@ -47,30 +47,51 @@ public class CompressFile extends AppCompatActivity implements WifiP2pManager.Co
     }
 
     public void onClickCompress(View view) {
-        if(Integer.parseInt(totalDevice.getText().toString().split(": ")[1]) == 0){
+        if(fileToCompress != null) {
+            if (Integer.parseInt(totalDevice.getText().toString().split(": ")[1]) == 0) {
 
-        }else{
+            } else {
 
+            }
         }
     }
 
     public void onClickChooseFile(View view){
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        startActivityForResult(intent,FILE_CHOOSE_REQUEST);
+    }
 
+    @Override
+    protected void onActivityResult(int requestCode,int resultCode, Intent intent){
+        if(requestCode == FILE_CHOOSE_REQUEST){
+            if(resultCode == RESULT_OK){
+                fileToCompress = intent.getData().getPath();
+                Toast.makeText(CompressFile.this,fileToCompress,Toast.LENGTH_LONG);
+            }
+        }else{
+            Log.d(TAG,"Invalid file");
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        Log.d(TAG, "on pause");
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        Log.d(TAG, "on Resume");
+
     }
 
     @Override
     public void onStop() {
         super.onStop();
+        Log.d(TAG, "on Stop");
+
     }
 
     @Override

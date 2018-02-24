@@ -42,22 +42,14 @@ public class Deflate {
      * @param input Name of the file to compress
      * @return error code
      */
-    public static int compressFile(String input) {
+    public static int compressFile(String input,String output) {
         try {
             fin = new FileInputStream(input);
 
             int iLength = input.length();
             byte[] header = {METHOD, 0x01, 0x02, 0x03, 0x04};
 
-            StringBuilder output = new StringBuilder(input);
-
-            output.append('.');
-            output.append('d');
-            output.append('c');
-            output.append('r');
-            output.append('z');
-
-            fout = new FileOutputStream(output.toString());
+            fout = new FileOutputStream(output.toString(),true);
 
             DeflaterOutputStream dout = new DeflaterOutputStream(fout);
 

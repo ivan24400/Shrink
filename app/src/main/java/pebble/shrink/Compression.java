@@ -22,23 +22,25 @@ public class Compression {
         System.loadLibrary("dcrz");
     }
 
-    public static int compress(int method, String filePath) {
+    private native int dcrzCompress(String input,String output);
+
+    public static int compress(int method, String inFile) {
+        StringBuilder outFile = new StringBuilder(inFile);
+        outFile.append(".dcrz");
 
         if (method == DEFLATE) {
 
-            return Deflate.compressFile(filePath);
+            return Deflate.compressFile(inFile,outFile.toString());
 
         } else if (method == DCRZ) {
 
             Compression c = new Compression();
-            return c.dcrz(COMPRESSION, filePath);
+            return c.dcrzCompress(inFile, outFile.toString());
 
         }
 
         return -1;
     }
-
-    private native int dcrz(boolean mode, String input);
 
     public long computeCrc32(String name) {
         long crc = 1;

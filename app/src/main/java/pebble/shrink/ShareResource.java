@@ -32,13 +32,8 @@ import java.net.Socket;
 
 public class ShareResource extends AppCompatActivity implements PeerListListener, ConnectionInfoListener {
 
-    private static final int CHANNEL_ID = 23456;
-    public static float batteryPercent;
-    private static Intent batteryIntent;
-    public String TAG = "Share Resource";
 
-    private NotificationManager notificationManager;
-    private NotificationCompat.Builder nBuilder;
+    public String TAG = "Share Resource";
 
     private WifiP2pDevice myDevice;
     private String goDeviceName;
@@ -47,6 +42,7 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
     private static Spinner priority;
     private static EditText mfreeSpace;
     private static Button connect;
+    private static boolean isConnect = true;
 
     public static Socket client;
 
@@ -62,21 +58,7 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
         connect = (Button) findViewById(R.id.btSRconnect);
         priority = (Spinner) findViewById(R.id.spSRsetPriority);
 
-        setupNotification();
-
-
-        Log.d(TAG, "Battery percent" + batteryPercent);
         P2pOperations.initNetwork(ShareResource.this);
-    }
-
-
-    public void setupNotification() {
-        nBuilder = new NotificationCompat.Builder(this).setSmallIcon(R.drawable.android).setContentTitle("Shrink").setContentText("Running in background").setOngoing(true);
-        notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        Intent intent = new Intent(this, ShareResource.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        nBuilder.setContentIntent(pendingIntent);
     }
 
 
@@ -98,12 +80,11 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
     @Override
     public void onStop() {
         Log.d(TAG, "on stop");
-        clickExitGroup(null);
         super.onStop();
     }
 
     public void resetData() {
-        deviceName.setText(getResources().getString(R.string.sr_device_name,"NA"));
+        deviceName.setText(getResources().getString(R.string.sr_device_name,"NA","NA"));
         freeSpace.setText(getResources().getString(R.string.sr_freespace,0));
         mfreeSpace.setText(getResources().getString(R.string.empty));
 
@@ -111,32 +92,22 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
 
     public void updateThisDevice(WifiP2pDevice dev) {
         this.myDevice = dev;
-        deviceName.setText(getResources().getString(R.string.device_name, dev.deviceName, P2pOperations.getDeviceStatus(dev.status)));
+        deviceName.setText(getResources().getString(R.string.sr_device_name, dev.deviceName, P2pOperations.getDeviceStatus(dev.status)));
+
         Log.d(TAG, "update device " + dev.deviceAddress);
     }
 
-    public void clickJoinGroup(View view) {
-        P2pOperations.initiateDiscovery();
-    }
-
-    public void clickExitGroup(View view) {
-        resetData();
-        if (notificationManager != null) {
-            notificationManager.cancel(CHANNEL_ID);
+    public void clickSRconnect(View view) {
+        if(isConnect){
+            P2pOperations.initiateDiscovery();
+        } else {
+            // Disconnect
+           P2pOperations.exitFromGroup();
+            if(!P2pOperations.isP2pOn){
+                connect.setText(getResources().getString(R.string.sr_connect));
+                isConnect = true;
+            }
         }
-        P2pOperations.nManager.removeGroup(P2pOperations.nChannel, new WifiP2pManager.ActionListener() {
-            @Override
-            public void onFailure(int reasonCode) {
-                Log.d(TAG, "Disconnect failed. Reason :" + P2pOperations.errToString(reasonCode));
-            }
-
-            @Override
-            public void onSuccess() {
-                P2pOperations.isP2pOn = false;
-                Log.d(TAG, "DisConnected Successfully");
-                exit.setVisibility(View.GONE);
-            }
-        });
     }
 
     @Override
@@ -148,11 +119,13 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
         for (WifiP2pDevice dev : wifiP2pDeviceList.getDeviceList()) {
             logs.append("\nFound Device: " + dev.deviceName);
             if (!P2pOperations.isP2pOn) {
-                if (dev.deviceName.matches("DVZN_GO_.*")) {
+                if (dev.deviceName.matches("SHRINK_GO_.*")) {
                     goDeviceName = dev.deviceName;
                     P2pOperations.connect(dev,0);
-                } else {
-                    goDeviceName = "NA";
+                    if(P2pOperations.isP2pOn){
+                        isConnect = false;
+                        connect.setText(getResources().getString(R.string.sr_disconnect));
+                    }
                 }
             }
         }
