@@ -2,6 +2,7 @@ package pebble.shrink;
 
 import android.content.Intent;
 import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
@@ -15,31 +16,33 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class CompressFile extends AppCompatActivity implements WifiP2pManager.ConnectionInfoListener{
+import java.util.Arrays;
+
+public class CompressFile extends AppCompatActivity implements WifiP2pManager.ConnectionInfoListener, WifiP2pManager.GroupInfoListener{
 
     public static TextView totalDevice, logView;
     private static final int FILE_CHOOSE_REQUEST=9;
 
     private String TAG = "CompressFile";
     public static String fileToCompress;
-    private DeviceGroupListener dg;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.compress_activity);
 
-        dg = new DeviceGroupListener(CompressFile.this);
         totalDevice = (TextView) findViewById(R.id.tvCFtotalDevices);
         logView = (TextView) findViewById(R.id.tvCFlogView);
 
         P2pOperations.initNetwork(CompressFile.this);
+        P2pOperations.dbReceiver = new DeviceBroadcastReceiver(CompressFile.this,P2pOperations.nChannel,P2pOperations.nManager);
+
         P2pOperations.createGroup();
 
     }
 
     public void updateThisDevice(WifiP2pDevice dev) {
-        P2pOperations.nManager.requestGroupInfo(P2pOperations.nChannel, dg);
+        P2pOperations.nManager.requestGroupInfo(P2pOperations.nChannel, CompressFile.this);
     }
 
     public void resetData() {
@@ -78,28 +81,44 @@ public class CompressFile extends AppCompatActivity implements WifiP2pManager.Co
     public void onPause() {
         super.onPause();
         Log.d(TAG, "on pause");
+        unregisterReceiver(P2pOperations.dbReceiver);
     }
 
     @Override
     public void onResume() {
         super.onResume();
         Log.d(TAG, "on Resume");
-
+        registerReceiver(P2pOperations.dbReceiver, P2pOperations.intentFilter);
     }
 
     @Override
     public void onStop() {
         super.onStop();
         Log.d(TAG, "on Stop");
-
+        P2pOperations.removeGroup();
     }
 
     @Override
     public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
         if (wifiP2pInfo != null) {
-            P2pOperations.nManager.requestGroupInfo(P2pOperations.nChannel, dg);
+            P2pOperations.nManager.requestGroupInfo(P2pOperations.nChannel, CompressFile.this);
         } else {
             Log.d(TAG, "wifip2pinfo is null");
         }
+    }
+
+    @Override
+    public void onGroupInfoAvailable(WifiP2pGroup wifiP2pGroup) {
+        if (wifiP2pGroup == null) {
+            Log.d(TAG, "wifiP2pgroup is null");
+            return;
+        }
+        int deviceCount = 0;
+        Log.d(TAG, Arrays.toString(wifiP2pGroup.getClientList().toArray()));
+        for (WifiP2pDevice device : wifiP2pGroup.getClientList()) {
+            if(device !=null)   deviceCount++;
+        }
+
+        CompressFile.totalDevice.setText(getResources().getString(R.string.cf_total_devices, deviceCount));
     }
 }

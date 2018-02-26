@@ -15,6 +15,7 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.os.BatteryManager;
 import android.os.Environment;
 import android.os.StatFs;
+import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -48,6 +49,10 @@ public class P2pOperations {
         context = c;
         startWifi();
 
+        progress = new ProgressDialog(c);
+        progress.setCancelable(false);
+        progress.setIndeterminate(true);
+
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
@@ -56,7 +61,9 @@ public class P2pOperations {
         nManager = (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
         nChannel = nManager.initialize(context, context.getMainLooper(), null);
 
-        DEVICE_NAME = BluetoothAdapter.getDefaultAdapter().getName();
+        //DEVICE_NAME = BluetoothAdapter.getDefaultAdapter().getName();
+        DEVICE_NAME = Settings.Secure.getString(c.getContentResolver(),"bluetooth_name");
+        Log.d(TAG,"DEVICE_NAME "+DEVICE_NAME);
     }
 
     public static void initiateDiscovery() {
@@ -86,7 +93,6 @@ public class P2pOperations {
         nManager.connect(nChannel, config, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
-                // DeviceBroadcastReceiver will notify us.
                 isP2pOn = true;
             }
 
@@ -130,7 +136,7 @@ public class P2pOperations {
     }
 
     public static void removeGroup() {
-        // For Master Device
+        // For Master and Slave Device
         if (isP2pOn) {
             Distributor.closeGroup();
             nManager.removeGroup(nChannel, new WifiP2pManager.ActionListener() {
@@ -146,22 +152,6 @@ public class P2pOperations {
                 }
             });
         }
-    }
-
-    public static void exitFromGroup(){
-        // For Slave Device
-        P2pOperations.nManager.removeGroup(P2pOperations.nChannel, new WifiP2pManager.ActionListener() {
-            @Override
-            public void onFailure(int reasonCode) {
-                Log.d(TAG, "Disconnect failed. Reason :" + P2pOperations.errToString(reasonCode));
-            }
-
-            @Override
-            public void onSuccess() {
-                P2pOperations.isP2pOn = false;
-                Log.d(TAG, "DisConnected Successfully");
-            }
-        });
     }
 
     public static void displayProgress(Context c, String title, String msg) {
@@ -285,9 +275,5 @@ public class P2pOperations {
 
             Log.d(TAG,"Battery: "+batteryPercent+", FreeSpace: "+freeSpace);
             return Double.toString(freeSpace) + "::" + Float.toString(batteryPercent);
-    }
-
-    public static String getBluetoothName() {
-        return DEVICE_NAME;
     }
 }

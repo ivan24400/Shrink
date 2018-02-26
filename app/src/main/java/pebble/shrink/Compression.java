@@ -1,5 +1,8 @@
 package pebble.shrink;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.Scanner;
 import java.util.zip.CRC32;
 import java.io.FileInputStream;
@@ -24,10 +27,19 @@ public class Compression {
 
     private native int dcrzCompress(String input,String output);
 
-    public static int compress(int method, String inFile) {
+    public static int compress(int method, String inFile) throws FileNotFoundException{
+
+        File in = new File(inFile);
+        if( !in.exists()){
+            throw new FileNotFoundException("Input File not found");
+        }
         StringBuilder outFile = new StringBuilder(inFile);
         outFile.append(".dcrz");
 
+        File out = new File(outFile.toString());
+        if(!out.exists()){
+            throw new FileNotFoundException("Ouput File not found");
+        }
         if (method == DEFLATE) {
 
             return Deflate.compressFile(inFile,outFile.toString());

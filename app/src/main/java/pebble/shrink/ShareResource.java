@@ -35,11 +35,10 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
 
     public String TAG = "Share Resource";
 
-    private WifiP2pDevice myDevice;
     private String goDeviceName;
 
     private static TextView logs, deviceName, freeSpace;
-    private static Spinner priority;
+    private static Spinner mpriority;
     private static EditText mfreeSpace;
     private static Button connect;
     private static boolean isConnect = true;
@@ -56,9 +55,11 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
         freeSpace = (TextView) findViewById(R.id.tvSRfreespace);
         mfreeSpace = (EditText) findViewById(R.id.etSRsetFreespace);
         connect = (Button) findViewById(R.id.btSRconnect);
-        priority = (Spinner) findViewById(R.id.spSRsetPriority);
+        mpriority = (Spinner) findViewById(R.id.spSRsetPriority);
 
         P2pOperations.initNetwork(ShareResource.this);
+        P2pOperations.dbReceiver = new DeviceBroadcastReceiver(ShareResource.this,P2pOperations.nChannel,P2pOperations.nManager);
+
     }
 
 
@@ -66,7 +67,6 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
     public void onResume() {
         super.onResume();
         Log.d(TAG, "on Resume");
-        P2pOperations.dbReceiver = new DeviceBroadcastReceiver(ShareResource.this, P2pOperations.nChannel, P2pOperations.nManager);
         registerReceiver(P2pOperations.dbReceiver, P2pOperations.intentFilter);
     }
 
@@ -91,9 +91,11 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
     }
 
     public void updateThisDevice(WifiP2pDevice dev) {
-        this.myDevice = dev;
         deviceName.setText(getResources().getString(R.string.sr_device_name, dev.deviceName, P2pOperations.getDeviceStatus(dev.status)));
-
+        freeSpace.setText(getResources().getString(R.string.sr_freespace,
+                Integer.getInteger(
+                        P2pOperations.getDeviceInfo().split("::")[1])
+        ));
         Log.d(TAG, "update device " + dev.deviceAddress);
     }
 
@@ -102,7 +104,7 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
             P2pOperations.initiateDiscovery();
         } else {
             // Disconnect
-           P2pOperations.exitFromGroup();
+           P2pOperations.removeGroup();
             if(!P2pOperations.isP2pOn){
                 connect.setText(getResources().getString(R.string.sr_connect));
                 isConnect = true;
@@ -136,7 +138,7 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
         Log.d(TAG, "on connection info available " + wifiP2pInfo.toString());
         connect.setText(getResources().getString(R.string.sr_disconnect));
         P2pOperations.isP2pOn = true;
-        logs.setText("Connected to " + goDeviceName);
+        logs.append("Connected to " + goDeviceName);
         connectToGroup(wifiP2pInfo.groupOwnerAddress, Integer.parseInt(goDeviceName.split("_")[2]));
     }
 
