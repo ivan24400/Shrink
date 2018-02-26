@@ -3,7 +3,6 @@ package pebble.shrink;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.util.Scanner;
 import java.util.zip.CRC32;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -15,46 +14,56 @@ import java.io.IOException;
 
 public class Compression {
 
-    public static final boolean COMPRESSION = true;
-    //public static final boolean DECOMPRESSION = false;
-
     public static final int DEFLATE = 0;
     public static final int DCRZ = 1;
+
+    public static boolean isLocal = false;
 
     static {
         System.loadLibrary("dcrz");
     }
 
-    private native int dcrzCompress(String input,String output);
+    private native static int dcrzCompress(boolean append, String input,String output);
 
-    public static int compress(int method, String inFile) throws FileNotFoundException{
-
+    private static void writeHeader(int method, String inFile) throws IOException{
         File in = new File(inFile);
         if( !in.exists()){
             throw new FileNotFoundException("Input File not found");
         }
         StringBuilder outFile = new StringBuilder(inFile);
         outFile.append(".dcrz");
+        FileOutputStream out = new FileOutputStream(outFile.toString());
+        long crc = computeCrc32(inFile);
+        int shift = 0;
 
-        File out = new File(outFile.toString());
-        if(!out.exists()){
-            throw new FileNotFoundException("Ouput File not found");
-        }
         if (method == DEFLATE) {
+            out.write(Compression.DEFLATE);
+        } else if (method == DCRZ) {
+            out.write(Compression.DCRZ);
+        }
+        while (shift <= 24) {
+            byte data = (byte) ((crc >> shift) & 0xff); // Little Endian
+            out.write(data);
+            shift = shift + 8;
+        }
+        out.close();
+    }
 
-            return Deflate.compressFile(inFile,outFile.toString());
+    public static int compress(int method, String inFile) throws IOException{
+        StringBuilder outFile = new StringBuilder(inFile);
+        outFile.append(".dcrz");
+        if (method == DEFLATE) {
+            return Deflate.compressFile(isLocal, inFile,outFile.toString());
 
         } else if (method == DCRZ) {
-
-            Compression c = new Compression();
-            return c.dcrzCompress(inFile, outFile.toString());
+            return Compression.dcrzCompress(isLocal, inFile, outFile.toString());
 
         }
 
         return -1;
     }
 
-    public long computeCrc32(String name) {
+    public static long computeCrc32(String name) {
         long crc = 1;
         try {
             System.out.println(name);
@@ -66,6 +75,7 @@ public class Compression {
             }
             crc = obj.getValue();
             System.out.printf("CRc is %x\n", crc);
+            file.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

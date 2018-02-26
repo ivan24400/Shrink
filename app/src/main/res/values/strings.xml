@@ -8,6 +8,7 @@
 
     <!-- Compress file -->
     <string name="cf_total_devices">Total Devices: %1$d</string>
+    <string name="cf_file_name">FileName: %1$s</string>
     <string name="cf_choose_file">Choose File</string>
     <string name="cf_compress">Compress</string>
 

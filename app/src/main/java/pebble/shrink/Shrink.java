@@ -28,39 +28,17 @@ public class Shrink extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.shrink_activity);
 
-        setupUserChoice();
-
         Log.d(TAG, Build.DEVICE + "\n" + Build.HARDWARE + "\n" + Build.BRAND + "\n" + Build.MODEL + "\n");
     }
 
-    public void clickNext(View view) {
-        File file = new File(getExternalFilesDir(null) + "/dvznLogs.txt");
-        file.mkdirs();
-        try {
-            Runtime.getRuntime().exec("logcat -f " + getExternalFilesDir(null) + "/dvznLogs.txt");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        choice.show();
-        Log.d("ShrinkActivity", "After starting compressdata");
+    public void onClickCompressFile(View view){
+        Intent intent = new Intent(Shrink.this, CompressFile.class);
+        startActivity(intent);
     }
 
-    private void setupUserChoice() {
-        choice = new AlertDialog.Builder(this);
-        choice.setTitle("Select a task").setItems(R.array.task_choice, new DialogInterface.OnClickListener() {
-
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                Log.d(TAG, "selected " + i);
-                if (i == 0) {
-                    Intent intent = new Intent(Shrink.this, CompressFile.class);
-                    startActivity(intent);
-                } else {
-                    Intent intent = new Intent(Shrink.this, ShareResource.class);
-                    startActivity(intent);
-                }
-            }
-        });
+    public void onClickShareDevice(View view){
+        Intent intent = new Intent(Shrink.this, ShareResource.class);
+        startActivity(intent);
     }
 
     @Override

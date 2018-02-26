@@ -14,7 +14,6 @@ import java.util.zip.InflaterInputStream;
  */
 public class Deflate {
 
-    private static final byte METHOD = Compression.DEFLATE & 0xFF;
     private static FileInputStream fin;
     private static FileOutputStream fout;
 
@@ -42,19 +41,14 @@ public class Deflate {
      * @param input Name of the file to compress
      * @return error code
      */
-    public static int compressFile(String input,String output) {
+    public static int compressFile(boolean append,String input,String output) {
         try {
             fin = new FileInputStream(input);
-
-            int iLength = input.length();
-            byte[] header = {METHOD, 0x01, 0x02, 0x03, 0x04};
-
-            fout = new FileOutputStream(output.toString(),true);
+            fout = new FileOutputStream(output.toString(),append);
 
             DeflaterOutputStream dout = new DeflaterOutputStream(fout);
 
             copyData(fin, dout);
-
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -73,7 +67,6 @@ public class Deflate {
         try {
             fin = new FileInputStream(input);
             int iLength = input.length();
-            byte[] header = new byte[5];
 
             StringBuilder output;
             if (input.substring(iLength - 4).equals("dcrz")) {

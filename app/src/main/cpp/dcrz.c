@@ -7,13 +7,13 @@
 /**
  * dcrz function to encode or decode stream
  * @param env java environment
- * @param obj Current java object
- * @param _mode compression or decompression mode
+ * @param cls Class
  * @param _input input file name
+ * @param _output output file name
  * @return error code. 0 for no error
  */
 JNIEXPORT jint JNICALL Java_pebble_shrink_Compression_dcrzCompress
-        (JNIEnv *env, jobject obj, jstring _input, jstring _output) {
+        (JNIEnv *env, jclass cls, jboolean append, jstring _input, jstring _output) {
 
     const char *input = (*env)->GetStringUTFChars(env, _input, 0);
     const char *output = (*env)->GetStringUTFChars(env, _output, 0);
@@ -22,7 +22,12 @@ JNIEXPORT jint JNICALL Java_pebble_shrink_Compression_dcrzCompress
 
     in = fopen(input, "rb");
     MY_MALLOC(ibuffer, uint8_t*, BUFFER_SIZE, sizeof(uint8_t))
-    out = fopen(output, "ab");
+    if(append) {
+        out = fopen(output, "ab");
+    } else{
+        out = fopen(output, "wb");
+    }
+
 
     if (!in || !out || !ibuffer) {
         fprintf(stderr, "File open failed in: %p out: %p\ninput: %s\n output: %s buffer %p\n",
@@ -45,13 +50,13 @@ JNIEXPORT jint JNICALL Java_pebble_shrink_Compression_dcrzCompress
 /**
  * dcrz function to encode or decode stream
  * @param env java environment
- * @param obj Current java object
- * @param _mode compression or decompression mode
+ * @param cls Class
  * @param _input input file name
+ * @param _output output file name
  * @return error code. 0 for no error
  */
 JNIEXPORT jint JNICALL Java_pebble_shrink_Compression_dcrzDecompress
-        (JNIEnv *env, jobject obj, jstring _input, jstring _output) {
+        (JNIEnv *env, jclass cls, jstring _input, jstring _output) {
     // Decompression
     const char *input = (*env)->GetStringUTFChars(env, _input, 0);
     const char *output = (*env)->GetStringUTFChars(env,_output,0);

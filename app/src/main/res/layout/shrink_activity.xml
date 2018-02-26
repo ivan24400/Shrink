@@ -15,6 +15,7 @@
         android:layout_marginRight="30dp"
         android:layout_marginTop="120dp"
         android:text="@string/app_title"
+        android:textSize="30dp"
         android:textAlignment="center" />
 
     <TextView
@@ -26,18 +27,30 @@
         android:layout_alignRight="@+id/tvtitle"
         android:layout_alignStart="@+id/tvtitle"
         android:layout_below="@+id/tvtitle"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="38dp"
         android:text="@string/app_desc" />
 
+
     <Button
-        android:id="@+id/nextCmp"
+        android:id="@+id/btnScompress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/tvtitle"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="120dp"
-        android:onClick="clickNext"
-        android:text="@string/next" />
+        android:text="Compress File"
+        android:onClick="onClickCompressFile"
+        android:layout_marginTop="20dp"
+        android:layout_centerVertical="true"
+        android:layout_alignLeft="@+id/btnSshare"
+        android:layout_alignStart="@+id/btnSshare" />
+
+    <Button
+        android:id="@+id/btnSshare"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Share Device"
+        android:onClick="onClickShareDevice"
+        android:layout_marginTop="13dp"
+        android:layout_below="@+id/btnScompress"
+        android:layout_centerHorizontal="true" />
 
 
 </RelativeLayout>
