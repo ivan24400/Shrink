@@ -15,10 +15,8 @@ public class Notification {
     private static final String CHANNEL_ID = "SHRINK_NOTIFICATION_CHANNEL";
     private static final int NOTIFICATION_ID = 24;
 
-    public static void createNotification(Context contxt,String content){
+    public static void createNotification(Context contxt,PendingIntent pintent, String content){
         context = contxt;
-        Intent intent = new Intent(context,context.getClass());
-        PendingIntent pintent = PendingIntent.getActivity(context,0,intent,0);
 
         nbuilder = new NotificationCompat.Builder(context)
                 .setChannel(CHANNEL_ID)

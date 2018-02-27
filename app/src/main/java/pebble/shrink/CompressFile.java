@@ -8,20 +8,20 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.text.InputFilter;
-import android.text.Spanned;
 import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 public class CompressFile extends AppCompatActivity implements WifiP2pManager.ConnectionInfoListener, WifiP2pManager.GroupInfoListener{
 
-    public static TextView totalDevice, logView;
+    public static TextView totalDevice;
     private static final int FILE_CHOOSE_REQUEST=9;
+    private static Spinner spMethod;
 
     private String TAG = "CompressFile";
     public static String fileToCompress;
@@ -32,7 +32,7 @@ public class CompressFile extends AppCompatActivity implements WifiP2pManager.Co
         setContentView(R.layout.compress_activity);
 
         totalDevice = (TextView) findViewById(R.id.tvCFtotalDevices);
-        logView = (TextView) findViewById(R.id.tvCFlogView);
+        spMethod = (Spinner) findViewById(R.id.spCFmethod);
 
         P2pOperations.initNetwork(CompressFile.this);
         P2pOperations.dbReceiver = new DeviceBroadcastReceiver(CompressFile.this,P2pOperations.nChannel,P2pOperations.nManager);
@@ -51,9 +51,16 @@ public class CompressFile extends AppCompatActivity implements WifiP2pManager.Co
 
     public void onClickCompress(View view) {
         if(fileToCompress != null) {
+            try {
+                CompressionUtils.writeHeader(spMethod.getSelectedItemPosition(), fileToCompress);
+            }catch(IOException e){
+                e.printStackTrace();
+            }
             if (Integer.parseInt(totalDevice.getText().toString().split(": ")[1]) == 0) {
-
+                CompressionUtils.isLocal=true;
+                CompressionUtils.compress(spMethod.getSelectedItemPosition(),fileToCompress);
             } else {
+                CompressionUtils.isLocal=false;
 
             }
         }

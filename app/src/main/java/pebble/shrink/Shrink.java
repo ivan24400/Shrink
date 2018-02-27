@@ -21,7 +21,6 @@ import java.io.IOException;
 public class Shrink extends AppCompatActivity {
 
     private final String TAG = Shrink.this.getClass().getSimpleName();
-    private AlertDialog.Builder choice;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,23 +40,4 @@ public class Shrink extends AppCompatActivity {
         startActivity(intent);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_info:
-                Intent intent = new Intent(this, Help.class);
-                startActivity(intent);
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
-
-        }
-    }
 }

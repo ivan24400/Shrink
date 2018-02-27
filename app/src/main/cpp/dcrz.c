@@ -12,7 +12,7 @@
  * @param _output output file name
  * @return error code. 0 for no error
  */
-JNIEXPORT jint JNICALL Java_pebble_shrink_Compression_dcrzCompress
+JNIEXPORT jint JNICALL Java_pebble_shrink_CompressionUtils_dcrzCompress
         (JNIEnv *env, jclass cls, jboolean append, jstring _input, jstring _output) {
 
     const char *input = (*env)->GetStringUTFChars(env, _input, 0);

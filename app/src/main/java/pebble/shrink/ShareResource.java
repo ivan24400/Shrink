@@ -37,7 +37,7 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
 
     private String goDeviceName;
 
-    private static TextView logs, deviceName, freeSpace;
+    private static TextView deviceName, freeSpace;
     private static Spinner mpriority;
     private static EditText mfreeSpace;
     private static Button connect;
@@ -50,7 +50,6 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.share_resource);
 
-        logs = (TextView) findViewById(R.id.tvSRlogView);
         deviceName = (TextView) findViewById(R.id.tvSRdeviceName);
         freeSpace = (TextView) findViewById(R.id.tvSRfreespace);
         mfreeSpace = (EditText) findViewById(R.id.etSRsetFreespace);
@@ -62,6 +61,12 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
 
     }
 
+    @Override
+    public void onPause() {
+        Log.d(TAG, "on Pause");
+        super.onPause();
+        unregisterReceiver(P2pOperations.dbReceiver);
+    }
 
     @Override
     public void onResume() {
@@ -71,16 +76,10 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
     }
 
     @Override
-    public void onPause() {
-        Log.d(TAG, "on Pause");
-        super.onPause();
-        unregisterReceiver(P2pOperations.dbReceiver);
-    }
-
-    @Override
     public void onStop() {
         Log.d(TAG, "on stop");
         super.onStop();
+        P2pOperations.removeGroup();
     }
 
     public void resetData() {
@@ -119,7 +118,6 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
             P2pOperations.progress.dismiss();
 
         for (WifiP2pDevice dev : wifiP2pDeviceList.getDeviceList()) {
-            logs.append("\nFound Device: " + dev.deviceName);
             if (!P2pOperations.isP2pOn) {
                 if (dev.deviceName.matches("SHRINK_GO_.*")) {
                     goDeviceName = dev.deviceName;
@@ -138,7 +136,6 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
         Log.d(TAG, "on connection info available " + wifiP2pInfo.toString());
         connect.setText(getResources().getString(R.string.sr_disconnect));
         P2pOperations.isP2pOn = true;
-        logs.append("Connected to " + goDeviceName);
         connectToGroup(wifiP2pInfo.groupOwnerAddress, Integer.parseInt(goDeviceName.split("_")[2]));
     }
 
@@ -155,7 +152,6 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
                     out.println(P2pOperations.getDeviceInfo());
                     out.flush();
                     String data = in.readLine();
-                    logs.append("Compressing " + data);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
