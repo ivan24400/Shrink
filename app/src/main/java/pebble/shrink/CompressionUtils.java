@@ -17,12 +17,16 @@ public class CompressionUtils {
     public static final int DEFLATE = 0;
     public static final int DCRZ = 1;
 
+    public static String cmethod = "COMPRESSION_METHOD";
+    public static String cfile = "COMPRESSION_FILE";
+
     public static boolean isLocal = false;
 
-    public static int ACTION_START_FOREGROUND = 1;
-    public static int ACTION_COMPRESS_WRITE_HEADER = 2;
-    public static int ACTION_COMPRESS_DATA_COMPRESS = 3;
-    public static int ACTION_STOP_FOREGROUND = 4;
+    public static String ACTION_START_FOREGROUND = "compressionUtils_start_foreground";
+    public static String ACTION_COMPRESS_WRITE_HEADER = "compressionUtils_write_header";
+    public static String ACTION_COMPRESS_REMOTE = "compressionUtils_compress_remote";
+    public static String ACTION_COMPRESS_LOCAL = "compressionUtils_compress_local";
+    public static String ACTION_STOP_FOREGROUND = "compressionUtils_stop_foreground";
 
     static {
         System.loadLibrary("dcrz");
@@ -30,28 +34,33 @@ public class CompressionUtils {
 
     private native static int dcrzCompress(boolean append, String input,String output);
 
-    public static void writeHeader(int method, String inFile) throws IOException{
+    public static void writeHeader(int method, String inFile){
         File in = new File(inFile);
-        if( !in.exists()){
-            throw new FileNotFoundException("Input File not found");
-        }
-        StringBuilder outFile = new StringBuilder(inFile);
-        outFile.append(".dcrz");
-        FileOutputStream out = new FileOutputStream(outFile.toString());
-        long crc = computeCrc32(inFile);
-        int shift = 0;
+        try {
+            if (!in.exists()) {
+                throw new FileNotFoundException("Input File not found");
+            }
+            StringBuilder outFile = new StringBuilder(inFile);
+            outFile.append(".dcrz");
+            FileOutputStream out = new FileOutputStream(outFile.toString());
+            long crc = computeCrc32(inFile);
 
-        if (method == DEFLATE) {
-            out.write(CompressionUtils.DEFLATE);
-        } else if (method == DCRZ) {
-            out.write(CompressionUtils.DCRZ);
+            int shift = 0;
+
+            if (method == DEFLATE) {
+                out.write(CompressionUtils.DEFLATE);
+            } else if (method == DCRZ) {
+                out.write(CompressionUtils.DCRZ);
+            }
+            while (shift <= 24) {
+                byte data = (byte) ((crc >> shift) & 0xff); // Little Endian
+                out.write(data);
+                shift = shift + 8;
+            }
+            out.close();
+        }catch (IOException e){
+            e.printStackTrace();
         }
-        while (shift <= 24) {
-            byte data = (byte) ((crc >> shift) & 0xff); // Little Endian
-            out.write(data);
-            shift = shift + 8;
-        }
-        out.close();
     }
 
     public static int compress(int method, String inFile){
@@ -62,7 +71,6 @@ public class CompressionUtils {
 
             } else if (method == DCRZ) {
                 return CompressionUtils.dcrzCompress(isLocal, inFile, outFile.toString());
-
             }
         return -1;
     }

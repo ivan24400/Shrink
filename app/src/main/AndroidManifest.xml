@@ -23,6 +23,7 @@
         </activity>
         <activity android:name="pebble.shrink.CompressFile" />
         <activity android:name="pebble.shrink.ShareResource" />
+        <service android:name="pebble.shrink.CompressionService" />
         <activity android:name="pebble.shrink.Help" />
     </application>
 

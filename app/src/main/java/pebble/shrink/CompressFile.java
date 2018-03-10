@@ -14,12 +14,15 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.IOException;
+import org.w3c.dom.Text;
+
 import java.util.Arrays;
 
 public class CompressFile extends AppCompatActivity implements WifiP2pManager.ConnectionInfoListener, WifiP2pManager.GroupInfoListener{
 
-    public static TextView totalDevice;
+    public static TextView tvTotalDevice;
+    private static TextView tvFileName;
+
     private static final int FILE_CHOOSE_REQUEST=9;
     private static Spinner spMethod;
 
@@ -31,7 +34,8 @@ public class CompressFile extends AppCompatActivity implements WifiP2pManager.Co
         super.onCreate(savedInstanceState);
         setContentView(R.layout.compress_activity);
 
-        totalDevice = (TextView) findViewById(R.id.tvCFtotalDevices);
+        tvTotalDevice = (TextView) findViewById(R.id.tvCFtotalDevices);
+        tvFileName = (TextView) findViewById(R.id.tvCFfileName);
         spMethod = (Spinner) findViewById(R.id.spCFmethod);
 
         P2pOperations.initNetwork(CompressFile.this);
@@ -46,22 +50,26 @@ public class CompressFile extends AppCompatActivity implements WifiP2pManager.Co
     }
 
     public void resetData() {
-        totalDevice.setText(getResources().getString(R.string.cf_total_devices, 0));
+        tvTotalDevice.setText(getResources().getString(R.string.cf_total_devices, 0));
+        tvFileName.setText(getString(R.string.cf_file_name,"NA"));
     }
 
     public void onClickCompress(View view) {
-        if(fileToCompress != null) {
-            try {
-                CompressionUtils.writeHeader(spMethod.getSelectedItemPosition(), fileToCompress);
-            }catch(IOException e){
-                e.printStackTrace();
-            }
-            if (Integer.parseInt(totalDevice.getText().toString().split(": ")[1]) == 0) {
+        if(!fileToCompress.trim().isEmpty()) {
+            int method = spMethod.getSelectedItemPosition();
+
+            Intent intent = new Intent(this,CompressionService.class);
+            intent.putExtra(CompressionUtils.cmethod,method);
+            intent.putExtra(CompressionUtils.cfile,fileToCompress);
+
+            if (Integer.parseInt(tvTotalDevice.getText().toString().split(": ")[1]) == 0) {
                 CompressionUtils.isLocal=true;
-                CompressionUtils.compress(spMethod.getSelectedItemPosition(),fileToCompress);
+                intent.setAction(CompressionUtils.ACTION_COMPRESS_LOCAL);
+                startService(intent);
             } else {
                 CompressionUtils.isLocal=false;
-
+                intent.setAction(CompressionUtils.ACTION_COMPRESS_WRITE_HEADER);
+                startService(intent);
             }
         }
     }
@@ -77,6 +85,8 @@ public class CompressFile extends AppCompatActivity implements WifiP2pManager.Co
         if(requestCode == FILE_CHOOSE_REQUEST){
             if(resultCode == RESULT_OK){
                 fileToCompress = intent.getData().getPath();
+                tvFileName.setText(fileToCompress);
+                Log.d(TAG,"File name: "+fileToCompress);
                 Toast.makeText(CompressFile.this,fileToCompress,Toast.LENGTH_LONG);
             }
         }else{
@@ -126,6 +136,6 @@ public class CompressFile extends AppCompatActivity implements WifiP2pManager.Co
             if(device !=null)   deviceCount++;
         }
 
-        CompressFile.totalDevice.setText(getResources().getString(R.string.cf_total_devices, deviceCount));
+        CompressFile.tvTotalDevice.setText(getResources().getString(R.string.cf_total_devices, deviceCount));
     }
 }
