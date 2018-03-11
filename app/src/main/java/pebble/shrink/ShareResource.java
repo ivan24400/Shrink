@@ -135,7 +135,7 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
     public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
         Log.d(TAG, "on connection info available " + wifiP2pInfo.toString());
         connect.setText(getResources().getString(R.string.sr_disconnect));
-        connectToGroup(wifiP2pInfo.groupOwnerAddress, Integer.parseInt(goDeviceName.split("_")[2]));
+        //connectToGroup(wifiP2pInfo.groupOwnerAddress, Integer.parseInt(goDeviceName.split("_")[2]));
     }
 
     private void connectToGroup(final InetAddress serverAddress, final int port) {

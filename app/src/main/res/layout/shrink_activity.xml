@@ -36,7 +36,6 @@
         android:text="@string/cf_title"
         android:onClick="onClickCompressFile"
         android:layout_margin="20dp"
-        android:background="?attr/selectableItemBackground"
         android:layout_gravity="center"/>
 
     <Button

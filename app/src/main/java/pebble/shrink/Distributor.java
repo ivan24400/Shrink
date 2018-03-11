@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -18,7 +19,7 @@ public class Distributor {
 
     private static final int MAX_DEVICES_COUNT = 9;
     public static ServerSocket server;
-    public static List<Device> deviceList;
+    public static List<Device> deviceList = new LinkedList<>();
     private static String TAG = "Distributor";
     private static Executor executor = Executors.newFixedThreadPool(MAX_DEVICES_COUNT);
 

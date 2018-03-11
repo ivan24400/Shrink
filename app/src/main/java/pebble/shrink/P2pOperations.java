@@ -134,7 +134,6 @@ public class P2pOperations {
             public void onFailure(int error) {
                 Log.d(TAG, "Create group failed");
                 isP2pOn = false;
-                Toast.makeText(context.getApplicationContext(), "Create Group Failed " + errToString(error), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -280,7 +279,6 @@ public class P2pOperations {
             //  Battery
             Intent batteryIntent = context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
             float batteryPercent = batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) / batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
-
 
             // Free space in Bytes
 
