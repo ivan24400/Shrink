@@ -64,8 +64,8 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
     @Override
     public void onPause() {
         Log.d(TAG, "on Pause");
-        super.onPause();
         unregisterReceiver(P2pOperations.dbReceiver);
+        super.onPause();
     }
 
     @Override
@@ -78,8 +78,8 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
     @Override
     public void onStop() {
         Log.d(TAG, "on stop");
-        super.onStop();
         P2pOperations.removeGroup();
+        super.onStop();
     }
 
     public void resetData() {
@@ -135,7 +135,6 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
     public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
         Log.d(TAG, "on connection info available " + wifiP2pInfo.toString());
         connect.setText(getResources().getString(R.string.sr_disconnect));
-        P2pOperations.isP2pOn = true;
         connectToGroup(wifiP2pInfo.groupOwnerAddress, Integer.parseInt(goDeviceName.split("_")[2]));
     }
 

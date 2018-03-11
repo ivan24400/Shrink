@@ -1,9 +1,8 @@
 <resources>
-    <string name="app_name">Shrink</string>
-
     <!-- Shrink -->
+    <string name="app_name">Shrink</string>
     <string name="app_title">Compression</string>
-    <string name="app_desc">This app distributes the task of compression among nearby devices.</string>
+    <string name="app_desc">An application to compress a file both locally and distributed way.</string>
     <string name="info">Info</string>
 
     <!-- Compress file -->
@@ -18,11 +17,13 @@
     <string name="sr_device_name">Device Name: %1$s &lt; %2$s &gt;</string>
     <string name="sr_freespace">Free Space: %1$d</string>
     <string name="sr_connect">Connect</string>
+    <string name="sr_output">tmp_file.dcrz</string>
     <string name="sr_disconnect">Disconnect</string>
 
-    <!-- NotificationUtil -->
+    <!-- NotificationUtils -->
     <string name="distributing">Distributing</string>
     <string name="compressing">Compressing</string>
+    <string name="completed">Completed</string>
     <string name="processing">Processing</string>
     <string name="gather">Gathering results</string>
     <string name="nt_channel">SHRINK_NOTIFICATION_ID</string>

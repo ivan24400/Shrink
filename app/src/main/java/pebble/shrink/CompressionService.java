@@ -1,6 +1,5 @@
 package pebble.shrink;
 
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
@@ -11,20 +10,39 @@ import android.util.Log;
 public class CompressionService extends Service {
 
     private static final String TAG = "CompressionUtils";
+
+
     @Override
-    public int onStartCommand(Intent intent,int flag,int startId){
+    public int onStartCommand(final Intent intent,int flag,int startId){
         Log.d(TAG,"onstartcommand: start");
         if(intent.getAction().equals(CompressionUtils.ACTION_COMPRESS_LOCAL)){
-            NotificationUtil.startNotification(this,CompressFile.class,getString(R.string.compressing));
 
-            CompressionUtils.writeHeader(intent.getIntExtra(CompressionUtils.cmethod,0)
-                    ,intent.getStringExtra(CompressionUtils.cfile));
+            NotificationUtils.startNotification(CompressionService.this,intent,getString(R.string.compressing));
+            CompressFile.btCompress.setEnabled(false);
 
-            CompressionUtils.compress(intent.getIntExtra(CompressionUtils.cmethod,0)
-                    ,intent.getStringExtra(CompressionUtils.cfile));
+            (new Thread(new Runnable(){
+                @Override
+                public void run(){
+                    CompressionService.this.startForeground(NotificationUtils.NOTIFICATION_ID,NotificationUtils.notification);
+                    CompressionUtils.writeHeader(intent.getIntExtra(CompressionUtils.cmethod,0)
+                            ,intent.getStringExtra(CompressionUtils.cfile));
 
-            //NotificationUtil.stopNotification();
-            stopSelf();
+                    CompressionUtils.compress(intent.getIntExtra(CompressionUtils.cmethod,0)
+                            ,intent.getStringExtra(CompressionUtils.cfile));
+
+                    stopSelf();
+
+                    CompressFile.cfHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            NotificationUtils.updateNotification(getString(R.string.completed));
+                            CompressFile.btCompress.setEnabled(true);
+                        }
+                    });
+                }
+            })).start();
+
+
             Log.d(TAG,"onstartcommand: end");
 
         }else if(intent.getAction().equals(CompressionUtils.ACTION_COMPRESS_WRITE_HEADER)) {
@@ -33,6 +51,11 @@ public class CompressionService extends Service {
 
         }
         return START_STICKY;
+    }
+
+    @Override
+    public void onDestroy(){
+        NotificationUtils.stopNotification();
     }
 
     @Nullable

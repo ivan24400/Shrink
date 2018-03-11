@@ -7,14 +7,15 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
-public class NotificationUtil {
+public class NotificationUtils {
 
-    private static final String TAG = "NotificationUtil";
+    private static final String TAG = "NotificationUtils";
 
     private static NotificationCompat.Builder nbuilder;
     private static NotificationManager nmanager;
@@ -24,25 +25,26 @@ public class NotificationUtil {
 
     private static boolean sStarted = false;
     private static final String CHANNEL_ID = "SHRINK_NOTIFICATION_CHANNEL";
-    private static final int NOTIFICATION_ID = 24;
 
-    public static void startNotification(Service s,Class className, String content){
+    public static Notification notification;
+    public static final int NOTIFICATION_ID = 24;
+
+    public static void startNotification(Service s,Intent nintent, String content){
         service = s;
 
-        Log.d(TAG,"MY SDK version: "+Build.VERSION.SDK_INT +" oreo: "+Build.VERSION_CODES.O);
+        Log.d(TAG,"MY SDK version: "+Build.VERSION.SDK_INT +" oreo: "+Build.VERSION_CODES.O+" service: "+s.toString());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel();
         }
         nmanager = (NotificationManager)service.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        Intent nintent = new Intent(service,className);
-        nintent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         pendingIntent = PendingIntent.getActivity(service,0,nintent,0);
 
-        Notification notification = createNotification(content);
-        s.startForeground(NOTIFICATION_ID,notification);
+        notification = createNotification(content);
+        notification.flags |= Notification.FLAG_NO_CLEAR;
         sStarted = true;
+
     }
 
     public static void updateNotification(String content){
@@ -57,6 +59,8 @@ public class NotificationUtil {
 
         nbuilder = new NotificationCompat.Builder(service)
                 .setChannel(CHANNEL_ID)
+                .setLargeIcon(BitmapFactory.decodeResource(service.getResources(),R.mipmap.ic_launcher_round))
+                .setSmallIcon(R.drawable.ic_alert_white)
                 .setContentTitle(service.getResources().getString(R.string.app_name))
                 .setContentText(content)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
@@ -86,8 +90,7 @@ public class NotificationUtil {
     public static void stopNotification(){
         if(sStarted){
             sStarted = false;
-            nmanager.cancel(NOTIFICATION_ID);
-            service.stopForeground(true);
+            service.stopForeground(false);
         }
     }
 }

@@ -34,9 +34,13 @@ public class P2pOperations {
 
     public static String DEVICE_NAME = null;
     public static boolean isP2pOn = false;
+
     public static IntentFilter intentFilter = new IntentFilter();
+
     public static WifiP2pManager.Channel nChannel;
     public static WifiP2pManager nManager;
+    public static WifiManager wManager = null;
+
     public static DeviceBroadcastReceiver dbReceiver;
     public static ProgressDialog progress;
     private static String TAG = "P2pOperations";
@@ -61,9 +65,6 @@ public class P2pOperations {
         nManager = (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
         nChannel = nManager.initialize(context, context.getMainLooper(), null);
 
-        //DEVICE_NAME = BluetoothAdapter.getDefaultAdapter().getName();
-        DEVICE_NAME = Settings.Secure.getString(c.getContentResolver(),"bluetooth_name");
-        Log.d(TAG,"DEVICE_NAME "+DEVICE_NAME);
     }
 
     public static void initiateDiscovery() {
@@ -112,6 +113,10 @@ public class P2pOperations {
         }
         try {
             Distributor.server = new ServerSocket(0);
+
+            DEVICE_NAME = Settings.Secure.getString(context.getContentResolver(),"bluetooth_name");
+            Log.d(TAG,"DEVICE_NAME "+DEVICE_NAME);
+
             setDeviceName("SHRINK_GO_" + Integer.toString(Distributor.server.getLocalPort()));
             Distributor.acceptDevices();
             Log.d(TAG, "local port \t" + Integer.toString(Distributor.server.getLocalPort()));
@@ -122,7 +127,6 @@ public class P2pOperations {
             @Override
             public void onSuccess() {
                 isP2pOn = true;
-
                 Log.d(TAG, "Create group success");
             }
 
@@ -143,6 +147,8 @@ public class P2pOperations {
                 @Override
                 public void onSuccess() {
                     Log.d(TAG, "remove group success");
+                    setDeviceName(DEVICE_NAME);
+                    stopWifi();
                     isP2pOn = false;
                 }
 
@@ -208,43 +214,51 @@ public class P2pOperations {
     }
 
     public static void setDeviceName(String name) {
-        try {
-            Class[] paramTypes = new Class[3];
-            paramTypes[0] = WifiP2pManager.Channel.class;
-            paramTypes[1] = String.class;
-            paramTypes[2] = WifiP2pManager.ActionListener.class;
-            Method setDeviceName = P2pOperations.nManager.getClass().getMethod("setDeviceName", paramTypes);
-            setDeviceName.setAccessible(true);
+        if(name != null) {
+            try {
+                Class[] paramTypes = new Class[3];
+                paramTypes[0] = WifiP2pManager.Channel.class;
+                paramTypes[1] = String.class;
+                paramTypes[2] = WifiP2pManager.ActionListener.class;
+                Method setDeviceName = P2pOperations.nManager.getClass().getMethod("setDeviceName", paramTypes);
+                setDeviceName.setAccessible(true);
 
-            Object[] args = new Object[3];
-            args[0] = nChannel;
-            args[1] = name;
-            args[2] = new WifiP2pManager.ActionListener() {
+                Object[] args = new Object[3];
+                args[0] = nChannel;
+                args[1] = name;
+                args[2] = new WifiP2pManager.ActionListener() {
 
-                @Override
-                public void onSuccess() {
-                    Log.d(TAG, "set device name success");
-                }
+                    @Override
+                    public void onSuccess() {
+                        Log.d(TAG, "set device name success");
+                    }
 
-                @Override
-                public void onFailure(int i) {
-                    Log.d(TAG, "set device name failure " + i);
-                }
-            };
-            setDeviceName.invoke(nManager, args);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
+                    @Override
+                    public void onFailure(int i) {
+                        Log.d(TAG, "set device name failure " + i);
+                    }
+                };
+                setDeviceName.invoke(nManager, args);
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     public static void startWifi() {
-        WifiManager wManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        wManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         if (!wManager.isWifiEnabled()) {
             wManager.setWifiEnabled(true);
+        }
+    }
+
+    public static void stopWifi(){
+        if (wManager != null && wManager.isWifiEnabled()) {
+            wManager.setWifiEnabled(false);
         }
     }
 
