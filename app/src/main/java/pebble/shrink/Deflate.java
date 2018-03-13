@@ -16,20 +16,20 @@ public class Deflate {
 
     private static FileInputStream fin;
     private static FileOutputStream fout;
+    private static final int DEFLATE_BUFFER_SIZE = 16000;
 
     /**
      * Copy byte-wise data from input to output streams
      * and closes them.
-     *
      * @param in  Input stream
      * @param out Output stream
      * @throws IOException I/O related exceptions
      */
     private static void copyData(InputStream in, OutputStream out) throws IOException {
-        int data;
-
-        while ((data = in.read()) != -1) {
-            out.write(data);
+        int ret;
+        byte[] buffer = new byte[DEFLATE_BUFFER_SIZE];
+        while ((ret = in.read(buffer,0,DEFLATE_BUFFER_SIZE)) != -1) {
+            out.write(buffer,0,ret);
         }
         in.close();
         out.close();
@@ -37,7 +37,6 @@ public class Deflate {
 
     /**
      * Compress a file with given name.
-     *
      * @param input Name of the file to compress
      * @return error code
      */
@@ -59,7 +58,6 @@ public class Deflate {
 
     /**
      * Decompress a file with given name.
-     *
      * @param input Name of the file to decompress
      * @return error code
      */

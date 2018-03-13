@@ -97,6 +97,7 @@ public class CompressFile extends AppCompatActivity implements WifiP2pManager.Co
 
         Intent sintent = new Intent("com.sec.android.app.myfiles.PICK_DATA");
         sintent.addCategory(Intent.CATEGORY_DEFAULT);
+        sintent.putExtra("CONTENT_TYPE","*/*");
         sintent.setType("*/*");
 
         Intent intent;
@@ -107,10 +108,6 @@ public class CompressFile extends AppCompatActivity implements WifiP2pManager.Co
             intent = Intent.createChooser(nintent,"Open a file");
         }
         startActivityForResult(intent,FILE_CHOOSE_REQUEST);
-    }
-
-    public CompressFile getInstance(){
-        return CompressFile.this;
     }
 
     @Override
