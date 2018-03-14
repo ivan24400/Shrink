@@ -45,6 +45,9 @@ public class CompressFile extends AppCompatActivity implements WifiP2pManager.Co
         super.onCreate(savedInstanceState);
         setContentView(R.layout.compress_activity);
 
+        getSupportActionBar().setTitle(R.string.cf_title);
+        getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
+
         tvTotalDevice = (TextView) findViewById(R.id.tvCFtotalDevices);
         tvFileName = (TextView) findViewById(R.id.tvCFfileName);
         btCompress = (Button) findViewById(R.id.btCFcompress);
@@ -63,10 +66,11 @@ public class CompressFile extends AppCompatActivity implements WifiP2pManager.Co
 
     public void resetData() {
         tvTotalDevice.setText(getResources().getString(R.string.cf_total_devices, 0));
+
     }
 
     public void onClickCompress(View view) {
-        if(!fileToCompress.trim().isEmpty()) {
+        if(fileToCompress != null) {
             int method = spMethod.getSelectedItemPosition();
 
             Intent intent = new Intent(this,CompressionService.class);
@@ -88,25 +92,14 @@ public class CompressFile extends AppCompatActivity implements WifiP2pManager.Co
                 NotificationUtils.startNotification(new CompressionService(),intent,getString(R.string.compressing));
 
             }
+        } else {
+            Toast.makeText(this,"First choose a file !",Toast.LENGTH_SHORT).show();
         }
     }
 
     public void onClickChooseFile(View view){
-        Intent nintent = new Intent(Intent.ACTION_GET_CONTENT);
-        nintent.setType("*/*");
+        Intent intent = new Intent(this,FileChooser.class);
 
-        Intent sintent = new Intent("com.sec.android.app.myfiles.PICK_DATA");
-        sintent.addCategory(Intent.CATEGORY_DEFAULT);
-        sintent.putExtra("CONTENT_TYPE","*/*");
-        sintent.setType("*/*");
-
-        Intent intent;
-        if(getPackageManager().resolveActivity(sintent,0)!=null){
-            intent = Intent.createChooser(sintent,"Open a file");
-            intent.putExtra(Intent.EXTRA_INITIAL_INTENTS,nintent);
-        }else{
-            intent = Intent.createChooser(nintent,"Open a file");
-        }
         startActivityForResult(intent,FILE_CHOOSE_REQUEST);
     }
 
@@ -114,10 +107,9 @@ public class CompressFile extends AppCompatActivity implements WifiP2pManager.Co
     protected void onActivityResult(int requestCode,int resultCode, Intent intent){
         if(requestCode == FILE_CHOOSE_REQUEST){
             if(resultCode == RESULT_OK){
-                fileToCompress = intent.getData().getPath();
+                fileToCompress = intent.getStringExtra(FileChooser.EXTRA_FILE_PATH);
                 tvFileName.setText(getString(R.string.cf_file_name,fileToCompress));
                 Log.d(TAG,"File name: "+fileToCompress);
-                Toast.makeText(CompressFile.this,fileToCompress,Toast.LENGTH_LONG);
             }
         }else{
             Log.d(TAG,"Invalid file");
@@ -141,6 +133,9 @@ public class CompressFile extends AppCompatActivity implements WifiP2pManager.Co
     @Override
     public void onStop() {
         Log.d(TAG, "on Stop");
+        tvFileName.setText(getString(R.string.cf_file_name,"NA"));
+        fileToCompress = null;
+
         P2pOperations.removeGroup();
         super.onStop();
     }
@@ -165,7 +160,6 @@ public class CompressFile extends AppCompatActivity implements WifiP2pManager.Co
         for (WifiP2pDevice device : wifiP2pGroup.getClientList()) {
             if(device !=null)   deviceCount++;
         }
-
         CompressFile.tvTotalDevice.setText(getResources().getString(R.string.cf_total_devices, deviceCount));
     }
 }

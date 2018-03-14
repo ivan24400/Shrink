@@ -50,6 +50,9 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.share_resource);
 
+        getSupportActionBar().setTitle(R.string.sr_title);
+        getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
+
         deviceName = (TextView) findViewById(R.id.tvSRdeviceName);
         freeSpace = (TextView) findViewById(R.id.tvSRfreespace);
         mfreeSpace = (EditText) findViewById(R.id.etSRsetFreespace);

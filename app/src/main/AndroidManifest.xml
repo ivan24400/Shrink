@@ -22,10 +22,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="pebble.shrink.CompressFile" />
-        <activity android:name="pebble.shrink.ShareResource" />
+        <activity android:name="pebble.shrink.CompressFile"
+            android:parentActivityName=".Shrink"/>
+        <activity android:name="pebble.shrink.ShareResource"
+            android:parentActivityName=".Shrink"/>
         <service android:name="pebble.shrink.CompressionService" />
         <activity android:name="pebble.shrink.Help" />
+        <activity android:name="pebble.shrink.FileChooser" />
     </application>
 
 </manifest>

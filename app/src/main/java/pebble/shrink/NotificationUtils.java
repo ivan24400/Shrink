@@ -60,7 +60,7 @@ public class NotificationUtils {
         nbuilder = new NotificationCompat.Builder(service)
                 .setChannel(CHANNEL_ID)
                 .setLargeIcon(BitmapFactory.decodeResource(service.getResources(),R.mipmap.ic_launcher_round))
-                .setSmallIcon(R.drawable.ic_alert_white)
+                .setSmallIcon(R.drawable.ic_stat_notify_status)
                 .setContentTitle(service.getResources().getString(R.string.app_name))
                 .setContentText(content)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
