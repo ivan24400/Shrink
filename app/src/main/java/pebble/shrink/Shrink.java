@@ -40,4 +40,10 @@ public class Shrink extends AppCompatActivity {
         startActivity(intent);
     }
 
+    @Override
+    public void onDestroy(){
+        NotificationUtils.removeNotification();
+        super.onDestroy();
+    }
+
 }

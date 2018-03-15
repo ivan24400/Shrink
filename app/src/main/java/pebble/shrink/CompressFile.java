@@ -1,5 +1,6 @@
 package pebble.shrink;
 
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pGroup;
@@ -87,10 +88,9 @@ public class CompressFile extends AppCompatActivity implements WifiP2pManager.Co
                 startService(intent);
             } else {
                 CompressionUtils.isLocal=false;
-                intent.setAction(CompressionUtils.ACTION_COMPRESS_WRITE_HEADER);
+                intent.setAction(CompressionUtils.ACTION_COMPRESS_REMOTE);
                 intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                NotificationUtils.startNotification(new CompressionService(),intent,getString(R.string.compressing));
-
+                startService(intent);
             }
         } else {
             Toast.makeText(this,"First choose a file !",Toast.LENGTH_SHORT).show();
@@ -98,9 +98,8 @@ public class CompressFile extends AppCompatActivity implements WifiP2pManager.Co
     }
 
     public void onClickChooseFile(View view){
-        Intent intent = new Intent(this,FileChooser.class);
-
-        startActivityForResult(intent,FILE_CHOOSE_REQUEST);
+      Intent intent = new Intent(this,FileChooser.class);
+       startActivityForResult(intent,FILE_CHOOSE_REQUEST);
     }
 
     @Override

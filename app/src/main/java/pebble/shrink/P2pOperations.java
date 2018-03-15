@@ -13,6 +13,7 @@ import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.BatteryManager;
+import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.provider.Settings;
@@ -42,6 +43,9 @@ public class P2pOperations {
     public static WifiManager wManager = null;
 
     public static DeviceBroadcastReceiver dbReceiver;
+
+    public static Distributor distributor;
+
     public static ProgressDialog progress;
     private static String TAG = "P2pOperations";
     private static Context context;
@@ -111,18 +115,16 @@ public class P2pOperations {
         if (isP2pOn) {
             removeGroup();
         }
-        try {
-            Distributor.server = new ServerSocket(0);
+
 
             DEVICE_NAME = Settings.Secure.getString(context.getContentResolver(),"bluetooth_name");
             Log.d(TAG,"DEVICE_NAME "+DEVICE_NAME);
 
-            setDeviceName("SHRINK_GO_" + Integer.toString(Distributor.server.getLocalPort()));
-            Distributor.acceptDevices();
+            setDeviceName("SHRINK_GO_" + Integer.toString(Distributor.getServerPort()));
+
+
             Log.d(TAG, "local port \t" + Integer.toString(Distributor.server.getLocalPort()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
         P2pOperations.nManager.createGroup(P2pOperations.nChannel, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
@@ -136,12 +138,15 @@ public class P2pOperations {
                 isP2pOn = false;
             }
         });
+
+        distributor = new Distributor();
+        (new Thread(distributor)).start();
     }
 
     public static void removeGroup() {
-        // For Master and Slave Device
+        // For Master and Slave DeviceMaster
         if (isP2pOn) {
-            Distributor.closeGroup();
+            distributor.stop();
             nManager.removeGroup(nChannel, new WifiP2pManager.ActionListener() {
                 @Override
                 public void onSuccess() {
@@ -276,16 +281,29 @@ public class P2pOperations {
     // deviceName, String ip, String cpu, String freeSpace, String battery
 
     public static String getDeviceInfo() {
+
+        // Free space in Bytes
+
+        long freeSpace = 0;
+        StatFs statFs = new StatFs(Environment.getExternalStorageDirectory().getPath());
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2){
+            freeSpace = statFs.getBlockSizeLong() * statFs.getAvailableBlocks();
+        }else {
+            freeSpace = (long)statFs.getBlockSize() * (long)statFs.getAvailableBlocks();
+        }
             //  Battery
             Intent batteryIntent = context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
             float batteryPercent = batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) / batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+            char batteryClass;
+            if(batteryPercent > ShareResource.batteryAlowerLimit){
+                batteryClass = 'A';
+            }else if(batteryPercent > ShareResource.batteryBlowerLimit && batteryPercent < ShareResource.batteryAlowerLimit){
+                batteryClass = 'B';
+            }else {
+                batteryClass = 'C';
+            }
 
-            // Free space in Bytes
-
-            long freeSpace = 0;
-
-
-            Log.d(TAG,"Battery: "+batteryPercent+", FreeSpace: "+freeSpace);
-            return Double.toString(freeSpace) + "::" + Float.toString(batteryPercent);
+            Log.d(TAG,"Battery: "+batteryPercent+", Battery Class "+batteryClass+", FreeSpace: "+freeSpace);
+            return Long.toString(freeSpace) + "::" + Character.toString(batteryClass);
     }
 }

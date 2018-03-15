@@ -93,4 +93,10 @@ public class NotificationUtils {
             service.stopForeground(false);
         }
     }
+
+    public static void removeNotification(){
+        if(!sStarted){
+            nmanager.cancel(NOTIFICATION_ID);
+        }
+    }
 }

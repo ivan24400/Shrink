@@ -1,27 +1,21 @@
 package pebble.shrink;
 
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pInfo;
-import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.ConnectionInfoListener;
 import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v4.app.NotificationCompat;
-import android.support.v7.widget.Toolbar;
+
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
+
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -43,6 +37,11 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
     private static Button connect;
     private static boolean isConnect = true;
 
+    public static final int batteryBlowerLimit = 31;
+    public static final int batteryAlowerLimit = 61;
+
+    private static DeviceSlave deviceSlave;
+
     public static Socket client;
 
     @Override
@@ -59,9 +58,34 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
         connect = (Button) findViewById(R.id.btSRconnect);
         mpriority = (Spinner) findViewById(R.id.spSRsetPriority);
 
+        initFreeSpace();
+
         P2pOperations.initNetwork(ShareResource.this);
         P2pOperations.dbReceiver = new DeviceBroadcastReceiver(ShareResource.this,P2pOperations.nChannel,P2pOperations.nManager);
 
+    }
+
+    public void initFreeSpace(){
+        (new Thread(new Runnable(){
+
+            @Override
+            public void run() {
+                String metaData = P2pOperations.getDeviceInfo();
+                final long fs = Long.parseLong(metaData.split("::")[0]);
+
+                DeviceSlave.freeSpace = fs;
+                DeviceSlave.batteryClass = metaData.split("::")[1].charAt(0);
+
+                ShareResource.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        ShareResource.freeSpace.setText(Long.toString(fs));
+                        ShareResource.mfreeSpace.setText(Long.toString(fs));
+                    }
+                });
+            }
+        })).start();
     }
 
     @Override
@@ -103,7 +127,11 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
 
     public void clickSRconnect(View view) {
         if(isConnect){
-            P2pOperations.initiateDiscovery();
+            if(Long.parseLong(mfreeSpace.getText().toString()) > DeviceSlave.freeSpace){
+
+            } else{
+                P2pOperations.initiateDiscovery();
+            }
         } else {
             // Disconnect
            P2pOperations.removeGroup();
@@ -137,8 +165,15 @@ public class ShareResource extends AppCompatActivity implements PeerListListener
     @Override
     public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
         Log.d(TAG, "on connection info available " + wifiP2pInfo.toString());
+        try {
+            deviceSlave = new DeviceSlave(wifiP2pInfo.groupOwnerAddress, Integer.parseInt(goDeviceName.split("_")[2]));
+        }catch (IOException e){
+            e.printStackTrace();
+            Toast.makeText(this,R.string.m_connect_failed,Toast.LENGTH_SHORT).show();
+            return;
+        }
         connect.setText(getResources().getString(R.string.sr_disconnect));
-        //connectToGroup(wifiP2pInfo.groupOwnerAddress, Integer.parseInt(goDeviceName.split("_")[2]));
+        (new Thread(deviceSlave)).start();
     }
 
     private void connectToGroup(final InetAddress serverAddress, final int port) {

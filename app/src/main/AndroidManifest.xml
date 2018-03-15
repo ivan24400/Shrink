@@ -28,7 +28,9 @@
             android:parentActivityName=".Shrink"/>
         <service android:name="pebble.shrink.CompressionService" />
         <activity android:name="pebble.shrink.Help" />
-        <activity android:name="pebble.shrink.FileChooser" />
+        <activity android:name="pebble.shrink.FileChooser"
+            android:theme="@android:style/Theme.Holo.Light"
+            android:label="Select a file"/>
     </application>
 
 </manifest>

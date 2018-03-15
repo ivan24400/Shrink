@@ -31,7 +31,6 @@ public class FileChooser extends ListActivity{
     private ArrayList<File> files;
     private FileChooserListAdapter adapter;
 
-    private static final String DEFAULT_INITIAL_DIRECTORY="/sdcard";
     public static final String EXTRA_FILE_PATH="pebble.shrink.FileChooser.filepath";
 
     @Override
@@ -76,15 +75,6 @@ public class FileChooser extends ListActivity{
             Collections.sort(files, new FileComparator());
         }
         adapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public void onBackPressed(){
-        if(dir.getParentFile() != null){
-            dir = dir.getParentFile();
-            refreshFileList();
-        }
-        super.onBackPressed();
     }
 
     @Override

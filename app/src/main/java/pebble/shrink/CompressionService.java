@@ -30,8 +30,6 @@ public class CompressionService extends Service {
                     CompressionUtils.compress(intent.getIntExtra(CompressionUtils.cmethod,0)
                             ,intent.getStringExtra(CompressionUtils.cfile));
 
-                    stopSelf();
-
                     CompressFile.cfHandler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -39,15 +37,16 @@ public class CompressionService extends Service {
                             CompressFile.btCompress.setEnabled(true);
                         }
                     });
+                    stopSelf();
                 }
             })).start();
 
 
             Log.d(TAG,"onstartcommand: end");
 
-        }else if(intent.getAction().equals(CompressionUtils.ACTION_COMPRESS_WRITE_HEADER)) {
-
         }else if(intent.getAction().equals(CompressionUtils.ACTION_COMPRESS_REMOTE)){
+            Intent dtIntent = new Intent(this,DataTransferService.class);
+            dtIntent.setAction(DataTransferService.ACTION_DATA_TRANSFER);
 
         }
         return START_STICKY;

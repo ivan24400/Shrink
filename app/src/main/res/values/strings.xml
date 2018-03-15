@@ -21,6 +21,7 @@
     <string name="sr_disconnect">Disconnect</string>
 
     <!-- NotificationUtils -->
+    <string name="initializing">Initializing</string>
     <string name="distributing">Distributing</string>
     <string name="compressing">Compressing</string>
     <string name="completed">Completed</string>
@@ -29,10 +30,17 @@
     <string name="nt_channel">SHRINK_NOTIFICATION_ID</string>
     <string name="nt_channel_desc">SHRINK_NOTIFICATION_DESC</string>
 
+    <!-- FileChooser -->
+    <string name="fc_title">Choose a file</string>
+    <string name="fc_cancel">Cancel</string>
+
     <!-- Misc -->
     <string name="next">Next</string>
     <string name="log">Logs:</string>
     <string name="empty"></string>
     <string name="hide">Hide</string>
+
+    <!-- Error -->
+    <string name="m_connect_failed">Connection Failed</string>
 
 </resources>

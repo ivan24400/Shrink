@@ -17,10 +17,9 @@
         android:id="@+id/fc_list_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:textSize="28sp"
+        android:textSize="24sp"
         android:layout_gravity="start|center_vertical"
-        android:layout_marginLeft="10dip"
+        android:layout_marginLeft="10dp"
         android:maxLines="1"
         android:text="Filename" />
 </LinearLayout>
