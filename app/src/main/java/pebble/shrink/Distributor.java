@@ -1,5 +1,6 @@
 package pebble.shrink;
 
+import android.content.Context;
 import android.util.Log;
 
 import java.io.IOException;
@@ -16,30 +17,26 @@ import java.util.concurrent.Executors;
 
 public class Distributor implements Runnable{
 
-    public static final int HEADER_SIZE = 9; // freeSpace = 8, battery = 1
-
-    private static final int MAX_DEVICES_COUNT = 9;
-    public static ServerSocket server;
-    public static List<DeviceMaster> deviceList = new LinkedList<>();
     private static String TAG = "Distributor";
-    private static ExecutorService executor = Executors.newFixedThreadPool(MAX_DEVICES_COUNT);
 
+    public static final int HEADER_SIZE = 9; // freeSpace = 8, battery = 1
+    private static final int MAX_DEVICES_COUNT = 9;
+
+    private static ServerSocket server;
+    private static ExecutorService executor = Executors.newFixedThreadPool(MAX_DEVICES_COUNT);
+    private Context context;
     private static boolean isStopped = false;
 
-    public int getServerPort(){
-        synchronized (this) {
-            if (server != null) {
-                return server.getLocalPort();
-            } else {
-                return -1;
-            }
-        }
+    public Distributor(Context c){
+        context = c;
     }
 
     @Override
     public void run() {
           try {
               server = new ServerSocket(0);
+              WifiOperations.setWifiApSsid(context.getString(R.string.sr_ssid)+"_"+server.getLocalPort());
+              WifiOperations.setWifiApEnabled(true);
 
               while(!isStopped()) {
                 Socket client = server.accept();
@@ -49,7 +46,7 @@ public class Distributor implements Runnable{
                     return;
                 }
                 executor.execute(new DeviceMaster(client));
-            }
+             }
         } catch (IOException e) {
             e.printStackTrace();
         }

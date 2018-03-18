@@ -61,13 +61,15 @@ public class DeviceOperations {
         try {
             for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements(); ) {
                 NetworkInterface intf = en.nextElement();
-                if (intf.getDisplayName().matches(".*p2p.*")) {
+                if (intf.getDisplayName().matches(".*wlan0.*")) {
                     for (Enumeration<InetAddress> inet = intf.getInetAddresses(); inet.hasMoreElements(); ) {
                         InetAddress inetAddress = inet.nextElement();
                         if (!inetAddress.isLoopbackAddress()) {
                             String addr = inetAddress.getHostAddress();
-                            if (addr.indexOf(':') < 0)
+                            if (addr.indexOf(':') < 0) {
+                                Log.d(TAG,"getmyip "+addr);
                                 return addr;
+                            }
                         }
                     }
                 }

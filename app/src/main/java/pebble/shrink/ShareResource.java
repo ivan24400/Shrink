@@ -38,15 +38,13 @@ public class ShareResource extends AppCompatActivity {
     private static Spinner mpriority;
     private static EditText mfreeSpace;
     private static Button connect;
-    private static boolean isConnect = false;
+    public static boolean isConnect = false;
 
-    private static WifiOperations wifiOperations;
     private WifiScanner wifiScanner;
     private static IntentFilter intentFilter;
 
     private static DeviceSlave deviceSlave;
-
-    public static Socket client;
+    public static Thread deviceSlaveThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +54,8 @@ public class ShareResource extends AppCompatActivity {
         getSupportActionBar().setTitle(R.string.sr_title);
         getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
 
+        WifiOperations.initWifiOperations(ShareResource.this);
+
         deviceName = (TextView) findViewById(R.id.tvSRdeviceName);
         deviceStatus = (TextView) findViewById(R.id.tvSRdeviceStatus);
         freeSpace = (TextView) findViewById(R.id.tvSRfreespace);
@@ -63,10 +63,11 @@ public class ShareResource extends AppCompatActivity {
         connect = (Button) findViewById(R.id.btSRconnect);
         mpriority = (Spinner) findViewById(R.id.spSRsetPriority);
 
+        intentFilter = new IntentFilter();
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
+        intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
         intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
 
-        wifiOperations = new WifiOperations(ShareResource.this);
         initFreeSpace();
 
     }
@@ -76,7 +77,7 @@ public class ShareResource extends AppCompatActivity {
 
             @Override
             public void run() {
-                String metaData = "12345678::B";
+                String metaData = DeviceOperations.getDeviceInfo(ShareResource.this);
                 final long fs = Long.parseLong(metaData.split("::")[0]);
 
                 DeviceSlave.freeSpace = fs;
@@ -105,22 +106,31 @@ public class ShareResource extends AppCompatActivity {
 
     @Override
     public void onResume() {
+        Log.d(TAG, "on Resume");
         wifiScanner = new WifiScanner(ShareResource.this);
         registerReceiver(wifiScanner,intentFilter);
-
         super.onResume();
-        Log.d(TAG, "on Resume");
     }
 
     @Override
     public void onStop() {
         Log.d(TAG, "on stop");
+        super.onStop();
+    }
+
+    @Override
+    public void onDestroy(){
+        Log.d(TAG,"on destroy");
         isConnect = false;
         if(wifiScanner != null) {
             unregisterReceiver(wifiScanner);
             wifiScanner = null;
         }
-        super.onStop();
+        if(deviceSlaveThread != null){
+            deviceSlaveThread.interrupt();
+        }
+        WifiOperations.stop();
+        super.onDestroy();
     }
 
     public void resetData() {
@@ -133,11 +143,12 @@ public class ShareResource extends AppCompatActivity {
             if(Long.parseLong(mfreeSpace.getText().toString()) > DeviceSlave.freeSpace){
                 Toast.makeText(this,R.string.sr_err_maxspace,Toast.LENGTH_LONG).show();
             } else{
-                WifiOperations.getWifiManager().startScan();
+                WifiOperations.startScan();
             }
         } else {
             // Disconnect
-
+            isConnect = false;
+            WifiOperations.setWifiEnabled(false);
         }
     }
 

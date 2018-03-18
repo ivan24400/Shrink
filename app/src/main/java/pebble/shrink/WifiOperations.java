@@ -4,7 +4,6 @@ import android.content.Context;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.Build;
-import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -15,62 +14,76 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * Created by Ivan on 18-03-2018.
- */
 
 public class WifiOperations {
 
-    private Context context;
+    private static final String TAG = "WifiOperations";
+
+    private static Context context;
     private static WifiManager manager;
     private static WifiConfiguration configuration;
 
     private static final String passwd = "#1a2b3c4d";
 
-    private static Method getWifiApState;
-    private static Method isWifiApEnabled;
     private static Method setWifiApEnabled;
-    private static Method getWifiApConfiguration;
+    private static boolean isMaster = false;
 
-    private static InetAddress addr;
-    private static int port;
 
-    static {
-        // lookup methods and fields not defined publicly in the SDK.
-        Class<?> cls = WifiManager.class;
-        for (Method method : cls.getDeclaredMethods()) {
-            String methodName = method.getName();
-            if (methodName.equals("getWifiApState")) {
-                getWifiApState = method;
-            } else if (methodName.equals("isWifiApEnabled")) {
-                isWifiApEnabled = method;
-            } else if (methodName.equals("setWifiApEnabled")) {
-                setWifiApEnabled = method;
-            } else if (methodName.equals("getWifiApConfiguration")) {
-                getWifiApConfiguration = method;
-            }
+    public static void initWifiOperations(Context c){
+        context = c;
+        manager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
+        try {
+            setWifiApEnabled = WifiManager.class.getMethod("setWifiApEnabled", WifiConfiguration.class, boolean.class);
+        }catch (NoSuchMethodException e){
+            e.printStackTrace();
         }
     }
 
-    public WifiOperations(Context c){
-        this.context = c;
-        this.manager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
-    }
 
     public static void setWifiSsid(String ssid){
+        Log.d(TAG,"setwifissis "+ssid);
         configuration = new WifiConfiguration();
-        configuration.SSID = "\"".concat(ssid).concat("\"");
-        configuration.hiddenSSID = true;
+        configuration.SSID = "\""+ssid+"\"";
+        configuration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+       /* configuration.priority = 240000;
+        configuration.hiddenSSID = false;
         configuration.preSharedKey = passwd;
-        configuration.priority = 40;
-        configuration.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.SHARED);
         configuration.status = WifiConfiguration.Status.ENABLED;
+        configuration.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+        configuration.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
+        configuration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+        configuration.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.SHARED);
+
+        */
     }
 
-    public boolean setWifiApEnabled(boolean state){
+    public static void setWifiApSsid(String ssid){
+        Log.d(TAG,"setwifissis "+ssid);
+        configuration = new WifiConfiguration();
+        configuration.SSID = "\""+ssid+"\"";
+        configuration.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
+       /* configuration.priority = 240000;
+        configuration.hiddenSSID = false;
+        configuration.preSharedKey = passwd;
+        configuration.status = WifiConfiguration.Status.ENABLED;
+        configuration.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+        configuration.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
+        configuration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+        configuration.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.SHARED);
+
+        */
+    }
+
+    public static boolean setWifiApEnabled(boolean state){
+        isMaster = true;
+        if(manager == null){
+            manager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
+        }
       try {
           if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-             return (boolean) setWifiApEnabled.invoke(manager, configuration, state);
+             boolean ret = (Boolean)setWifiApEnabled.invoke(manager, configuration, state);
+              Log.d(TAG,"ip address "+DeviceOperations.getMyIpAddress());
+              return ret;
           } else {
               Toast.makeText(context,R.string.err_os_not_supported,Toast.LENGTH_LONG).show();
               return false;
@@ -81,21 +94,56 @@ public class WifiOperations {
       }
     }
 
-public static WifiManager getWifiManager(){
+    public static WifiManager getWifiManager(){
     return manager;
 }
+
     public static void setWifiEnabled(boolean state) {
+        isMaster = false;
         if (!state) {
             if(manager.isWifiEnabled()){
                 manager.setWifiEnabled(false);
             }
         }else{
+
             if(!manager.isWifiEnabled()){
                 manager.setWifiEnabled(true);
             }
+
+            for(WifiConfiguration config : manager.getConfiguredNetworks()){
+                manager.disableNetwork(config.networkId);
+            }
+
+            int res = manager.addNetwork(configuration);
+            Log.d(TAG,"network add result: "+res+" nid "+configuration.networkId);
+
             manager.disconnect();
-            manager.enableNetwork(configuration.networkId,true);
-            manager.reconnect();
+            boolean bres =  manager.enableNetwork(res, true);
+            Log.d(TAG,"network enable "+bres);
+           bres =  manager.reconnect();
+            Log.d(TAG,"network reconnect "+bres);
+
+        }
+    }
+
+    public static void startScan(){
+        if(manager != null){
+            if(!manager.isWifiEnabled()){
+                manager.setWifiEnabled(true);
+            }
+            manager.startScan();
+        }
+    }
+
+    public static boolean isConnected(){
+        if(manager != null){
+            if(manager.getConnectionInfo().getSSID().contains(context.getString(R.string.sr_ssid))){
+                return true;
+            }else{
+                return false;
+            }
+        }else{
+            return false;
         }
     }
 
@@ -149,6 +197,17 @@ public static WifiManager getWifiManager(){
 
         Thread mythread = new Thread(runnable);
         mythread.start();
+    }
+
+    public static void stop(){
+        if(manager != null){
+            if(isMaster){
+                setWifiApEnabled(false);
+            }else{
+                manager.disconnect();
+            }
+            manager = null;
+        }
     }
 
 }

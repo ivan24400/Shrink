@@ -3,6 +3,7 @@ package pebble.shrink;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -35,7 +36,6 @@ public class CompressFile extends AppCompatActivity {
 
     private static IntentFilter intentFilter;
 
-    private WifiOperations wifiOperations;
     private static Distributor distributor;
 
     public CompressFile(){
@@ -47,9 +47,10 @@ public class CompressFile extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.compress_activity);
 
-        distributor = new Distributor();
+        distributor = new Distributor(CompressFile.this);
+        WifiOperations.initWifiOperations(CompressFile.this);
+
         (new Thread(distributor)).start();
-        wifiOperations = new WifiOperations(CompressFile.this);
 
         getSupportActionBar().setTitle(R.string.cf_title);
         getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
@@ -62,34 +63,15 @@ public class CompressFile extends AppCompatActivity {
         intentFilter = new IntentFilter();
         intentFilter.addAction("android.net.wifi.WIFI_AP_STATE_CHANGED");
 
-        wifiOperations.setWifiApEnabled(true);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu){
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.cf_menu,menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item){
-        switch(item.getItemId()){
-            case R.id.mnCF:
-                int p = distributor.getServerPort();
-                if(p <= 0){
-                    Log.d(getClass().getSimpleName(),"nsd not started "+p);
-                }else{
-                }
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if( Build.VERSION.SDK_INT < Build.VERSION_CODES.O){
+            WifiOperations.setWifiApEnabled(true);
+        }else{
+            Toast.makeText(this,R.string.err_os_not_supported,Toast.LENGTH_LONG).show();
         }
     }
 
     public void resetData() {
         tvTotalDevice.setText(getResources().getString(R.string.cf_total_devices, 0));
-
     }
 
     public void onClickCompress(View view) {
@@ -103,6 +85,7 @@ public class CompressFile extends AppCompatActivity {
             if (Integer.parseInt(tvTotalDevice.getText().toString().split(": ")[1]) == 0) {
                 // If no devices are connected
                 CompressionUtils.isLocal=true;
+                WifiOperations.setWifiApEnabled(false);
 
                 intent.setAction(CompressionUtils.ACTION_COMPRESS_LOCAL);
                 intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -154,17 +137,17 @@ public class CompressFile extends AppCompatActivity {
     @Override
     public void onStop() {
         Log.d(TAG, "on Stop");
-        tvFileName.setText(getString(R.string.cf_file_name,"NA"));
-        fileToCompress = null;
-
         super.onStop();
     }
 
     @Override
     public void onDestroy(){
-    Log.d(TAG,"on destroy");
-        wifiOperations.setWifiApEnabled(false);
+        Log.d(TAG,"on destroy");
+        tvFileName.setText(getString(R.string.cf_file_name,"NA"));
+        fileToCompress = null;
 
+        distributor.stop();
+        WifiOperations.stop();
         super.onDestroy();
 
     }

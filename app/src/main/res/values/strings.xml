@@ -45,8 +45,8 @@
     <string name="hide">Hide</string>
 
     <!-- Error -->
-    <string name="err_connect_failed">Connection failed</string>
-    <string name="err_server_failed">Server crashed</string>
-    <string name="err_os_not_supported">Device not Supported</string>
+    <string name="err_connect_failed">Connection failed !</string>
+    <string name="err_server_failed">Server crashed !</string>
+    <string name="err_os_not_supported">Operating System not Supported !</string>
 
 </resources>
