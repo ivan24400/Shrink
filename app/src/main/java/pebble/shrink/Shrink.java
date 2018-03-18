@@ -26,8 +26,6 @@ public class Shrink extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.shrink_activity);
-
-        Log.d(TAG, Build.DEVICE + "\n" + Build.HARDWARE + "\n" + Build.BRAND + "\n" + Build.MODEL + "\n");
     }
 
     public void onClickCompressFile(View view){

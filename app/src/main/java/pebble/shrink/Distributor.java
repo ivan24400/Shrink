@@ -16,28 +16,32 @@ import java.util.concurrent.Executors;
 
 public class Distributor implements Runnable{
 
+    public static final int HEADER_SIZE = 9; // freeSpace = 8, battery = 1
+
     private static final int MAX_DEVICES_COUNT = 9;
     public static ServerSocket server;
     public static List<DeviceMaster> deviceList = new LinkedList<>();
     private static String TAG = "Distributor";
     private static ExecutorService executor = Executors.newFixedThreadPool(MAX_DEVICES_COUNT);
-    private Thread thisThread;
 
     private static boolean isStopped = false;
 
-
-    public static int getServerPort(){
-        return server.getLocalPort();
+    public int getServerPort(){
+        synchronized (this) {
+            if (server != null) {
+                return server.getLocalPort();
+            } else {
+                return -1;
+            }
+        }
     }
 
     @Override
     public void run() {
-        synchronized (this){
-            this.thisThread = Thread.currentThread();
-        }
-        try {
-            createSocket();
-            while(!isStopped()) {
+          try {
+              server = new ServerSocket(0);
+
+              while(!isStopped()) {
                 Socket client = server.accept();
                 Log.d(TAG, "Connected " + client.getInetAddress());
                 if(isStopped()){
@@ -50,12 +54,6 @@ public class Distributor implements Runnable{
             e.printStackTrace();
         }
         this.executor.shutdown();
-    }
-
-    private void createSocket() throws IOException{
-        this.isStopped = false;
-        server = new ServerSocket(0);
-
     }
 
     private synchronized boolean isStopped(){

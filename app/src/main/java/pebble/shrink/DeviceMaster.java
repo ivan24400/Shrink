@@ -11,7 +11,6 @@ import java.nio.ByteBuffer;
 // Master threads
 public class DeviceMaster implements Runnable{
 
-    public static final int HEADER_SIZE = 10; // freeSpace = 8, battery = 1
     private static final String TAG ="DeviceMaster";
     private long freeSpace;
     private long allocatedSpace;
@@ -22,24 +21,24 @@ public class DeviceMaster implements Runnable{
 
     public DeviceMaster(Socket s) throws IOException {
         this.client = s;
-        in = s.getInputStream();
-        out = s.getOutputStream();
     }
 
-    public void retrieveMetaData() throws IOException{
-        byte[] head = new byte[HEADER_SIZE];
-        in.read(head,0,HEADER_SIZE);
+    private void retrieveMetaData() throws IOException{
+        byte[] head = new byte[Distributor.HEADER_SIZE];
+        in.read(head,0,Distributor.HEADER_SIZE);
 
         // Read Free Space
         int i = 0; // free space base
         int shift = 0;
-        while (i < 9) { // free space length is 9 bytes
+        while (i < 8) { // free space length is 8 bytes
             freeSpace = (freeSpace << shift) | head[i++]; // Big Endian
             shift = shift + 8;
         }
 
         // Read Battery
-        battery = (char) head[i]; // battery is 1 byte
+        battery = (char) head[i]; // battery is 1
+
+        Log.d(TAG,"free space "+freeSpace+" , battery "+battery);
     }
 
     public void setAllocatedSpace(long as){ this.allocatedSpace = as; }
@@ -59,13 +58,22 @@ public class DeviceMaster implements Runnable{
     @Override
     public void run() {
        try{
+           in = client.getInputStream();
+           out = client.getOutputStream();
+
            retrieveMetaData();
            this.allocatedSpace = this.freeSpace/2;
 
-           ByteBuffer buffer = ByteBuffer.allocate(8);
-           buffer.putLong(this.allocatedSpace);
+           byte[] buffer = new byte[Distributor.HEADER_SIZE];
 
-           out.write(buffer.array());
+           int i=0;
+           int shift = 28;
+           while (i < 8){
+               buffer[i++] = (byte)((allocatedSpace >> shift) & 0xFF);
+               shift = shift - 8;
+           }
+
+           out.write(buffer,0,8);
 
            client.close();
 

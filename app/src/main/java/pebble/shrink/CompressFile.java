@@ -1,27 +1,23 @@
 package pebble.shrink;
 
-import android.app.FragmentManager;
 import android.content.Intent;
-import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pGroup;
-import android.net.wifi.p2p.WifiP2pInfo;
-import android.net.wifi.p2p.WifiP2pManager;
+import android.content.IntentFilter;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.w3c.dom.Text;
-
-import java.util.Arrays;
-
-public class CompressFile extends AppCompatActivity implements WifiP2pManager.ConnectionInfoListener, WifiP2pManager.GroupInfoListener{
+public class CompressFile extends AppCompatActivity {
 
     private String TAG = "CompressFile";
 
@@ -37,6 +33,11 @@ public class CompressFile extends AppCompatActivity implements WifiP2pManager.Co
 
     public static Handler cfHandler;
 
+    private static IntentFilter intentFilter;
+
+    private WifiOperations wifiOperations;
+    private static Distributor distributor;
+
     public CompressFile(){
         cfHandler = new Handler();
     }
@@ -46,6 +47,10 @@ public class CompressFile extends AppCompatActivity implements WifiP2pManager.Co
         super.onCreate(savedInstanceState);
         setContentView(R.layout.compress_activity);
 
+        distributor = new Distributor();
+        (new Thread(distributor)).start();
+        wifiOperations = new WifiOperations(CompressFile.this);
+
         getSupportActionBar().setTitle(R.string.cf_title);
         getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
 
@@ -54,15 +59,32 @@ public class CompressFile extends AppCompatActivity implements WifiP2pManager.Co
         btCompress = (Button) findViewById(R.id.btCFcompress);
         spMethod = (Spinner) findViewById(R.id.spCFmethod);
 
-        P2pOperations.initNetwork(CompressFile.this);
-        P2pOperations.dbReceiver = new DeviceBroadcastReceiver(CompressFile.this,P2pOperations.nChannel,P2pOperations.nManager);
+        intentFilter = new IntentFilter();
+        intentFilter.addAction("android.net.wifi.WIFI_AP_STATE_CHANGED");
 
-        P2pOperations.createGroup();
-
+        wifiOperations.setWifiApEnabled(true);
     }
 
-    public void updateThisDevice(WifiP2pDevice dev) {
-        P2pOperations.nManager.requestGroupInfo(P2pOperations.nChannel, CompressFile.this);
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.cf_menu,menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        switch(item.getItemId()){
+            case R.id.mnCF:
+                int p = distributor.getServerPort();
+                if(p <= 0){
+                    Log.d(getClass().getSimpleName(),"nsd not started "+p);
+                }else{
+                }
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     public void resetData() {
@@ -79,14 +101,15 @@ public class CompressFile extends AppCompatActivity implements WifiP2pManager.Co
             intent.putExtra(CompressionUtils.cfile,fileToCompress);
 
             if (Integer.parseInt(tvTotalDevice.getText().toString().split(": ")[1]) == 0) {
+                // If no devices are connected
                 CompressionUtils.isLocal=true;
-                P2pOperations.removeGroup();
 
                 intent.setAction(CompressionUtils.ACTION_COMPRESS_LOCAL);
                 intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
                 startService(intent);
             } else {
+                // If one or more devices are connected
                 CompressionUtils.isLocal=false;
                 intent.setAction(CompressionUtils.ACTION_COMPRESS_REMOTE);
                 intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -118,7 +141,6 @@ public class CompressFile extends AppCompatActivity implements WifiP2pManager.Co
     @Override
     public void onPause() {
         Log.d(TAG, "on pause");
-        unregisterReceiver(P2pOperations.dbReceiver);
         super.onPause();
     }
 
@@ -126,7 +148,7 @@ public class CompressFile extends AppCompatActivity implements WifiP2pManager.Co
     public void onResume() {
         super.onResume();
         Log.d(TAG, "on Resume");
-        registerReceiver(P2pOperations.dbReceiver, P2pOperations.intentFilter);
+
     }
 
     @Override
@@ -135,30 +157,15 @@ public class CompressFile extends AppCompatActivity implements WifiP2pManager.Co
         tvFileName.setText(getString(R.string.cf_file_name,"NA"));
         fileToCompress = null;
 
-        P2pOperations.removeGroup();
         super.onStop();
     }
 
     @Override
-    public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
-        if (wifiP2pInfo != null) {
-            P2pOperations.nManager.requestGroupInfo(P2pOperations.nChannel, CompressFile.this);
-        } else {
-            Log.d(TAG, "wifip2pinfo is null");
-        }
-    }
+    public void onDestroy(){
+    Log.d(TAG,"on destroy");
+        wifiOperations.setWifiApEnabled(false);
 
-    @Override
-    public void onGroupInfoAvailable(WifiP2pGroup wifiP2pGroup) {
-        if (wifiP2pGroup == null) {
-            Log.d(TAG, "wifiP2pgroup is null");
-            return;
-        }
-        int deviceCount = 0;
-        Log.d(TAG, Arrays.toString(wifiP2pGroup.getClientList().toArray()));
-        for (WifiP2pDevice device : wifiP2pGroup.getClientList()) {
-            if(device !=null)   deviceCount++;
-        }
-        CompressFile.tvTotalDevice.setText(getResources().getString(R.string.cf_total_devices, deviceCount));
+        super.onDestroy();
+
     }
 }

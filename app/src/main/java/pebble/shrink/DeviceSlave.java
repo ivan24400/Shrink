@@ -17,6 +17,8 @@ public class DeviceSlave implements Runnable {
 
     private static final String TAG = "DeviceSlave";
 
+    private static InetAddress addr;
+    private static int port;
     private static Socket socket;
     private static InputStream in;
     private static OutputStream out;
@@ -24,23 +26,37 @@ public class DeviceSlave implements Runnable {
     public static long freeSpace,allocateSpace;
     public static char batteryClass;
 
-    public DeviceSlave(final InetAddress addr, final int port) throws IOException{
-        this.socket = new Socket(addr,port);
-        this.in = socket.getInputStream();
-        this.out = socket.getOutputStream();
+    public DeviceSlave(final InetAddress a, final int p){
+        this.addr = a;
+        this.port = p;
     }
 
     @Override
     public void run() {
         try{
-            ByteBuffer buffer = ByteBuffer.allocate(9);
-            buffer.putLong(freeSpace);
-            buffer.put((byte)(batteryClass & 0xFF));
+            this.socket = new Socket(addr,port);
+            this.in = socket.getInputStream();
+            this.out = socket.getOutputStream();
 
-            out.write(buffer.array(),0,buffer.position());
+            byte[] buffer = new byte[10];
+            int i=0;
+            int shift = 28;
+            while(i<8){
+                buffer[i++] = (byte)((freeSpace >> shift) & 0xFF);
+                shift = shift - 8;
+            }
+            buffer[i] = ((byte)(batteryClass & 0xFF));
 
-            byte[] asBuffer = new byte[8];
-            allocateSpace = in.read(asBuffer,0,8);
+            out.write(buffer,0,Distributor.HEADER_SIZE);
+
+            in.read(buffer,0,8);
+
+            i=0;
+            shift = 0;
+            while(i < 8){
+                allocateSpace = (allocateSpace << shift) |  buffer[i++];
+                shift = shift + 8;
+            }
 
             Log.d(TAG,"Allocated Space is "+allocateSpace);
 

@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <android.support.constraint.ConstraintLayout
+    <LinearLayout
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -14,34 +14,28 @@
 
     <TextView
         android:id="@+id/tvSRdeviceName"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Device Name: NA"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:text="Device Name: NA" />
 
-    <TextView
+        <TextView
+            android:id="@+id/tvSRdeviceStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Device Status: NA" />
+
+        <TextView
         android:id="@+id/tvSRfreespace"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:text="Free Space: NA"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvSRdeviceName" />
+        android:text="Free Space: NA" />
 
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:orientation="horizontal"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintTop_toBottomOf="@+id/tvSRfreespace"
         android:id="@+id/linearLayout2">
 
         <TextView
@@ -50,9 +44,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="Set Free Space:"
-            android:layout_weight="2"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvSRfreespace" />
+            android:layout_weight="2"/>
 
         <EditText
             android:id="@+id/etSRsetFreespace"
@@ -65,22 +57,15 @@
             android:maxLength="10"
             android:textSize="14sp"
             android:layout_height="wrap_content"
-            android:layout_width="match_parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintLeft_toRightOf="@+id/tvSRsetFreeSpace"
-            app:layout_constraintHorizontal_bias="0.555"
-            app:layout_constraintTop_toBottomOf="@+id/tvSRfreespace"/>
+            android:layout_width="match_parent"/>
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintRight_toRightOf="parent"
         android:layout_marginTop="8dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:id="@+id/linearLayout"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout2">
+        android:id="@+id/linearLayout">
 
         <TextView
             android:layout_weight="2"
@@ -88,9 +73,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="Set Priority:"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvSRsetFreeSpace" />
+            android:text="Set Priority:"/>
 
         <Spinner
             android:id="@+id/spSRsetPriority"
@@ -98,24 +81,18 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:entries="@array/sr_priority"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintLeft_toRightOf="@+id/tvSRsetPriority"
-            app:layout_constraintTop_toBottomOf="@+id/etSRsetFreespace"
-            app:layout_constraintHorizontal_bias="0.503" />
+            android:entries="@array/sr_priority" />
     </LinearLayout>
 
         <Button
             android:id="@+id/btSRconnect"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="16dp"
+            android:layout_marginTop="20dp"
+            android:layout_gravity="center"
             android:onClick="clickSRconnect"
-            android:text="@string/sr_connect"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout"
-            app:layout_constraintLeft_toLeftOf="parent" />
+            android:text="@string/sr_connect" />
 
 
-    </android.support.constraint.ConstraintLayout>
+    </LinearLayout>
 </ScrollView>

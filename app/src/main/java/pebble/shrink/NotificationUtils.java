@@ -23,7 +23,7 @@ public class NotificationUtils {
     private static Service service;
     private static PendingIntent pendingIntent;
 
-    private static boolean sStarted = false;
+    private static boolean nActive = false;
     private static final String CHANNEL_ID = "SHRINK_NOTIFICATION_CHANNEL";
 
     public static Notification notification;
@@ -43,7 +43,7 @@ public class NotificationUtils {
 
         notification = createNotification(content);
         notification.flags |= Notification.FLAG_NO_CLEAR;
-        sStarted = true;
+        nActive = true;
 
     }
 
@@ -88,14 +88,14 @@ public class NotificationUtils {
     }
 
     public static void stopNotification(){
-        if(sStarted){
-            sStarted = false;
+        if(nActive){
+            nActive = false;
             service.stopForeground(false);
         }
     }
 
     public static void removeNotification(){
-        if(!sStarted){
+        if(!nActive && nmanager != null){
             nmanager.cancel(NOTIFICATION_ID);
         }
     }
