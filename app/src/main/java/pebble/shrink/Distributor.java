@@ -4,6 +4,8 @@ import android.content.Context;
 import android.util.Log;
 
 import java.io.IOException;
+import java.math.BigInteger;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
@@ -15,7 +17,7 @@ import java.util.concurrent.Executors;
  * Created by Ivan on 21-09-2017.
  */
 
-public class Distributor implements Runnable{
+public class Distributor implements Runnable {
 
     private static String TAG = "Distributor";
 
@@ -27,37 +29,37 @@ public class Distributor implements Runnable{
     private Context context;
     private static boolean isStopped = false;
 
-    public Distributor(Context c){
+    public Distributor(Context c) {
         context = c;
     }
 
     @Override
     public void run() {
-          try {
-              server = new ServerSocket(0);
-              WifiOperations.setWifiApSsid(context.getString(R.string.sr_ssid)+"_"+server.getLocalPort());
-              WifiOperations.setWifiApEnabled(true);
+        try {
+            server = new ServerSocket(0);
+            WifiOperations.setWifiApSsid(context.getString(R.string.sr_ssid) + "_" + server.getLocalPort());
+            WifiOperations.setWifiApEnabled(true);
 
-              while(!isStopped()) {
+            while (!isStopped()) {
                 Socket client = server.accept();
                 Log.d(TAG, "Connected " + client.getInetAddress());
-                if(isStopped()){
+                if (isStopped()) {
                     Log.d(TAG, "Server is stopped");
                     return;
                 }
                 executor.execute(new DeviceMaster(client));
-             }
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
         this.executor.shutdown();
     }
 
-    private synchronized boolean isStopped(){
+    private synchronized boolean isStopped() {
         return this.isStopped;
     }
 
-    public synchronized void stop(){
+    public synchronized void stop() {
         this.isStopped = true;
         try {
             server.close();

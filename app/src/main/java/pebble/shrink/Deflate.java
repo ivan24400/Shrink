@@ -21,6 +21,7 @@ public class Deflate {
     /**
      * Copy byte-wise data from input to output streams
      * and closes them.
+     *
      * @param in  Input stream
      * @param out Output stream
      * @throws IOException I/O related exceptions
@@ -28,8 +29,8 @@ public class Deflate {
     private static void copyData(InputStream in, OutputStream out) throws IOException {
         int ret;
         byte[] buffer = new byte[DEFLATE_BUFFER_SIZE];
-        while ((ret = in.read(buffer,0,DEFLATE_BUFFER_SIZE)) != -1) {
-            out.write(buffer,0,ret);
+        while ((ret = in.read(buffer, 0, DEFLATE_BUFFER_SIZE)) != -1) {
+            out.write(buffer, 0, ret);
         }
         in.close();
         out.close();
@@ -37,13 +38,14 @@ public class Deflate {
 
     /**
      * Compress a file with given name.
+     *
      * @param input Name of the file to compress
      * @return error code
      */
-    public static int compressFile(boolean append,String input,String output) {
+    public static int compressFile(boolean append, String input, String output) {
         try {
             fin = new FileInputStream(input);
-            fout = new FileOutputStream(output.toString(),append);
+            fout = new FileOutputStream(output.toString(), append);
 
             DeflaterOutputStream dout = new DeflaterOutputStream(fout);
 
@@ -58,6 +60,7 @@ public class Deflate {
 
     /**
      * Decompress a file with given name.
+     *
      * @param input Name of the file to decompress
      * @return error code
      */

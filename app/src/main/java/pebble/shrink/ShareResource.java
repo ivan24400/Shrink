@@ -1,17 +1,9 @@
 package pebble.shrink;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
-import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
-import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pDeviceList;
-import android.net.wifi.p2p.WifiP2pInfo;
-import android.net.wifi.p2p.WifiP2pManager.ConnectionInfoListener;
-import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -24,26 +16,21 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.IOException;
-import java.net.Socket;
-import java.util.List;
-
 public class ShareResource extends AppCompatActivity {
 
     public String TAG = "Share Resource";
 
     private String goDeviceName;
 
-    private static TextView deviceName, deviceStatus,freeSpace;
-    private static Spinner mpriority;
+    private static TextView deviceName, deviceStatus, freeSpace;
+    public static Spinner mpriority;
     private static EditText mfreeSpace;
-    private static Button connect;
+    public static Button connect;
     public static boolean isConnect = false;
 
     private WifiScanner wifiScanner;
     private static IntentFilter intentFilter;
 
-    private static DeviceSlave deviceSlave;
     public static Thread deviceSlaveThread;
 
     @Override
@@ -65,15 +52,17 @@ public class ShareResource extends AppCompatActivity {
 
         intentFilter = new IntentFilter();
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
-        intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
         intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        intentFilter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
 
-        initFreeSpace();
+        initDeviceStat();
 
+        wifiScanner = new WifiScanner(ShareResource.this);
+        registerReceiver(wifiScanner, intentFilter);
     }
 
-    public void initFreeSpace(){
-        (new Thread(new Runnable(){
+    public void initDeviceStat() {
+        (new Thread(new Runnable() {
 
             @Override
             public void run() {
@@ -86,7 +75,13 @@ public class ShareResource extends AppCompatActivity {
                 ShareResource.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        ShareResource.freeSpace.setText(getString(R.string.sr_freespace,fs));
+                        if(DeviceSlave.batteryClass == 'A'){
+                            ShareResource.mpriority.setSelection(1);
+                        }else{
+                            ShareResource.mpriority.setSelection(0);
+                        }
+                        ShareResource.deviceName.setText(getString(R.string.sr_device_name, Settings.Secure.getString(getContentResolver(), "bluetooth_name")));
+                        ShareResource.freeSpace.setText(getString(R.string.sr_freespace, fs));
                         ShareResource.mfreeSpace.setText(Long.toString(fs));
                     }
                 });
@@ -97,18 +92,12 @@ public class ShareResource extends AppCompatActivity {
     @Override
     public void onPause() {
         Log.d(TAG, "on Pause");
-        if(wifiScanner != null) {
-            unregisterReceiver(wifiScanner);
-            wifiScanner = null;
-        }
         super.onPause();
     }
 
     @Override
     public void onResume() {
         Log.d(TAG, "on Resume");
-        wifiScanner = new WifiScanner(ShareResource.this);
-        registerReceiver(wifiScanner,intentFilter);
         super.onResume();
     }
 
@@ -119,35 +108,62 @@ public class ShareResource extends AppCompatActivity {
     }
 
     @Override
-    public void onDestroy(){
-        Log.d(TAG,"on destroy");
+    public void onDestroy() {
+        Log.d(TAG, "on destroy");
         isConnect = false;
-        if(wifiScanner != null) {
+        if (wifiScanner != null) {
             unregisterReceiver(wifiScanner);
             wifiScanner = null;
         }
-        if(deviceSlaveThread != null){
+        if (deviceSlaveThread != null) {
             deviceSlaveThread.interrupt();
         }
         WifiOperations.stop();
         super.onDestroy();
     }
 
-    public void resetData() {
-        deviceStatus.setText(getString(R.string.sr_device_status,"NA"));
+    public void updateStatus(final String status) {
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                deviceStatus.setText(getString(R.string.sr_device_status, status));
+            }
+        });
+    }
+
+    public void setConnected(final boolean state) {
+        isConnect = state;
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (state) {
+                    connect.setText(getString(R.string.sr_disconnect));
+                } else {
+                    deviceStatus.setText(ShareResource.this.getString(R.string.sr_device_status,"Disconnected"));
+                    connect.setText(getString(R.string.sr_connect));
+                }
+            }
+        });
+
     }
 
     public void clickSRconnect(View view) {
-        Log.d(TAG,"clickconnect "+isConnect);
-        if(!isConnect){
-            if(Long.parseLong(mfreeSpace.getText().toString()) > DeviceSlave.freeSpace){
-                Toast.makeText(this,R.string.sr_err_maxspace,Toast.LENGTH_LONG).show();
-            } else{
-                WifiOperations.startScan();
+        Log.d(TAG, "clickconnect " + isConnect);
+        if (!isConnect) {
+            if (Long.parseLong(mfreeSpace.getText().toString()) > DeviceSlave.freeSpace) {
+                Toast.makeText(this, R.string.sr_err_maxspace, Toast.LENGTH_LONG).show();
+            } else {
+                DeviceOperations.displayProgress(ShareResource.this, getString(R.string.p_title), getString(R.string.p_scanning));
+                (new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        WifiOperations.startScan();
+                    }
+                })).start();
             }
         } else {
             // Disconnect
-            isConnect = false;
+            setConnected(false);
             WifiOperations.setWifiEnabled(false);
         }
     }

@@ -30,29 +30,38 @@ public class DeviceOperations {
 
         // Free space in Bytes
 
-        long freeSpace = 0;
+        long freeSpace = 0,totalSpace = 0;
         StatFs statFs = new StatFs(Environment.getExternalStorageDirectory().getPath());
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2){
-            freeSpace = statFs.getBlockSizeLong() * statFs.getAvailableBlocks();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            freeSpace = statFs.getBlockSizeLong() * statFs.getAvailableBlocksLong();
+            totalSpace = statFs.getBlockSizeLong() * statFs.getBlockCountLong();
+        } else {
+            freeSpace = (long) statFs.getBlockSize() * (long) statFs.getAvailableBlocks();
+            totalSpace = statFs.getBlockSize() * statFs.getBlockCount();
+        }
+
+        // Subtract unavailable minimum storage of android.
+        if((freeSpace/2 - (long)0.1*totalSpace) > 0){
+            freeSpace = freeSpace/2 - (long)0.1*totalSpace;
         }else {
-            freeSpace = (long)statFs.getBlockSize() * (long)statFs.getAvailableBlocks();
+            freeSpace = freeSpace/2;
         }
         //  Battery
         Intent batteryIntent = context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         float batteryPercent = batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) /
                 (float) batteryIntent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
-        batteryPercent = (int)(batteryPercent*100);
+        batteryPercent = (int) (batteryPercent * 100);
 
         char batteryClass;
-        if(batteryPercent > batteryAlowerLimit){
+        if (batteryPercent > batteryAlowerLimit) {
             batteryClass = 'A';
-        }else if(batteryPercent > batteryBlowerLimit && batteryPercent < batteryAlowerLimit){
+        } else if (batteryPercent > batteryBlowerLimit && batteryPercent < batteryAlowerLimit) {
             batteryClass = 'B';
-        }else {
+        } else {
             batteryClass = 'C';
         }
 
-        Log.d(TAG,"Battery: "+batteryPercent+", Battery Class "+batteryClass+", FreeSpace: "+freeSpace);
+        Log.d(TAG, "Battery: " + batteryPercent + ", Battery Class " + batteryClass + ", FreeSpace: " + freeSpace);
         return Long.toString(freeSpace) + "::" + Character.toString(batteryClass);
     }
 
@@ -67,7 +76,7 @@ public class DeviceOperations {
                         if (!inetAddress.isLoopbackAddress()) {
                             String addr = inetAddress.getHostAddress();
                             if (addr.indexOf(':') < 0) {
-                                Log.d(TAG,"getmyip "+addr);
+                                Log.d(TAG, "getmyip " + addr);
                                 return addr;
                             }
                         }
@@ -87,12 +96,13 @@ public class DeviceOperations {
         progress = progress.show(c, title, msg, true,
                 true, new DialogInterface.OnCancelListener() {
                     @Override
-                    public void onCancel(DialogInterface dialog) {}
+                    public void onCancel(DialogInterface dialog) {
+                    }
                 });
     }
 
 
-    public static void removeProgress(){
+    public static void removeProgress() {
         if (progress != null && progress.isShowing()) {
             progress.dismiss();
         }

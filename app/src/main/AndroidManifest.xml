@@ -3,12 +3,15 @@
     package="pebble.shrink">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+
+    <uses-feature android:name="android.hardware.wifi" android:required="true" />
 
     <application
         android:allowBackup="true"
@@ -24,15 +27,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="pebble.shrink.CompressFile"
-            android:parentActivityName=".Shrink"/>
-        <activity android:name="pebble.shrink.ShareResource"
-            android:parentActivityName=".Shrink"/>
+        <activity
+            android:name="pebble.shrink.CompressFile"
+            android:parentActivityName=".Shrink" />
+        <activity
+            android:name="pebble.shrink.ShareResource"
+            android:parentActivityName=".Shrink" />
+
         <service android:name="pebble.shrink.CompressionService" />
+
         <activity android:name="pebble.shrink.Help" />
-        <activity android:name="pebble.shrink.FileChooser"
+        <activity
+            android:name="pebble.shrink.FileChooser"
             android:theme="@android:style/Theme.Holo.Light"
-            android:label="Select a file"/>
+            android:label="Select a file" />
     </application>
 
 </manifest>

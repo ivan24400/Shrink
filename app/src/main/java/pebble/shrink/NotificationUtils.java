@@ -29,17 +29,17 @@ public class NotificationUtils {
     public static Notification notification;
     public static final int NOTIFICATION_ID = 24;
 
-    public static void startNotification(Service s,Intent nintent, String content){
+    public static void startNotification(Service s, Intent nintent, String content) {
         service = s;
 
-        Log.d(TAG,"MY SDK version: "+Build.VERSION.SDK_INT +" oreo: "+Build.VERSION_CODES.O+" service: "+s.toString());
+        Log.d(TAG, "MY SDK version: " + Build.VERSION.SDK_INT + " oreo: " + Build.VERSION_CODES.O + " service: " + s.toString());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel();
         }
-        nmanager = (NotificationManager)service.getSystemService(Context.NOTIFICATION_SERVICE);
+        nmanager = (NotificationManager) service.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        pendingIntent = PendingIntent.getActivity(service,0,nintent,0);
+        pendingIntent = PendingIntent.getActivity(service, 0, nintent, 0);
 
         notification = createNotification(content);
         notification.flags |= Notification.FLAG_NO_CLEAR;
@@ -47,19 +47,19 @@ public class NotificationUtils {
 
     }
 
-    public static void updateNotification(String content){
+    public static void updateNotification(String content) {
         Notification not = createNotification(content);
-        if(not != null){
-            nmanager.notify(NOTIFICATION_ID,not);
+        if (not != null) {
+            nmanager.notify(NOTIFICATION_ID, not);
         }
     }
 
 
-    public static Notification createNotification(final String content){
+    public static Notification createNotification(final String content) {
 
         nbuilder = new NotificationCompat.Builder(service)
                 .setChannel(CHANNEL_ID)
-                .setLargeIcon(BitmapFactory.decodeResource(service.getResources(),R.mipmap.ic_launcher_round))
+                .setLargeIcon(BitmapFactory.decodeResource(service.getResources(), R.mipmap.ic_launcher_round))
                 .setSmallIcon(R.drawable.ic_stat_notify_status)
                 .setContentTitle(service.getResources().getString(R.string.app_name))
                 .setContentText(content)
@@ -87,15 +87,15 @@ public class NotificationUtils {
         }
     }
 
-    public static void stopNotification(){
-        if(nActive){
+    public static void stopNotification() {
+        if (nActive) {
             nActive = false;
             service.stopForeground(false);
         }
     }
 
-    public static void removeNotification(){
-        if(!nActive && nmanager != null){
+    public static void removeNotification() {
+        if (!nActive && nmanager != null) {
             nmanager.cancel(NOTIFICATION_ID);
         }
     }

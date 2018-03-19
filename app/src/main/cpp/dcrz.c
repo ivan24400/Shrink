@@ -22,9 +22,9 @@ JNIEXPORT jint JNICALL Java_pebble_shrink_CompressionUtils_dcrzCompress
 
     in = fopen(input, "rb");
     MY_MALLOC(ibuffer, uint8_t*, BUFFER_SIZE, sizeof(uint8_t))
-    if(append) {
+    if (append) {
         out = fopen(output, "ab");
-    } else{
+    } else {
         out = fopen(output, "wb");
     }
 
@@ -33,7 +33,7 @@ JNIEXPORT jint JNICALL Java_pebble_shrink_CompressionUtils_dcrzCompress
         fprintf(stderr, "File open failed in: %p out: %p\ninput: %s\n output: %s buffer %p\n",
                 in, out, input, output, ibuffer);
         (*env)->ReleaseStringUTFChars(env, _input, input);
-        (*env)->ReleaseStringUTFChars(env,_output, output);
+        (*env)->ReleaseStringUTFChars(env, _output, output);
         return ERROR;
     }
     error = dcrzEncode();
@@ -59,7 +59,7 @@ JNIEXPORT jint JNICALL Java_pebble_shrink_Compression_dcrzDecompress
         (JNIEnv *env, jclass cls, jstring _input, jstring _output) {
     // Decompression
     const char *input = (*env)->GetStringUTFChars(env, _input, 0);
-    const char *output = (*env)->GetStringUTFChars(env,_output,0);
+    const char *output = (*env)->GetStringUTFChars(env, _output, 0);
     int error = 0;
 
     in = fopen(input, "rb");

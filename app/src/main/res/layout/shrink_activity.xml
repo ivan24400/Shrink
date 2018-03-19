@@ -1,51 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-<LinearLayout
-    android:id="@+id/main_content"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:fitsSystemWindows="true"
-    android:orientation="vertical" >
-
-
-    <TextView
-        android:id="@+id/tvtitle"
+    <LinearLayout
+        android:id="@+id/main_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="20dp"
-        android:text="@string/app_title"
-        android:textSize="30sp"
-        android:textAlignment="center" />
-
-    <TextView
-        android:id="@+id/tvAppDescription"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="40dp"
-        android:text="@string/app_desc" />
+        android:fitsSystemWindows="true"
+        android:orientation="vertical">
 
 
-    <Button
-        android:id="@+id/btScompress"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/cf_title"
-        android:onClick="onClickCompressFile"
-        android:layout_margin="20dp"
-        android:layout_gravity="center"/>
+        <TextView
+            android:id="@+id/tvtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:text="@string/app_title"
+            android:textAlignment="center"
+            android:textSize="30sp" />
 
-    <Button
-        android:id="@+id/btSshare"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/sr_title"
-        android:onClick="onClickShareDevice"
-        android:layout_margin="10dp"
-        android:layout_gravity="center" />
+        <TextView
+            android:id="@+id/tvAppDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="40dp"
+            android:text="@string/app_desc" />
+
+
+        <Button
+            android:id="@+id/btScompress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="20dp"
+            android:onClick="onClickCompressFile"
+            android:text="@string/cf_title" />
+
+        <Button
+            android:id="@+id/btSshare"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="10dp"
+            android:onClick="onClickShareDevice"
+            android:text="@string/sr_title" />
 
     </LinearLayout>
 </ScrollView>

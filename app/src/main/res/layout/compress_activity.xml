@@ -1,66 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:layout_margin="8dp"   >
-
-    <TextView
-        android:id="@+id/tvCFtotalDevices"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:textColor="@android:color/holo_red_light"
-        android:text="Total Devices: 0" />
-
-
-    <TextView
-        android:id="@+id/tvCFfileName"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="FileName: NA" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:weightSum="2"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        android:layout_margin="8dp">
+
+        <TextView
+            android:id="@+id/tvCFtotalDevices"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Total Devices: 0" />
+
+
+        <TextView
+            android:id="@+id/tvCFfileName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="FileName: NA" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:weightSum="2"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btCFchooseFile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="onClickChooseFile"
+                android:layout_margin="8dp"
+                android:layout_gravity="center"
+                android:text="@string/cf_choose_file" />
+
+            <Spinner
+                android:id="@+id/spCFmethod"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:entries="@array/compression_method"
+                android:layout_weight="1" />
+
+        </LinearLayout>
 
         <Button
-            android:id="@+id/btCFchooseFile"
-            android:layout_width="match_parent"
+            android:id="@+id/btCFcompress"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:onClick="onClickChooseFile"
             android:layout_margin="8dp"
             android:layout_gravity="center"
-            android:text="@string/cf_choose_file" />
-
-        <Spinner
-            android:id="@+id/spCFmethod"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:entries="@array/compression_method"
-            android:layout_weight="1" />
+            android:onClick="onClickCompress"
+            android:text="@string/cf_compress" />
 
     </LinearLayout>
-
-    <Button
-        android:id="@+id/btCFcompress"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:layout_gravity="center"
-        android:onClick="onClickCompress"
-        android:text="@string/cf_compress" />
-
-</LinearLayout>
 </ScrollView>

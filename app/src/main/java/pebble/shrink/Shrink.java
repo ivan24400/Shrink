@@ -28,18 +28,19 @@ public class Shrink extends AppCompatActivity {
         setContentView(R.layout.shrink_activity);
     }
 
-    public void onClickCompressFile(View view){
+    public void onClickCompressFile(View view) {
         Intent intent = new Intent(Shrink.this, CompressFile.class);
         startActivity(intent);
     }
 
-    public void onClickShareDevice(View view){
+    public void onClickShareDevice(View view) {
+        Log.d(TAG,"onclicksharedevice "+view.getId());
         Intent intent = new Intent(Shrink.this, ShareResource.class);
         startActivity(intent);
     }
 
     @Override
-    public void onDestroy(){
+    public void onDestroy() {
         NotificationUtils.removeNotification();
         super.onDestroy();
     }

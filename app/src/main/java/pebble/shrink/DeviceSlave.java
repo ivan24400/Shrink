@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 /**
  * Created by Ivan on 15-03-2018.
@@ -23,46 +24,50 @@ public class DeviceSlave implements Runnable {
     private static InputStream in;
     private static OutputStream out;
 
-    public static long freeSpace,allocateSpace;
+    public static long freeSpace, allocateSpace;
     public static char batteryClass;
 
-    public DeviceSlave(final InetAddress a, final int p){
+    public DeviceSlave(final InetAddress a, final int p) {
         this.addr = a;
         this.port = p;
     }
 
     @Override
     public void run() {
-        try{
-            this.socket = new Socket(addr,port);
+        try {
+            Log.d(TAG,"device slave socket "+addr+" @ "+port);
+            this.socket = new Socket(addr, port);
             this.in = socket.getInputStream();
             this.out = socket.getOutputStream();
 
             byte[] buffer = new byte[10];
-            int i=0;
+            int i = 0;
             int shift = 28;
-            while(i<8){
-                buffer[i++] = (byte)((freeSpace >> shift) & 0xFF);
+            while (i < 8) {
+                buffer[i++] = (byte) ((freeSpace >> shift) & 0xFF);
                 shift = shift - 8;
             }
-            buffer[i] = ((byte)(batteryClass & 0xFF));
+            buffer[i] = ((byte) (batteryClass & 0xFF));
 
-            out.write(buffer,0,Distributor.HEADER_SIZE);
+            out.write(buffer, 0, Distributor.HEADER_SIZE);
+            out.flush();
+            Log.d(TAG,"sent: "+Arrays.toString(buffer));
 
-            in.read(buffer,0,8);
+            in.read(buffer, 0, 8);
+            Log.d(TAG,"read: "+ Arrays.toString(buffer));
 
-            i=0;
+            i = 0;
             shift = 0;
-            while(i < 8){
-                allocateSpace = (allocateSpace << shift) |  buffer[i++];
+            while (i < 8) {
+                allocateSpace = (allocateSpace << shift) | buffer[i++];
                 shift = shift + 8;
             }
 
-            Log.d(TAG,"Allocated Space is "+allocateSpace);
+            Log.d(TAG, "Allocated Space is " + allocateSpace);
 
             socket.close();
 
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

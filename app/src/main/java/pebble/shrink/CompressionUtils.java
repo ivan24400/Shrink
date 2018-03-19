@@ -32,9 +32,9 @@ public class CompressionUtils {
         System.loadLibrary("dcrz");
     }
 
-    private native static int dcrzCompress(boolean append, String input,String output);
+    private native static int dcrzCompress(boolean append, String input, String output);
 
-    public static void writeHeader(int method, String inFile){
+    public static void writeHeader(int method, String inFile) {
         File in = new File(inFile);
         try {
             if (!in.exists()) {
@@ -58,20 +58,20 @@ public class CompressionUtils {
                 shift = shift + 8;
             }
             out.close();
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public static int compress(int method, String inFile){
+    public static int compress(int method, String inFile) {
         StringBuilder outFile = new StringBuilder(inFile);
         outFile.append(".dcrz");
-            if (method == DEFLATE) {
-                return Deflate.compressFile(isLocal, inFile, outFile.toString());
+        if (method == DEFLATE) {
+            return Deflate.compressFile(isLocal, inFile, outFile.toString());
 
-            } else if (method == DCRZ) {
-                return CompressionUtils.dcrzCompress(isLocal, inFile, outFile.toString());
-            }
+        } else if (method == DCRZ) {
+            return CompressionUtils.dcrzCompress(isLocal, inFile, outFile.toString());
+        }
         return -1;
     }
 

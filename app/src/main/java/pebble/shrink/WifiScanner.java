@@ -8,7 +8,6 @@ import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.text.format.Formatter;
 import android.util.Log;
 
 import java.math.BigInteger;
@@ -25,19 +24,44 @@ import static android.content.ContentValues.TAG;
 
 public class WifiScanner extends BroadcastReceiver {
 
-    private Context context;
+    private final Context context;
+    private static final String TAG = "WifiScanner";
 
     public WifiScanner(Context c) {
         this.context = c;
     }
 
     @Override
-    public void onReceive(Context context, Intent intent) {
+    public void onReceive(final Context context, Intent intent) {
 
         final String action = intent.getAction();
         switch (action) {
+
+            case WifiManager.WIFI_STATE_CHANGED_ACTION:
+                Log.d(TAG,"wifi state changed");
+                int ext = intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE,WifiManager.WIFI_STATE_UNKNOWN);
+                switch(ext){
+                    case WifiManager.WIFI_STATE_DISABLED:
+                        Log.d(TAG,"WIFI STATE DISABLED");
+                        break;
+                    case WifiManager.WIFI_STATE_DISABLING:
+                        Log.d(TAG,"WIFI STATE DISABLING");
+                        break;
+                    case WifiManager.WIFI_STATE_ENABLED:
+                        Log.d(TAG,"WIFI STATE ENABLED");
+                        break;
+                    case WifiManager.WIFI_STATE_ENABLING:
+                        Log.d(TAG,"WIFI STATE ENABLING");
+                        break;
+                    case WifiManager.WIFI_STATE_UNKNOWN:
+                        Log.d(TAG,"WIFI STATE UNKNOWN");
+                        break;
+                }
+
+
             case WifiManager.SCAN_RESULTS_AVAILABLE_ACTION:
-                if(!WifiOperations.isConnected()) {
+                Log.d(TAG,"wifi scan results available");
+                if (!WifiOperations.isConnected()) {
                     List<ScanResult> result = WifiOperations.getWifiManager().getScanResults();
                     for (ScanResult scan : result) {
                         Log.d(getClass().getSimpleName(), "ssid found: " + scan.toString());
@@ -56,30 +80,39 @@ public class WifiScanner extends BroadcastReceiver {
                 NetworkInfo netInfo = conMan.getActiveNetworkInfo();
                 if (netInfo != null && netInfo.getType() == ConnectivityManager.TYPE_WIFI) {
                     Log.d(TAG, "Have Wifi Connection " + netInfo.toString());
+
+                    ((ShareResource) context).updateStatus(WifiOperations.getDeviceStatus(netInfo));
+
                     if (netInfo.isConnected()) {
                         final WifiManager wm = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
                         final WifiInfo wi = wm.getConnectionInfo();
-                        if(wi != null && !wi.getSSID().trim().contains(context.getString(R.string.sr_ssid))){
-                            Log.d(TAG,"wifi different: "+wi.getSSID());
+                        if (wi != null && !wi.getSSID().trim().contains(context.getString(R.string.sr_ssid))) {
+                            Log.d(TAG, "wifi different: " + wi.getSSID());
                             wm.disconnect();
+                            DeviceOperations.removeProgress();
                             return;
-                        }else {
-                            Log.d(TAG, "wifiscanner connected " + wi.getSSID());
-                            /*
-                            ShareResource.isConnect = true;
-                            int i = wi.getIpAddress();
-                            if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
-                                i = Integer.reverseBytes(i);
-                            }
 
-                            byte[] ipByteArray = BigInteger.valueOf(i).toByteArray();
+                        } else {
+                            Log.d(TAG, "wifiscanner connected " + wi.getSSID());
+                            ((ShareResource) context).runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    DeviceOperations.removeProgress();
+                                    ((ShareResource) context).setConnected(true);
+                                }
+                            });
+                            DeviceSlave.batteryClass = ((ShareResource) context).mpriority.getSelectedItemPosition() == 0 ? 'B' : 'A';
+
                             try {
-                                ShareResource.deviceSlaveThread = new Thread(new DeviceSlave(InetAddress.getByAddress(ipByteArray),
-                                        Integer.parseInt(wi.getSSID().split("_")[1])));
+                                InetAddress addr = InetAddress.getByName("192.168.43.1");
+                                Log.d(TAG, "wifiscanner server: " + addr + " , " + wi.getSSID().split("_")[1].replace("\"", ""));
+
+                                ShareResource.deviceSlaveThread = new Thread(new DeviceSlave(addr,
+                                        Integer.parseInt(wi.getSSID().split("_")[1].replace("\"", ""))));
+                                ShareResource.deviceSlaveThread.start();
                             } catch (UnknownHostException e) {
                                 e.printStackTrace();
                             }
-                            */
                         }
                     } else {
                         Log.d("WifiReceiver", "Don't have Wifi Connection");

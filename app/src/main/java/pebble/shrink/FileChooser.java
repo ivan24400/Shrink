@@ -24,22 +24,22 @@ import java.util.List;
  * Created by Ivan on 14-03-2018.
  */
 
-public class FileChooser extends ListActivity{
+public class FileChooser extends ListActivity {
 
     private static final String TAG = "FileChooser";
     private File dir;
     private ArrayList<File> files;
     private FileChooserListAdapter adapter;
 
-    public static final String EXTRA_FILE_PATH="pebble.shrink.FileChooser.filepath";
+    public static final String EXTRA_FILE_PATH = "pebble.shrink.FileChooser.filepath";
 
     @Override
-    protected void onCreate(Bundle savedInstance){
+    protected void onCreate(Bundle savedInstance) {
         super.onCreate(savedInstance);
 
-        LayoutInflater layoutInflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View emptyView = layoutInflater.inflate(R.layout.fc_empty_view,null);
-        ((ViewGroup)getListView().getParent()).addView(emptyView);
+        LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View emptyView = layoutInflater.inflate(R.layout.fc_empty_view, null);
+        ((ViewGroup) getListView().getParent()).addView(emptyView);
         getListView().setEmptyView(emptyView);
 
         dir = Environment.getExternalStorageDirectory();
@@ -49,23 +49,23 @@ public class FileChooser extends ListActivity{
         adapter = new FileChooserListAdapter(this, files);
         setListAdapter(adapter);
 
-        if(getIntent().hasExtra(EXTRA_FILE_PATH)){
+        if (getIntent().hasExtra(EXTRA_FILE_PATH)) {
             dir = new File(getIntent().getStringExtra(EXTRA_FILE_PATH));
         }
     }
 
     @Override
-    public void onResume(){
+    public void onResume() {
         refreshFileList();
         super.onResume();
     }
 
-    private void refreshFileList(){
+    private void refreshFileList() {
         files.clear();
 
         File[] tmpFiles = dir.listFiles();
 
-        if(tmpFiles != null && tmpFiles.length > 0) {
+        if (tmpFiles != null && tmpFiles.length > 0) {
             for (File f : tmpFiles) {
                 if (f.isHidden()) {
                     continue;
@@ -78,45 +78,46 @@ public class FileChooser extends ListActivity{
     }
 
     @Override
-    public void onListItemClick(ListView lv, View v, int pos, long id){
-        super.onListItemClick(lv,v,pos,id);
-        File tmp = (File)lv.getItemAtPosition(pos);
-        if(tmp.isFile()){
+    public void onListItemClick(ListView lv, View v, int pos, long id) {
+        super.onListItemClick(lv, v, pos, id);
+        File tmp = (File) lv.getItemAtPosition(pos);
+        if (tmp.isFile()) {
             Intent intent = new Intent();
-            intent.putExtra(EXTRA_FILE_PATH,tmp.getAbsolutePath());
-            setResult(RESULT_OK,intent);
+            intent.putExtra(EXTRA_FILE_PATH, tmp.getAbsolutePath());
+            setResult(RESULT_OK, intent);
             finish();
         } else {
             dir = tmp;
             refreshFileList();
         }
     }
-    private static class FileChooserListAdapter extends ArrayAdapter<File>{
+
+    private static class FileChooserListAdapter extends ArrayAdapter<File> {
 
         private List<File> fileList;
 
-        public FileChooserListAdapter(Context context, List<File> list){
-            super(context,R.layout.fc_list_item,R.id.fc_list_text,list);
+        public FileChooserListAdapter(Context context, List<File> list) {
+            super(context, R.layout.fc_list_item, R.id.fc_list_text, list);
             fileList = list;
         }
 
         @Override
-        public View getView(int position, View view, ViewGroup parent){
+        public View getView(int position, View view, ViewGroup parent) {
             View row = view;
-            if(row == null){
-                LayoutInflater inflater = (LayoutInflater)getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                row = inflater.inflate(R.layout.fc_list_item,null);
+            if (row == null) {
+                LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                row = inflater.inflate(R.layout.fc_list_item, null);
             }
 
             final File file = fileList.get(position);
-            if(file != null) {
+            if (file != null) {
                 ImageView liImage = (ImageView) row.findViewById(R.id.fc_list_image);
                 TextView liText = (TextView) row.findViewById(R.id.fc_list_text);
                 Log.d(TAG, "NULL values litext " + liText + " liImage " + liImage);
-                if(liText != null) {
+                if (liText != null) {
                     liText.setText(file.getName());
                 }
-                if(liImage != null) {
+                if (liImage != null) {
                     if (file.isFile()) {
                         liImage.setImageResource(R.drawable.ic_menu_file);
                     } else {
@@ -128,18 +129,18 @@ public class FileChooser extends ListActivity{
         }
     }
 
-    private static class FileComparator implements Comparator<File>{
+    private static class FileComparator implements Comparator<File> {
 
-        public int compare(File f1, File f2){
-            if(f1 == f2){
+        public int compare(File f1, File f2) {
+            if (f1 == f2) {
                 return 0;
             }
 
-            if(f1.isDirectory() && f2.isFile()){
+            if (f1.isDirectory() && f2.isFile()) {
                 return -1;
             }
 
-            if(f1.isFile() && f2.isDirectory()){
+            if (f1.isFile() && f2.isDirectory()) {
                 return 1;
             }
 

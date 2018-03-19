@@ -6,8 +6,8 @@
 
     <ImageView
         android:id="@+id/fc_list_image"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp"
         android:layout_marginLeft="5dp"
@@ -17,9 +17,8 @@
         android:id="@+id/fc_list_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="24sp"
+        android:textSize="15sp"
         android:layout_gravity="start|center_vertical"
         android:layout_marginLeft="10dp"
-        android:maxLines="1"
         android:text="Filename" />
 </LinearLayout>

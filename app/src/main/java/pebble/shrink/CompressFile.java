@@ -22,7 +22,7 @@ public class CompressFile extends AppCompatActivity {
 
     private String TAG = "CompressFile";
 
-    private static final int FILE_CHOOSE_REQUEST=9;
+    private static final int FILE_CHOOSE_REQUEST = 9;
 
     public static TextView tvTotalDevice;
     public static Button btCompress;
@@ -35,10 +35,11 @@ public class CompressFile extends AppCompatActivity {
     public static Handler cfHandler;
 
     private static IntentFilter intentFilter;
+    private static WifiReceiver wifiReceiver;
 
     private static Distributor distributor;
 
-    public CompressFile(){
+    public CompressFile() {
         cfHandler = new Handler();
     }
 
@@ -62,12 +63,9 @@ public class CompressFile extends AppCompatActivity {
 
         intentFilter = new IntentFilter();
         intentFilter.addAction("android.net.wifi.WIFI_AP_STATE_CHANGED");
+        wifiReceiver = new WifiReceiver();
+        registerReceiver(wifiReceiver,intentFilter);
 
-        if( Build.VERSION.SDK_INT < Build.VERSION_CODES.O){
-            WifiOperations.setWifiApEnabled(true);
-        }else{
-            Toast.makeText(this,R.string.err_os_not_supported,Toast.LENGTH_LONG).show();
-        }
     }
 
     public void resetData() {
@@ -75,16 +73,16 @@ public class CompressFile extends AppCompatActivity {
     }
 
     public void onClickCompress(View view) {
-        if(fileToCompress != null) {
+        if (fileToCompress != null) {
             int method = spMethod.getSelectedItemPosition();
 
-            Intent intent = new Intent(this,CompressionService.class);
-            intent.putExtra(CompressionUtils.cmethod,method);
-            intent.putExtra(CompressionUtils.cfile,fileToCompress);
+            Intent intent = new Intent(this, CompressionService.class);
+            intent.putExtra(CompressionUtils.cmethod, method);
+            intent.putExtra(CompressionUtils.cfile, fileToCompress);
 
             if (Integer.parseInt(tvTotalDevice.getText().toString().split(": ")[1]) == 0) {
                 // If no devices are connected
-                CompressionUtils.isLocal=true;
+                CompressionUtils.isLocal = true;
                 WifiOperations.setWifiApEnabled(false);
 
                 intent.setAction(CompressionUtils.ACTION_COMPRESS_LOCAL);
@@ -93,31 +91,31 @@ public class CompressFile extends AppCompatActivity {
                 startService(intent);
             } else {
                 // If one or more devices are connected
-                CompressionUtils.isLocal=false;
+                CompressionUtils.isLocal = false;
                 intent.setAction(CompressionUtils.ACTION_COMPRESS_REMOTE);
                 intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startService(intent);
             }
         } else {
-            Toast.makeText(this,"First choose a file !",Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "First choose a file !", Toast.LENGTH_SHORT).show();
         }
     }
 
-    public void onClickChooseFile(View view){
-      Intent intent = new Intent(this,FileChooser.class);
-       startActivityForResult(intent,FILE_CHOOSE_REQUEST);
+    public void onClickChooseFile(View view) {
+        Intent intent = new Intent(this, FileChooser.class);
+        startActivityForResult(intent, FILE_CHOOSE_REQUEST);
     }
 
     @Override
-    protected void onActivityResult(int requestCode,int resultCode, Intent intent){
-        if(requestCode == FILE_CHOOSE_REQUEST){
-            if(resultCode == RESULT_OK){
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        if (requestCode == FILE_CHOOSE_REQUEST) {
+            if (resultCode == RESULT_OK) {
                 fileToCompress = intent.getStringExtra(FileChooser.EXTRA_FILE_PATH);
-                tvFileName.setText(getString(R.string.cf_file_name,fileToCompress));
-                Log.d(TAG,"File name: "+fileToCompress);
+                tvFileName.setText(getString(R.string.cf_file_name, fileToCompress));
+                Log.d(TAG, "File name: " + fileToCompress);
             }
-        }else{
-            Log.d(TAG,"Invalid file");
+        } else {
+            Log.d(TAG, "Invalid file");
         }
     }
 
@@ -141,11 +139,11 @@ public class CompressFile extends AppCompatActivity {
     }
 
     @Override
-    public void onDestroy(){
-        Log.d(TAG,"on destroy");
-        tvFileName.setText(getString(R.string.cf_file_name,"NA"));
+    public void onDestroy() {
+        Log.d(TAG, "on destroy");
+        tvFileName.setText(getString(R.string.cf_file_name, "NA"));
         fileToCompress = null;
-
+        unregisterReceiver(wifiReceiver);
         distributor.stop();
         WifiOperations.stop();
         super.onDestroy();

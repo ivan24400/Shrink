@@ -19,8 +19,8 @@ public class DataTransferService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        if(intent.getAction().equals(ACTION_DATA_TRANSFER)){
-            NotificationUtils.startNotification(DataTransferService.this,intent,getString(R.string.initializing));
+        if (intent.getAction().equals(ACTION_DATA_TRANSFER)) {
+            NotificationUtils.startNotification(DataTransferService.this, intent, getString(R.string.initializing));
             CompressFile.btCompress.setEnabled(false);
             (new Thread(new Runnable() {
                 @Override

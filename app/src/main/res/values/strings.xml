@@ -49,4 +49,9 @@
     <string name="err_server_failed">Server crashed !</string>
     <string name="err_os_not_supported">Operating System not Supported !</string>
 
+    <!-- Progress -->
+    <string name="p_title">Shrink - Network</string>
+    <string name="p_scanning">Looking for server ...</string>
+
+
 </resources>
