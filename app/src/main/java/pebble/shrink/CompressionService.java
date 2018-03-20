@@ -48,6 +48,8 @@ public class CompressionService extends Service {
             Intent dtIntent = new Intent(this, DataTransferService.class);
             dtIntent.setAction(DataTransferService.ACTION_DATA_TRANSFER);
 
+        }else if (intent.getAction().equals(CompressionUtils.ACTION_COMPRESS_REMOTE_LOCAL)){
+
         }
         return START_STICKY;
     }

@@ -12,7 +12,6 @@ public class WifiReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d(TAG, "ip address " + DeviceOperations.getMyIpAddress());
         if (intent.getAction().equals("android.net.wifi.WIFI_AP_STATE_CHANGED")) {
             WifiOperations.refreshDeviceCount(context);
 

@@ -65,30 +65,6 @@ public class DeviceOperations {
         return Long.toString(freeSpace) + "::" + Character.toString(batteryClass);
     }
 
-    public static String getMyIpAddress() {
-
-        try {
-            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements(); ) {
-                NetworkInterface intf = en.nextElement();
-                if (intf.getDisplayName().matches(".*wlan0.*")) {
-                    for (Enumeration<InetAddress> inet = intf.getInetAddresses(); inet.hasMoreElements(); ) {
-                        InetAddress inetAddress = inet.nextElement();
-                        if (!inetAddress.isLoopbackAddress()) {
-                            String addr = inetAddress.getHostAddress();
-                            if (addr.indexOf(':') < 0) {
-                                Log.d(TAG, "getmyip " + addr);
-                                return addr;
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (SocketException e) {
-            e.printStackTrace();
-        }
-        return "NA";
-    }
-
     public static void displayProgress(Context c, String title, String msg) {
         if (progress != null && progress.isShowing()) {
             progress.dismiss();

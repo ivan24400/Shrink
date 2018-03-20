@@ -18,6 +18,7 @@ public class DeviceSlave implements Runnable {
 
     private static final String TAG = "DeviceSlave";
 
+    private static ShareResource context;
     private static InetAddress addr;
     private static int port;
     private static Socket socket;
@@ -27,7 +28,8 @@ public class DeviceSlave implements Runnable {
     public static long freeSpace, allocateSpace;
     public static char batteryClass;
 
-    public DeviceSlave(final InetAddress a, final int p) {
+    public DeviceSlave(ShareResource c,final InetAddress a, final int p) {
+        context = c;
         this.addr = a;
         this.port = p;
     }
@@ -40,12 +42,14 @@ public class DeviceSlave implements Runnable {
             this.in = socket.getInputStream();
             this.out = socket.getOutputStream();
 
-            byte[] buffer = new byte[10];
+            byte[] buffer = new byte[Distributor.HEADER_SIZE];
             int i = 0;
-            int shift = 28;
+            int shift = 56;
             while (i < 8) {
-                buffer[i++] = (byte) ((freeSpace >> shift) & 0xFF);
+              buffer[i] = (byte) ((freeSpace >> shift )& 0xFF);
+                Log.d(TAG," i "+i+" shift "+shift+" buffer "+buffer[i]);
                 shift = shift - 8;
+                i++;
             }
             buffer[i] = ((byte) (batteryClass & 0xFF));
 
@@ -57,18 +61,23 @@ public class DeviceSlave implements Runnable {
             Log.d(TAG,"read: "+ Arrays.toString(buffer));
 
             i = 0;
-            shift = 0;
             while (i < 8) {
-                allocateSpace = (allocateSpace << shift) | buffer[i++];
-                shift = shift + 8;
+                allocateSpace = (allocateSpace << 8 ) | (long)(buffer[i++] & 0xFF);
             }
 
-            Log.d(TAG, "Allocated Space is " + allocateSpace);
+            Log.d(TAG, "Allocated Space is " + Long.toString(allocateSpace));
 
             socket.close();
 
         } catch (IOException e) {
             e.printStackTrace();
+            try {
+                socket.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        }finally {
+            context.setConnected(false);
         }
     }
 }

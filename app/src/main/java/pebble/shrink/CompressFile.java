@@ -48,9 +48,9 @@ public class CompressFile extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.compress_activity);
 
-        distributor = new Distributor(CompressFile.this);
         WifiOperations.initWifiOperations(CompressFile.this);
 
+        distributor = new Distributor(CompressFile.this);
         (new Thread(distributor)).start();
 
         getSupportActionBar().setTitle(R.string.cf_title);
@@ -66,10 +66,6 @@ public class CompressFile extends AppCompatActivity {
         wifiReceiver = new WifiReceiver();
         registerReceiver(wifiReceiver,intentFilter);
 
-    }
-
-    public void resetData() {
-        tvTotalDevice.setText(getResources().getString(R.string.cf_total_devices, 0));
     }
 
     public void onClickCompress(View view) {
@@ -141,12 +137,15 @@ public class CompressFile extends AppCompatActivity {
     @Override
     public void onDestroy() {
         Log.d(TAG, "on destroy");
-        tvFileName.setText(getString(R.string.cf_file_name, "NA"));
         fileToCompress = null;
         unregisterReceiver(wifiReceiver);
         distributor.stop();
         WifiOperations.stop();
         super.onDestroy();
+
+    }
+
+    public void tearDown(){
 
     }
 }

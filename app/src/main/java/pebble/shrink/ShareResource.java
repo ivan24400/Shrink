@@ -20,8 +20,6 @@ public class ShareResource extends AppCompatActivity {
 
     public String TAG = "Share Resource";
 
-    private String goDeviceName;
-
     private static TextView deviceName, deviceStatus, freeSpace;
     public static Spinner mpriority;
     private static EditText mfreeSpace;
@@ -42,6 +40,7 @@ public class ShareResource extends AppCompatActivity {
         getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
 
         WifiOperations.initWifiOperations(ShareResource.this);
+       // WifiOperations.setWifiEnabled(false);
 
         deviceName = (TextView) findViewById(R.id.tvSRdeviceName);
         deviceStatus = (TextView) findViewById(R.id.tvSRdeviceStatus);
@@ -57,7 +56,7 @@ public class ShareResource extends AppCompatActivity {
 
         initDeviceStat();
 
-        wifiScanner = new WifiScanner(ShareResource.this);
+        wifiScanner = new WifiScanner();
         registerReceiver(wifiScanner, intentFilter);
     }
 
@@ -122,21 +121,13 @@ public class ShareResource extends AppCompatActivity {
         super.onDestroy();
     }
 
-    public void updateStatus(final String status) {
-        this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                deviceStatus.setText(getString(R.string.sr_device_status, status));
-            }
-        });
-    }
-
     public void setConnected(final boolean state) {
         isConnect = state;
         this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 if (state) {
+                    deviceStatus.setText(ShareResource.this.getString(R.string.sr_device_status,"Connected"));
                     connect.setText(getString(R.string.sr_disconnect));
                 } else {
                     deviceStatus.setText(ShareResource.this.getString(R.string.sr_device_status,"Disconnected"));
@@ -163,7 +154,6 @@ public class ShareResource extends AppCompatActivity {
             }
         } else {
             // Disconnect
-            setConnected(false);
             WifiOperations.setWifiEnabled(false);
         }
     }

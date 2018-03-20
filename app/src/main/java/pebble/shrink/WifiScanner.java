@@ -24,12 +24,8 @@ import static android.content.ContentValues.TAG;
 
 public class WifiScanner extends BroadcastReceiver {
 
-    private final Context context;
     private static final String TAG = "WifiScanner";
 
-    public WifiScanner(Context c) {
-        this.context = c;
-    }
 
     @Override
     public void onReceive(final Context context, Intent intent) {
@@ -42,6 +38,7 @@ public class WifiScanner extends BroadcastReceiver {
                 int ext = intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE,WifiManager.WIFI_STATE_UNKNOWN);
                 switch(ext){
                     case WifiManager.WIFI_STATE_DISABLED:
+                        ((ShareResource)context).setConnected(false);
                         Log.d(TAG,"WIFI STATE DISABLED");
                         break;
                     case WifiManager.WIFI_STATE_DISABLING:
@@ -66,7 +63,7 @@ public class WifiScanner extends BroadcastReceiver {
                     for (ScanResult scan : result) {
                         Log.d(getClass().getSimpleName(), "ssid found: " + scan.toString());
                         if (scan.SSID.contains(context.getString(R.string.sr_ssid))) {
-                            Log.d(TAG, "shrink found: " + scan.SSID);
+                            Log.d(TAG, "shrink connecting to: " + scan.SSID);
                             WifiOperations.setWifiSsid(scan.SSID);
                             WifiOperations.setWifiEnabled(true);
                         }
@@ -81,19 +78,17 @@ public class WifiScanner extends BroadcastReceiver {
                 if (netInfo != null && netInfo.getType() == ConnectivityManager.TYPE_WIFI) {
                     Log.d(TAG, "Have Wifi Connection " + netInfo.toString());
 
-                    ((ShareResource) context).updateStatus(WifiOperations.getDeviceStatus(netInfo));
-
                     if (netInfo.isConnected()) {
                         final WifiManager wm = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
                         final WifiInfo wi = wm.getConnectionInfo();
                         if (wi != null && !wi.getSSID().trim().contains(context.getString(R.string.sr_ssid))) {
                             Log.d(TAG, "wifi different: " + wi.getSSID());
                             wm.disconnect();
-                            DeviceOperations.removeProgress();
                             return;
 
                         } else {
                             Log.d(TAG, "wifiscanner connected " + wi.getSSID());
+
                             ((ShareResource) context).runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -107,15 +102,16 @@ public class WifiScanner extends BroadcastReceiver {
                                 InetAddress addr = InetAddress.getByName("192.168.43.1");
                                 Log.d(TAG, "wifiscanner server: " + addr + " , " + wi.getSSID().split("_")[1].replace("\"", ""));
 
-                                ShareResource.deviceSlaveThread = new Thread(new DeviceSlave(addr,
+                                ShareResource.deviceSlaveThread = new Thread(new DeviceSlave((ShareResource)context,addr,
                                         Integer.parseInt(wi.getSSID().split("_")[1].replace("\"", ""))));
                                 ShareResource.deviceSlaveThread.start();
+
                             } catch (UnknownHostException e) {
                                 e.printStackTrace();
                             }
                         }
                     } else {
-                        Log.d("WifiReceiver", "Don't have Wifi Connection");
+                        Log.d("WifiScanner", "Don't have Wifi Connection");
                     }
                 }
                 break;

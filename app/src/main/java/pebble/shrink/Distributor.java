@@ -23,13 +23,14 @@ public class Distributor implements Runnable {
 
     public static final int HEADER_SIZE = 9; // freeSpace = 8, battery = 1
     private static final int MAX_DEVICES_COUNT = 9;
+    private static int deviceCount = 0;
 
     private static ServerSocket server;
     private static ExecutorService executor = Executors.newFixedThreadPool(MAX_DEVICES_COUNT);
-    private Context context;
+    private static CompressFile context;
     private static boolean isStopped = false;
 
-    public Distributor(Context c) {
+    public Distributor(CompressFile c) {
         context = c;
     }
 
@@ -42,17 +43,19 @@ public class Distributor implements Runnable {
 
             while (!isStopped()) {
                 Socket client = server.accept();
+                updateDeviceCount(true);
                 Log.d(TAG, "Connected " + client.getInetAddress());
                 if (isStopped()) {
                     Log.d(TAG, "Server is stopped");
                     return;
                 }
-                executor.execute(new DeviceMaster(client));
+                executor.execute(new DeviceMaster(context,client));
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
         this.executor.shutdown();
+        Log.d(TAG,"after executor shutdown");
     }
 
     private synchronized boolean isStopped() {
@@ -66,5 +69,19 @@ public class Distributor implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static synchronized void updateDeviceCount(final boolean isIncrement){
+        if(isIncrement){
+            deviceCount++;
+        }else{
+            deviceCount--;
+        }
+        context.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                context.tvTotalDevice.setText(context.getString(R.string.cf_total_devices,deviceCount));
+            }
+        });
     }
 }
