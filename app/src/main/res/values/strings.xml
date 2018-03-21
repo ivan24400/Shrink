@@ -21,6 +21,7 @@
     <string name="sr_connect">Connect</string>
     <string name="sr_output">tmp_file.dcrz</string>
     <string name="sr_disconnect">Disconnect</string>
+    <string name="sr_server_ip">192.168.43.1</string>
     <string name="sr_err_maxspace">Value should be less or equal to given freespace</string>
     <string name="sr_ssid">SHRINK</string>
 

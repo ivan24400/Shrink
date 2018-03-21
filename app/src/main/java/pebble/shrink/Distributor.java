@@ -27,6 +27,8 @@ public class Distributor implements Runnable {
 
     private static ServerSocket server;
     private static ExecutorService executor = Executors.newFixedThreadPool(MAX_DEVICES_COUNT);
+
+    public static List<DeviceMaster> deviceList = new LinkedList<>();
     private static CompressFile context;
     private static boolean isStopped = false;
 
@@ -49,7 +51,9 @@ public class Distributor implements Runnable {
                     Log.d(TAG, "Server is stopped");
                     return;
                 }
-                executor.execute(new DeviceMaster(context,client));
+                DeviceMaster deviceMaster = new DeviceMaster(context,client);
+                deviceList.add(deviceMaster);
+                executor.execute(deviceMaster);
             }
         } catch (IOException e) {
             e.printStackTrace();

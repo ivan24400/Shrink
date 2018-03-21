@@ -5,9 +5,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Array;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 // Master threads
@@ -15,12 +13,18 @@ public class DeviceMaster implements Runnable {
 
     private static final String TAG = "DeviceMaster";
     private static CompressFile context;
+
     private long freeSpace;
     private long allocatedSpace;
     private char battery;
+
+    private static int rank;
+
     private InputStream in;
     private OutputStream out;
     private Socket client;
+
+    public DeviceMaster(){}
 
     public DeviceMaster(CompressFile cf, Socket s) throws IOException {
         context = cf;
@@ -48,24 +52,23 @@ public class DeviceMaster implements Runnable {
     }
 
     public void setAllocatedSpace(long as) {
-        this.allocatedSpace = as;
+        allocatedSpace = as;
     }
+
+    public long getAllocatedSpace(){ return allocatedSpace; }
 
     public long getFreeSpace() {
         return freeSpace;
     }
 
+
     public char getBattery() {
         return battery;
     }
 
-    public InputStream getInputStream() {
-        return in;
-    }
+    public int getRank(){ return rank; }
 
-    public OutputStream getOutputStream() {
-        return out;
-    }
+    public void setRank(int r){ rank = r; }
 
     @Override
     public void run() {

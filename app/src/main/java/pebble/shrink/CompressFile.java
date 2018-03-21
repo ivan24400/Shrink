@@ -18,6 +18,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+
 public class CompressFile extends AppCompatActivity {
 
     private String TAG = "CompressFile";
@@ -108,7 +110,7 @@ public class CompressFile extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 fileToCompress = intent.getStringExtra(FileChooser.EXTRA_FILE_PATH);
                 tvFileName.setText(getString(R.string.cf_file_name, fileToCompress));
-                Log.d(TAG, "File name: " + fileToCompress);
+                TaskAllocation.setFileSize((new File(fileToCompress)).length());
             }
         } else {
             Log.d(TAG, "Invalid file");
@@ -137,7 +139,6 @@ public class CompressFile extends AppCompatActivity {
     @Override
     public void onDestroy() {
         Log.d(TAG, "on destroy");
-        fileToCompress = null;
         unregisterReceiver(wifiReceiver);
         distributor.stop();
         WifiOperations.stop();

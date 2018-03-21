@@ -99,7 +99,7 @@ public class WifiScanner extends BroadcastReceiver {
                             DeviceSlave.batteryClass = ((ShareResource) context).mpriority.getSelectedItemPosition() == 0 ? 'B' : 'A';
 
                             try {
-                                InetAddress addr = InetAddress.getByName("192.168.43.1");
+                                InetAddress addr = InetAddress.getByName(context.getString(R.string.sr_server_ip));
                                 Log.d(TAG, "wifiscanner server: " + addr + " , " + wi.getSSID().split("_")[1].replace("\"", ""));
 
                                 ShareResource.deviceSlaveThread = new Thread(new DeviceSlave((ShareResource)context,addr,
