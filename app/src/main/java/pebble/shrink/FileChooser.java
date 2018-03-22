@@ -49,9 +49,6 @@ public class FileChooser extends ListActivity {
         adapter = new FileChooserListAdapter(this, files);
         setListAdapter(adapter);
 
-        if (getIntent().hasExtra(EXTRA_FILE_PATH)) {
-            dir = new File(getIntent().getStringExtra(EXTRA_FILE_PATH));
-        }
     }
 
     @Override
@@ -145,6 +142,16 @@ public class FileChooser extends ListActivity {
             }
 
             return f1.getName().compareToIgnoreCase(f2.getName());
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(dir.equals(Environment.getExternalStorageDirectory())){
+            super.onBackPressed();
+        }else{
+            dir = dir.getParentFile();
+            refreshFileList();
         }
     }
 }

@@ -41,7 +41,7 @@ public class Shrink extends AppCompatActivity {
 
     @Override
     public void onDestroy() {
-        NotificationUtils.removeNotification();
+        Log.d(TAG,"on destroy");
         super.onDestroy();
     }
 

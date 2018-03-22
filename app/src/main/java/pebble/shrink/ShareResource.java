@@ -1,8 +1,11 @@
 package pebble.shrink;
 
+import android.content.Context;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -29,7 +32,8 @@ public class ShareResource extends AppCompatActivity {
     private WifiScanner wifiScanner;
     private static IntentFilter intentFilter;
 
-    public static Thread deviceSlaveThread;
+    public static Handler handler;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +44,7 @@ public class ShareResource extends AppCompatActivity {
         getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
 
         WifiOperations.initWifiOperations(ShareResource.this);
-       // WifiOperations.setWifiEnabled(false);
+        handler = new Handler(Looper.getMainLooper());
 
         deviceName = (TextView) findViewById(R.id.tvSRdeviceName);
         deviceStatus = (TextView) findViewById(R.id.tvSRdeviceStatus);
@@ -68,13 +72,13 @@ public class ShareResource extends AppCompatActivity {
                 String metaData = DeviceOperations.getDeviceInfo(ShareResource.this);
                 final long fs = Long.parseLong(metaData.split("::")[0]);
 
-                DeviceSlave.freeSpace = fs;
-                DeviceSlave.batteryClass = metaData.split("::")[1].charAt(0);
+                SlaveDeviceService.freeSpace = fs;
+                SlaveDeviceService.batteryClass = metaData.split("::")[1].charAt(0);
 
                 ShareResource.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if(DeviceSlave.batteryClass == 'A'){
+                        if(SlaveDeviceService.batteryClass == 'A'){
                             ShareResource.mpriority.setSelection(1);
                         }else{
                             ShareResource.mpriority.setSelection(0);
@@ -114,34 +118,31 @@ public class ShareResource extends AppCompatActivity {
             unregisterReceiver(wifiScanner);
             wifiScanner = null;
         }
-        if (deviceSlaveThread != null) {
-            deviceSlaveThread.interrupt();
-        }
+        NotificationUtils.removeNotification();
+
         WifiOperations.stop();
         super.onDestroy();
     }
 
-    public void setConnected(final boolean state) {
+    public static void setConnected(final Context context, final boolean state) {
         isConnect = state;
-        this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
                 if (state) {
-                    deviceStatus.setText(ShareResource.this.getString(R.string.sr_device_status,"Connected"));
-                    connect.setText(getString(R.string.sr_disconnect));
+                    deviceStatus.setText(context.getString(R.string.sr_device_status,"Connected"));
+                    connect.setText(context.getString(R.string.sr_disconnect));
+                    mpriority.setEnabled(!state);
+                    mfreeSpace.setEnabled(!state);
                 } else {
-                    deviceStatus.setText(ShareResource.this.getString(R.string.sr_device_status,"Disconnected"));
-                    connect.setText(getString(R.string.sr_connect));
+                    deviceStatus.setText(context.getString(R.string.sr_device_status, "Disconnected"));
+                    connect.setText(context.getString(R.string.sr_connect));
+                    mpriority.setEnabled(state);
+                    mfreeSpace.setEnabled(state);
                 }
-            }
-        });
-
     }
 
     public void clickSRconnect(View view) {
         Log.d(TAG, "clickconnect " + isConnect);
         if (!isConnect) {
-            if (Long.parseLong(mfreeSpace.getText().toString()) > DeviceSlave.freeSpace) {
+            if (Long.parseLong(mfreeSpace.getText().toString()) > SlaveDeviceService.freeSpace) {
                 Toast.makeText(this, R.string.sr_err_maxspace, Toast.LENGTH_LONG).show();
             } else {
                 DeviceOperations.displayProgress(ShareResource.this, getString(R.string.p_title), getString(R.string.p_scanning));

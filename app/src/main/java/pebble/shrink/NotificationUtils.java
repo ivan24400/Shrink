@@ -23,7 +23,6 @@ public class NotificationUtils {
     private static Service service;
     private static PendingIntent pendingIntent;
 
-    private static boolean nActive = false;
     private static final String CHANNEL_ID = "SHRINK_NOTIFICATION_CHANNEL";
 
     public static Notification notification;
@@ -31,9 +30,6 @@ public class NotificationUtils {
 
     public static void startNotification(Service s, Intent nintent, String content) {
         service = s;
-
-        Log.d(TAG, "MY SDK version: " + Build.VERSION.SDK_INT + " oreo: " + Build.VERSION_CODES.O + " service: " + s.toString());
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel();
         }
@@ -43,8 +39,8 @@ public class NotificationUtils {
 
         notification = createNotification(content);
         notification.flags |= Notification.FLAG_NO_CLEAR;
-        nActive = true;
 
+        service.startForeground(NOTIFICATION_ID,notification);
     }
 
     public static void updateNotification(String content) {
@@ -87,15 +83,9 @@ public class NotificationUtils {
         }
     }
 
-    public static void stopNotification() {
-        if (nActive) {
-            nActive = false;
-            service.stopForeground(false);
-        }
-    }
 
     public static void removeNotification() {
-        if (!nActive && nmanager != null) {
+        if (nmanager != null) {
             nmanager.cancel(NOTIFICATION_ID);
         }
     }

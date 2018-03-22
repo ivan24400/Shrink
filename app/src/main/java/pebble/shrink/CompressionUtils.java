@@ -7,10 +7,6 @@ import java.util.zip.CRC32;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-/**
- * This class compress or decompress given input file
- * using deflate or dcrz method.
- */
 
 public class CompressionUtils {
 
@@ -22,11 +18,9 @@ public class CompressionUtils {
 
     public static boolean isLocal = false;
 
-    public static String ACTION_START_FOREGROUND = "compressionUtils_start_foreground";
     public static String ACTION_COMPRESS_REMOTE_LOCAL = "compressionUtils_write_header";
     public static String ACTION_COMPRESS_REMOTE = "compressionUtils_compress_remote";
     public static String ACTION_COMPRESS_LOCAL = "compressionUtils_compress_local";
-    public static String ACTION_STOP_FOREGROUND = "compressionUtils_stop_foreground";
 
     static {
         System.loadLibrary("dcrz");

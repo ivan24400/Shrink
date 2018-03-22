@@ -34,13 +34,19 @@
             android:name="pebble.shrink.ShareResource"
             android:parentActivityName=".Shrink" />
 
-        <service android:name="pebble.shrink.CompressionService" />
+        <service android:name="pebble.shrink.CompressionService"
+            android:label="CompressionService"/>
+
+        <service android:name="pebble.shrink.SlaveDeviceService"
+            android:label="ShareResourceService"/>
 
         <activity android:name="pebble.shrink.Help" />
+
         <activity
             android:name="pebble.shrink.FileChooser"
             android:theme="@android:style/Theme.Holo.Light"
             android:label="Select a file" />
+
     </application>
 
 </manifest>

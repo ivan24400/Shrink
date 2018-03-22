@@ -12,7 +12,7 @@ public class Help extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.help);
 
-        Toast.makeText(this, "DVZN - Data compressor", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Shrink - Data compressor", Toast.LENGTH_LONG).show();
 
     }
 }

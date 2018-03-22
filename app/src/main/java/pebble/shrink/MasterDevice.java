@@ -9,10 +9,9 @@ import java.net.Socket;
 import java.util.Arrays;
 
 // Master threads
-public class DeviceMaster implements Runnable {
+public class MasterDevice implements Runnable {
 
-    private static final String TAG = "DeviceMaster";
-    private static CompressFile context;
+    private static final String TAG = "MasterDevice";
 
     private long freeSpace;
     private long allocatedSpace;
@@ -24,10 +23,8 @@ public class DeviceMaster implements Runnable {
     private OutputStream out;
     private Socket client;
 
-    public DeviceMaster(){}
 
-    public DeviceMaster(CompressFile cf, Socket s) throws IOException {
-        context = cf;
+    public MasterDevice(Socket s) throws IOException {
         this.client = s;
         this.freeSpace = 0;
     }
@@ -61,7 +58,6 @@ public class DeviceMaster implements Runnable {
         return freeSpace;
     }
 
-
     public char getBattery() {
         return battery;
     }
@@ -86,7 +82,6 @@ public class DeviceMaster implements Runnable {
             int shift = 56;
             while (i < 8) {
                 buffer[i++] = (byte) ((allocatedSpace >> shift) & 0xFF);
-                Log.d(TAG," i "+i+" shift "+shift+" buffer "+buffer[i]);
                 shift = shift - 8;
             }
 

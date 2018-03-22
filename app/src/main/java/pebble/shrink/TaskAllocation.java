@@ -7,14 +7,14 @@ import java.util.List;
 public class TaskAllocation {
 
     private static long fileSize,fileSize_t;
-    private static List<DeviceMaster> list;
+    private static List<MasterDevice> list;
     private static int index = 0;
 
     public static void setFileSize(long size){
         fileSize = size;
     }
 
-    public List<DeviceMaster> getDeviceList(){
+    public List<MasterDevice> getDeviceList(){
         return list;
     }
 
@@ -33,7 +33,7 @@ public class TaskAllocation {
         return -1;
     }
 
-    public boolean allocate(List<DeviceMaster> tmp){
+    public boolean allocate(List<MasterDevice> tmp){
         list = tmp;
         Collections.sort(list,new SortDevices());
 
@@ -57,7 +57,7 @@ public class TaskAllocation {
     }
 
     public boolean reallocate(int rank){
-        for(DeviceMaster device : list){
+        for(MasterDevice device : list){
             if(rank == device.getRank()){
                 if(list.get(++index).getFreeSpace() >= device.getAllocatedSpace()){
                     list.get(index).setAllocatedSpace(device.getAllocatedSpace());
@@ -69,10 +69,10 @@ public class TaskAllocation {
         return false;
     }
 
-    private class SortDevices implements Comparator<DeviceMaster> {
+    private class SortDevices implements Comparator<MasterDevice> {
 
         @Override
-        public int compare(DeviceMaster o1, DeviceMaster o2) {
+        public int compare(MasterDevice o1, MasterDevice o2) {
 
             if(o1.getBattery() < o2.getBattery()){
                 return -1;

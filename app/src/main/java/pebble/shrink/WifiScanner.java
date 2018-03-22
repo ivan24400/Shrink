@@ -10,13 +10,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 
-import java.math.BigInteger;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.nio.ByteOrder;
 import java.util.List;
-
-import static android.content.ContentValues.TAG;
 
 /**
  * Created by Ivan on 18-03-2018.
@@ -38,7 +32,7 @@ public class WifiScanner extends BroadcastReceiver {
                 int ext = intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE,WifiManager.WIFI_STATE_UNKNOWN);
                 switch(ext){
                     case WifiManager.WIFI_STATE_DISABLED:
-                        ((ShareResource)context).setConnected(false);
+                        ShareResource.setConnected(context,false);
                         Log.d(TAG,"WIFI STATE DISABLED");
                         break;
                     case WifiManager.WIFI_STATE_DISABLING:
@@ -93,22 +87,17 @@ public class WifiScanner extends BroadcastReceiver {
                                 @Override
                                 public void run() {
                                     DeviceOperations.removeProgress();
-                                    ((ShareResource) context).setConnected(true);
+                                    ShareResource.setConnected(context,true);
                                 }
                             });
-                            DeviceSlave.batteryClass = ((ShareResource) context).mpriority.getSelectedItemPosition() == 0 ? 'B' : 'A';
+                            SlaveDeviceService.batteryClass = ((ShareResource) context).mpriority.getSelectedItemPosition() == 0 ? 'B' : 'A';
 
-                            try {
-                                InetAddress addr = InetAddress.getByName(context.getString(R.string.sr_server_ip));
-                                Log.d(TAG, "wifiscanner server: " + addr + " , " + wi.getSSID().split("_")[1].replace("\"", ""));
+                                Log.d(TAG, "wifiscanner server: " + wi.getSSID().split("_")[1].replace("\"", ""));
 
-                                ShareResource.deviceSlaveThread = new Thread(new DeviceSlave((ShareResource)context,addr,
-                                        Integer.parseInt(wi.getSSID().split("_")[1].replace("\"", ""))));
-                                ShareResource.deviceSlaveThread.start();
+                                Intent dintent = new Intent(context,SlaveDeviceService.class);
+                                dintent.putExtra(SlaveDeviceService.EXTRA_PORT,Integer.parseInt(wi.getSSID().split("_")[1].replace("\"", "")));
+                                context.startService(dintent);
 
-                            } catch (UnknownHostException e) {
-                                e.printStackTrace();
-                            }
                         }
                     } else {
                         Log.d("WifiScanner", "Don't have Wifi Connection");

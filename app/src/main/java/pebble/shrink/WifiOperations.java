@@ -5,6 +5,8 @@ import android.net.NetworkInfo;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -174,14 +176,6 @@ public class WifiOperations {
                     }
                 }
 
-                // Get a handler that can be used to post to the main thread
-                CompressFile.cfHandler.post(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        CompressFile.tvTotalDevice.setText(context.getString(R.string.cf_total_devices, totalDevices.get()));
-                    }
-                });
 
             }
         };

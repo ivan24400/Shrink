@@ -2,19 +2,16 @@ package pebble.shrink;
 
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.wifi.WifiManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,10 +24,10 @@ public class CompressFile extends AppCompatActivity {
     private static final int FILE_CHOOSE_REQUEST = 9;
 
     public static TextView tvTotalDevice;
-    public static Button btCompress;
+    public static Button btCompress, btChooseFile;
     private static TextView tvFileName;
 
-    private static Spinner spMethod;
+    private static Spinner spAlgorithm;
 
     public static String fileToCompress;
 
@@ -41,19 +38,12 @@ public class CompressFile extends AppCompatActivity {
 
     private static Distributor distributor;
 
-    public CompressFile() {
-        cfHandler = new Handler();
-    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.compress_activity);
-
-        WifiOperations.initWifiOperations(CompressFile.this);
-
-        distributor = new Distributor(CompressFile.this);
-        (new Thread(distributor)).start();
+        cfHandler = new Handler(Looper.getMainLooper());
 
         getSupportActionBar().setTitle(R.string.cf_title);
         getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
@@ -61,18 +51,22 @@ public class CompressFile extends AppCompatActivity {
         tvTotalDevice = (TextView) findViewById(R.id.tvCFtotalDevices);
         tvFileName = (TextView) findViewById(R.id.tvCFfileName);
         btCompress = (Button) findViewById(R.id.btCFcompress);
-        spMethod = (Spinner) findViewById(R.id.spCFmethod);
+        spAlgorithm = (Spinner) findViewById(R.id.spCFmethod);
+        btChooseFile = (Button)findViewById(R.id.btCFchooseFile);
 
+        WifiOperations.initWifiOperations(CompressFile.this);
+
+        wifiReceiver = new WifiReceiver();
         intentFilter = new IntentFilter();
         intentFilter.addAction("android.net.wifi.WIFI_AP_STATE_CHANGED");
-        wifiReceiver = new WifiReceiver();
+
         registerReceiver(wifiReceiver,intentFilter);
 
     }
 
     public void onClickCompress(View view) {
         if (fileToCompress != null) {
-            int method = spMethod.getSelectedItemPosition();
+            int method = spAlgorithm.getSelectedItemPosition();
 
             Intent intent = new Intent(this, CompressionService.class);
             intent.putExtra(CompressionUtils.cmethod, method);
@@ -99,6 +93,21 @@ public class CompressFile extends AppCompatActivity {
         }
     }
 
+    public void onClickReceiverSwitch(View view){
+      if(((Switch)view).isChecked()){
+          distributor = new Distributor(CompressFile.this);
+          (new Thread(distributor)).start();
+          btChooseFile.setEnabled(false);
+          spAlgorithm.setEnabled(false);
+        }else{
+          if(distributor != null){
+              distributor.stop();
+          }
+          btChooseFile.setEnabled(true);
+          spAlgorithm.setEnabled(true);
+      }
+    }
+
     public void onClickChooseFile(View view) {
         Intent intent = new Intent(this, FileChooser.class);
         startActivityForResult(intent, FILE_CHOOSE_REQUEST);
@@ -117,12 +126,15 @@ public class CompressFile extends AppCompatActivity {
         }
     }
 
+    public static void setEnabledWidget(boolean state){
+        btCompress.setEnabled(state);
+    }
+
     @Override
     public void onPause() {
         Log.d(TAG, "on pause");
         super.onPause();
     }
-
     @Override
     public void onResume() {
         super.onResume();
@@ -140,13 +152,13 @@ public class CompressFile extends AppCompatActivity {
     public void onDestroy() {
         Log.d(TAG, "on destroy");
         unregisterReceiver(wifiReceiver);
-        distributor.stop();
-        WifiOperations.stop();
+        if(distributor != null){
+            distributor.stop();
+        }
+        NotificationUtils.removeNotification();
+
         super.onDestroy();
 
     }
 
-    public void tearDown(){
-
-    }
 }

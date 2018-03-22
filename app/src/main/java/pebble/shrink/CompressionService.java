@@ -17,8 +17,10 @@ public class CompressionService extends Service {
         Log.d(TAG, "onstartcommand: start");
         if (intent.getAction().equals(CompressionUtils.ACTION_COMPRESS_LOCAL)) {
 
-            NotificationUtils.startNotification(CompressionService.this, intent, getString(R.string.compressing));
-            CompressFile.btCompress.setEnabled(false);
+            Intent t = new Intent(CompressionService.this,CompressFile.class);
+
+            NotificationUtils.startNotification(CompressionService.this, t, getString(R.string.compressing));
+            CompressFile.setEnabledWidget(false);
 
             (new Thread(new Runnable() {
                 @Override
@@ -34,9 +36,11 @@ public class CompressionService extends Service {
                         @Override
                         public void run() {
                             NotificationUtils.updateNotification(getString(R.string.completed));
-                            CompressFile.btCompress.setEnabled(true);
+                            CompressFile.setEnabledWidget(true);
                         }
                     });
+
+                    stopForeground(false);
                     stopSelf();
                 }
             })).start();
@@ -51,12 +55,7 @@ public class CompressionService extends Service {
         }else if (intent.getAction().equals(CompressionUtils.ACTION_COMPRESS_REMOTE_LOCAL)){
 
         }
-        return START_STICKY;
-    }
-
-    @Override
-    public void onDestroy() {
-        NotificationUtils.stopNotification();
+        return START_NOT_STICKY;
     }
 
     @Nullable
