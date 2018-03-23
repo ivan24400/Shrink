@@ -24,7 +24,7 @@ public class MasterDevice implements Runnable {
     private Context context;
     private Object sync,masterSync;
 
-    private boolean isLastChunk = true;
+    private boolean isLastChunk = false;
     private byte[] buffer = new byte[DataTransfer.BUFFER_SIZE];
 
 
@@ -35,6 +35,7 @@ public class MasterDevice implements Runnable {
     public MasterDevice(Context c,Socket s) throws IOException {
         this.client = s;
         this.context = c;
+        sync = new Object();
     }
 
     public void setAllocatedSpace(long as) {
@@ -140,13 +141,14 @@ public class MasterDevice implements Runnable {
 
             // Read Compressed Size
             in.read(buffer,0,8);
+            DistributorService.dcrWorker();
             int i = 0; // free space base
             while (i < 8) { // free space length is 8 bytes
                 compressedSize = (compressedSize << 8)| (long)(buffer[i++] & 0xFF); // Big Endian
             }
 
             // Wait until previous devices send their data
-            while(!isFileAvailable){
+            while(!isFileAvailable && (DistributorService.getWorkerCount() != 0)){
                 try{
                     sync.wait();
                 }catch (InterruptedException e){}

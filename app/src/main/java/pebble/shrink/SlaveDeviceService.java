@@ -28,6 +28,7 @@ public class SlaveDeviceService extends Service {
     private static InputStream in;
     private static OutputStream out;
     private static int algorithm;
+    private static boolean isLastChunk = true;
     private static byte[] buffer = new byte[DataTransfer.BUFFER_SIZE];
 
     public static long freeSpace, allocatedSpace, compressedSize;
@@ -55,8 +56,18 @@ public class SlaveDeviceService extends Service {
         while (i < 8) {
             allocatedSpace = (allocatedSpace << 8 ) | (long)(buffer[i++] & 0xFF);
         }
-        algorithm = buffer[i];
-        Log.d(TAG, "Allocated Space is " + Long.toString(allocatedSpace)+ " algorithm is "+algorithm);
+        byte meta = buffer[i];
+        if((meta & CompressionUtils.MASK_LAST_CHUNK) ==  CompressionUtils.MASK_LAST_CHUNK){
+            isLastChunk = true;
+        }else{
+            isLastChunk = false;
+        }
+        if((meta & (byte)CompressionUtils.DCRZ) == (byte)(CompressionUtils.DCRZ)){
+            algorithm = CompressionUtils.DCRZ;
+        }else{
+            algorithm = CompressionUtils.DEFLATE;
+        }
+        Log.d(TAG, "Allocated Space is " + Long.toString(allocatedSpace)+ " algorithm is "+algorithm+" islast chunk "+isLastChunk);
     }
 
     @Override
@@ -89,16 +100,28 @@ public class SlaveDeviceService extends Service {
 
                    initMetaData();
 
-                   DataTransfer.initFile(tmpc_file,tmp_file);
+                   DataTransfer.initFiles(false,tmpc_file,tmp_file);
 
                     out.write(DataTransfer.READY);
                     out.flush();
 
+                    ShareResource.handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            NotificationUtils.updateNotification(SlaveDeviceService.this.getString(R.string.receiving));
+                        }
+                    });
                     // Receive chunk from master device
                     DataTransfer.receiveChunk(allocatedSpace,in);
 
+                    ShareResource.handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            NotificationUtils.updateNotification(SlaveDeviceService.this.getString(R.string.compressing));
+                        }
+                    });
                     // Compress chunk
-                    CompressionUtils.compress(algorithm,tmp_file);
+                    CompressionUtils.compress(algorithm,isLastChunk,tmp_file);
 
                     // Send compressed size to master device.
                     compressedSize = (new File(tmpc_file)).length();
@@ -117,8 +140,16 @@ public class SlaveDeviceService extends Service {
                         throw new IOException("Invalid signal");
                     }
 
+                    ShareResource.handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            NotificationUtils.updateNotification(SlaveDeviceService.this.getString(R.string.sending));
+                        }
+                    });
                     // Send compressed output to master
                     DataTransfer.transferChunk(compressedSize,out);
+
+                    DataTransfer.deleteFiles();
 
                     // End of process
                     socket.close();

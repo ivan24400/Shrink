@@ -74,6 +74,10 @@ public class NotificationUtils {
         }
     }
 
+    public static Context getContext(){
+        return service.getBaseContext();
+    }
+
     public static void updateNotification(String content) {
         Notification not = createNotification(content);
         if (not != null) {

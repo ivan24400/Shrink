@@ -1,6 +1,7 @@
 package pebble.shrink;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
@@ -24,7 +25,7 @@ public class DistributorService extends Service {
     public static final String ACTION_STOP_FOREGROUND = "ps.DistributorService.stop";
 
     private static final int MAX_DEVICES_COUNT = 9;
-
+    private static int workerCount = 0;
     private static ServerSocket server;
     private static ExecutorService executor = Executors.newFixedThreadPool(MAX_DEVICES_COUNT);
 
@@ -36,9 +37,23 @@ public class DistributorService extends Service {
         return this.isStopped;
     }
 
+    public synchronized static void incrWorker(){
+        workerCount++;
+    }
+
+    public synchronized static void dcrWorker(){
+        workerCount--;
+        if(workerCount == 0){
+            gatherResults();
+        }
+    }
+
+    public synchronized static int getWorkerCount(){
+        return workerCount;
+    }
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
+    public int onStartCommand(final Intent intent, int flags, int startId) {
 
         if(intent.getAction().equals(ACTION_START_FOREGROUND)) {
 
@@ -50,8 +65,10 @@ public class DistributorService extends Service {
                     try {
                         DistributorService.this.startForeground(NotificationUtils.NOTIFICATION_ID,NotificationUtils.notification);
 
-                        //t-> writeheader
-                        DataTransfer.initFile(CompressFile.fileToCompress, CompressFile.fileToCompress + ".dcrz");
+                        // Write Header
+                        CompressionUtils.writeHeader(intent.getIntExtra(CompressionUtils.cmethod,0),CompressFile.fileToCompress);
+
+                        DataTransfer.initFiles(true, CompressFile.fileToCompress, CompressFile.fileToCompress + ".dcrz");
 
                         server = new ServerSocket(0);
                         WifiOperations.setWifiApSsid(DistributorService.this.getString(R.string.sr_ssid) + "_" + server.getLocalPort());
@@ -74,6 +91,12 @@ public class DistributorService extends Service {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                    CompressFile.cfHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            NotificationUtils.updateNotification(DistributorService.this.getString(R.string.completed));
+                        }
+                    });
                     stop();
                     Log.d(TAG, "after executor shutdown");
                 }
@@ -85,32 +108,61 @@ public class DistributorService extends Service {
         return START_NOT_STICKY;
     }
 
-    public static void startDistribution(){
+    public static void startDistribution(final Context context){
+
         (new Thread(new Runnable() {
             @Override
             public void run() {
-
-                    boolean areMoreDevices = true;
-                    for (int i = 1; i <= deviceList.size() && areMoreDevices; i++) {
-                        for (MasterDevice device : deviceList) {
-                            if(device.getAllocatedSpace() == 0) {
-                                areMoreDevices = false;
+                CompressFile.cfHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        CompressFile.setEnabledWidget(false);
+                        NotificationUtils.updateNotification(context.getString(R.string.distributing));
+                    }
+                });
+                    for (int i = 1; i <= deviceList.size() ; i++) {
+                            if(deviceList.get(i).getAllocatedSpace() == 0) {
                                 break;
+                            }else {
+                                deviceList.get(i).notifyMe(this);
                             }
-                            if (device.getRank() == i ) {
-                                    device.notifyMe(this);
-                                    break;
-                                }
-                            }
-                        }
+                    }
+                CompressFile.cfHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        NotificationUtils.updateNotification(context.getString(R.string.compressing));
+                    }
+                });
                     }
 
+        })).start();
+    }
+
+    public synchronized static void gatherResults(){
+        CompressFile.cfHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                NotificationUtils.updateNotification(NotificationUtils.getContext().getString(R.string.gather));
+            }
+        });
+        (new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (MasterDevice device : deviceList) {
+                    if(device.getAllocatedSpace() == 0){
+                        break;
+                    }else {
+                        device.notifyMe(this);
+                    }
+                }
+            }
         })).start();
     }
 
     public synchronized void stop() {
         this.isStopped = true;
         WifiOperations.stop();
+        DataTransfer.releaseFiles();
         try {
             if(server != null) {
                 server.close();
@@ -119,6 +171,12 @@ public class DistributorService extends Service {
                 executor.shutdownNow();
                 executor.awaitTermination(1, TimeUnit.SECONDS);
             }
+            CompressFile.cfHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    CompressFile.setEnabledWidget(true);
+                }
+            });
             stopForeground(false);
             stopSelf();
 

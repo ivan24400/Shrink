@@ -33,8 +33,9 @@ public class TaskAllocation {
         return -1;
     }
 
-    public boolean allocate(List<MasterDevice> tmp){
-        list = tmp;
+    public boolean allocate(){
+        list = DistributorService.deviceList;
+
         Collections.sort(list,new SortDevices());
 
         for(int i=1; i <= list.size(); i++){
@@ -44,11 +45,14 @@ public class TaskAllocation {
 
         if(fileSize_t < fileSize){ return false; }
 
+        DistributorService.incrWorker();
         for(;index < list.size(); index++){
             if((fileSize - list.get(index).getFreeSpace()) <= 0){
                 list.get(index).setAllocatedSpace(fileSize);
+                list.get(index).setLastChunk(true);
                 return true;
             }else{
+                DistributorService.incrWorker();
                 list.get(index).setAllocatedSpace(fileSize - list.get(index).getFreeSpace());
                 fileSize = fileSize - list.get(index).getFreeSpace();
             }

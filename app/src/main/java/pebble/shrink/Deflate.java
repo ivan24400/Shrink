@@ -45,7 +45,7 @@ public class Deflate {
     public static int compressFile(boolean append, String input, String output) {
         try {
             fin = new FileInputStream(input);
-            fout = new FileOutputStream(output.toString(), append);
+            fout = new FileOutputStream(output, append);
 
             DeflaterOutputStream dout = new DeflaterOutputStream(fout);
 

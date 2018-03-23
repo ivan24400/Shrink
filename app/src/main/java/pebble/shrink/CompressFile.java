@@ -86,11 +86,11 @@ public class CompressFile extends AppCompatActivity {
                 // If one or more devices are connected
                 CompressionUtils.isLocal = false;
                 TaskAllocation ta = new TaskAllocation();
-                if(!ta.allocate(DistributorService.deviceList)){
+                if(!ta.allocate()){
                     Toast.makeText(this,getString(R.string.err_task_allocation),Toast.LENGTH_SHORT).show();
                     return;
                 }
-                DistributorService.startDistribution();
+                DistributorService.startDistribution(this);
 
             }
         } else {
@@ -104,6 +104,7 @@ public class CompressFile extends AppCompatActivity {
 
     public void onClickReceiverSwitch(View view){
         Intent tintent = new Intent(this,DistributorService.class);
+        tintent.putExtra(CompressionUtils.cmethod, spAlgorithm.getSelectedItemPosition());
 
         if(((Switch)view).isChecked()){
 

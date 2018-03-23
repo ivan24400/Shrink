@@ -31,6 +31,8 @@
     <!-- NotificationUtils -->
     <string name="initializing">Initializing</string>
     <string name="distributing">Distributing</string>
+    <string name="receiving">Receiving data</string>
+    <string name="sending">Sending data</string>
     <string name="compressing">Compressing</string>
     <string name="completed">Completed</string>
     <string name="processing">Processing</string>

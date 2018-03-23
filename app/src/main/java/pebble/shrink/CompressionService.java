@@ -30,7 +30,7 @@ public class CompressionService extends Service {
                             , intent.getStringExtra(CompressionUtils.cfile));
 
                     CompressionUtils.compress(intent.getIntExtra(CompressionUtils.cmethod, 0)
-                            , intent.getStringExtra(CompressionUtils.cfile));
+                            , true,intent.getStringExtra(CompressionUtils.cfile));
 
                     CompressFile.cfHandler.post(new Runnable() {
                         @Override

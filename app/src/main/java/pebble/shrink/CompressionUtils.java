@@ -1,5 +1,7 @@
 package pebble.shrink;
 
+import android.util.Log;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -12,14 +14,15 @@ public class CompressionUtils {
 
     public static final int DEFLATE = 0;
     public static final int DCRZ = 1;
+    public static final byte MASK_LAST_CHUNK = (byte)0x80;
 
     public static String cmethod = "COMPRESSION_METHOD";
     public static String cfile = "COMPRESSION_FILE";
 
     public static boolean isLocal = false;
 
-    public static String ACTION_COMPRESS_REMOTE = "compressionUtils_compress_remote";
     public static String ACTION_COMPRESS_LOCAL = "compressionUtils_compress_local";
+    private static String TAG = "CompressionUtils";
 
     private native static int dcrzCompress(boolean append, boolean isLast, String input, String output);
 
@@ -32,15 +35,16 @@ public class CompressionUtils {
             StringBuilder outFile = new StringBuilder(inFile);
             outFile.append(".dcrz");
             FileOutputStream out = new FileOutputStream(outFile.toString());
-            long crc = computeCrc32(inFile);
 
-            int shift = 0;
+            long crc = computeCrc32(inFile);
 
             if (method == DEFLATE) {
                 out.write(CompressionUtils.DEFLATE);
             } else if (method == DCRZ) {
                 out.write(CompressionUtils.DCRZ);
             }
+
+            int shift = 0;
             while (shift <= 24) {
                 byte data = (byte) ((crc >> shift) & 0xff); // Little Endian
                 out.write(data);
@@ -52,14 +56,13 @@ public class CompressionUtils {
         }
     }
 
-    public static int compress(int method, String inFile) {
+    public static int compress(int method, boolean isLast, String inFile) {
         StringBuilder outFile = new StringBuilder(inFile);
         outFile.append(".dcrz");
         if (method == DEFLATE) {
             return Deflate.compressFile(isLocal, inFile, outFile.toString());
-
         } else if (method == DCRZ) {
-            return CompressionUtils.dcrzCompress(isLocal, true, inFile, outFile.toString());
+            return CompressionUtils.dcrzCompress(isLocal, isLast, inFile, outFile.toString());
         }
         return -1;
     }
@@ -75,7 +78,7 @@ public class CompressionUtils {
                 obj.update(cnt);
             }
             crc = obj.getValue();
-            System.out.printf("CRc is %x\n", crc);
+            Log.d(TAG,"CRc is "+crc);
             file.close();
         } catch (IOException e) {
             e.printStackTrace();
