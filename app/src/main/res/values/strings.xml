@@ -23,7 +23,8 @@
     <string name="sr_output">tmp_file.dcrz</string>
     <string name="sr_disconnect">Disconnect</string>
     <string name="sr_server_ip">192.168.43.1</string>
-    <string name="sr_tmp_file">temp.dcrz</string>
+    <string name="sr_tmp_file">temp.dat</string>
+    <string name="sr_tmpc_file">temp.dat.dcrz</string>
     <string name="sr_err_maxspace">Value should be less or equal to given freespace</string>
     <string name="sr_ssid">SHRINK</string>
 

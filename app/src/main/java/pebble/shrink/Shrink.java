@@ -22,6 +22,10 @@ public class Shrink extends AppCompatActivity {
 
     private final String TAG = Shrink.this.getClass().getSimpleName();
 
+    static {
+        System.loadLibrary("dcrz");
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

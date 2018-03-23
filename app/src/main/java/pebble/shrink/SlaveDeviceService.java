@@ -2,10 +2,12 @@ package pebble.shrink;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.Environment;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -19,13 +21,43 @@ public class SlaveDeviceService extends Service {
 
     public static final String EXTRA_PORT = "ps.SlaveDeviceService.port";
 
+    private static final String tmp_file= Environment.getExternalStorageDirectory()+"Shrink/tmp.dat";
+    private static final String tmpc_file= Environment.getExternalStorageDirectory()+"Shrink/tmp.dat.dcrz";
+
     private static Socket socket;
     private static InputStream in;
     private static OutputStream out;
+    private static int algorithm;
+    private static byte[] buffer = new byte[DataTransfer.BUFFER_SIZE];
 
-    public static long freeSpace, allocateSpace;
+    public static long freeSpace, allocatedSpace, compressedSize;
     public static char batteryClass;
 
+    private static void initMetaData() throws IOException{
+
+        int i = 0;
+        int shift = 56;
+        while (i < 8) {
+            buffer[i] = (byte) ((freeSpace >> shift )& 0xFF);
+            shift = shift - 8;
+            i++;
+        }
+        buffer[i] = ((byte) (batteryClass & 0xFF));
+
+        out.write(buffer, 0, DataTransfer.HEADER_SIZE);
+        out.flush();
+        Log.d(TAG,"sent: "+Arrays.toString(buffer));
+
+        in.read(buffer, 0,  DataTransfer.HEADER_SIZE);
+        Log.d(TAG,"read: "+ Arrays.toString(buffer));
+
+        i = 0;
+        while (i < 8) {
+            allocatedSpace = (allocatedSpace << 8 ) | (long)(buffer[i++] & 0xFF);
+        }
+        algorithm = buffer[i];
+        Log.d(TAG, "Allocated Space is " + Long.toString(allocatedSpace)+ " algorithm is "+algorithm);
+    }
 
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
@@ -53,30 +85,40 @@ public class SlaveDeviceService extends Service {
                     in = socket.getInputStream();
                     out = socket.getOutputStream();
 
-                    byte[] buffer = new byte[Distributor.HEADER_SIZE];
+                   initMetaData();
+
+                   DataTransfer.initFile(tmpc_file,tmp_file);
+
+                    out.write(DataTransfer.READY);
+                    out.flush();
+
+                    // Receive chunk from master device
+                    DataTransfer.receiveChunk(allocatedSpace,in);
+
+                    // Compress chunk
+                    CompressionUtils.compress(algorithm,tmp_file);
+
+                    // Send compressed size to master device.
+                    compressedSize = (new File(tmpc_file)).length();
                     int i = 0;
                     int shift = 56;
                     while (i < 8) {
-                        buffer[i] = (byte) ((freeSpace >> shift )& 0xFF);
+                        buffer[i] = (byte) ((compressedSize >> shift )& 0xFF);
                         shift = shift - 8;
                         i++;
                     }
-                    buffer[i] = ((byte) (batteryClass & 0xFF));
-
-                    out.write(buffer, 0, Distributor.HEADER_SIZE);
+                    out.write(buffer,0,8);
                     out.flush();
-                    Log.d(TAG,"sent: "+Arrays.toString(buffer));
 
-                    in.read(buffer, 0,  Distributor.HEADER_SIZE);
-                    Log.d(TAG,"read: "+ Arrays.toString(buffer));
-
-                    i = 0;
-                    while (i < 8) {
-                        allocateSpace = (allocateSpace << 8 ) | (long)(buffer[i++] & 0xFF);
+                    // Receive ready signal from master
+                    if(in.read() != DataTransfer.READY){
+                        throw new IOException("Invalid signal");
                     }
 
-                    Log.d(TAG, "Allocated Space is " + Long.toString(allocateSpace)+ " algorithm is "+buffer[i]);
+                    // Send compressed output to master
+                    DataTransfer.transferChunk(compressedSize,out);
 
+                    // End of process
                     socket.close();
 
                 } catch (IOException e) {

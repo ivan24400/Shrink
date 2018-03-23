@@ -8,18 +8,19 @@
  * dcrz function to encode or decode stream
  * @param env java environment
  * @param cls Class
+ * @param append append to output file
  * @param _input input file name
  * @param _output output file name
  * @return error code. 0 for no error
  */
 JNIEXPORT jint JNICALL Java_pebble_shrink_CompressionUtils_dcrzCompress
-        (JNIEnv *env, jclass cls, jboolean append, jstring _input, jstring _output) {
+        (JNIEnv *env, jclass cls, jboolean append, jboolean isLast, jstring _input, jstring _output) {
 
     const char *input = (*env)->GetStringUTFChars(env, _input, 0);
     const char *output = (*env)->GetStringUTFChars(env, _output, 0);
 
     int error = 0;
-
+    isLastChunk = isLast;
     in = fopen(input, "rb");
     MY_MALLOC(ibuffer, uint8_t*, BUFFER_SIZE, sizeof(uint8_t))
     if (append) {

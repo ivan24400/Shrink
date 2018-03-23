@@ -16,9 +16,10 @@ public class Distributor implements Runnable {
 
     private static String TAG = "Distributor";
 
-    public static final int HEADER_SIZE = 9; // freeSpace = 8, battery = 1 && allocatedSpace = 8, algorithm = 1
-    private static final int MAX_DEVICES_COUNT = 9;
+    public static boolean isFileAvailable = false;
+
     private static int deviceCount = 0;
+    private static final int MAX_DEVICES_COUNT = 9;
 
     private static ServerSocket server;
     private static ExecutorService executor = Executors.newFixedThreadPool(MAX_DEVICES_COUNT);
@@ -34,6 +35,9 @@ public class Distributor implements Runnable {
     @Override
     public void run() {
         try {
+
+            DataTransfer.initFile(CompressFile.fileToCompress,CompressFile.fileToCompress+".dcrz");
+
             server = new ServerSocket(0);
             WifiOperations.setWifiApSsid(context.getString(R.string.sr_ssid) + "_" + server.getLocalPort());
             WifiOperations.setWifiApEnabled(true);

@@ -11,7 +11,6 @@ public class CompressionService extends Service {
 
     private static final String TAG = "CompressionUtils";
 
-
     @Override
     public int onStartCommand(final Intent intent, int flag, int startId) {
         Log.d(TAG, "onstartcommand: start");
@@ -47,12 +46,6 @@ public class CompressionService extends Service {
 
 
             Log.d(TAG, "onstartcommand: end");
-
-        } else if (intent.getAction().equals(CompressionUtils.ACTION_COMPRESS_REMOTE)) {
-            Intent dtIntent = new Intent(this, DataTransferService.class);
-            dtIntent.setAction(DataTransferService.ACTION_DATA_TRANSFER);
-
-        }else if (intent.getAction().equals(CompressionUtils.ACTION_COMPRESS_REMOTE_LOCAL)){
 
         }
         return START_NOT_STICKY;

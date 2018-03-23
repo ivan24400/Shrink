@@ -35,10 +35,10 @@
             android:parentActivityName=".Shrink" />
 
         <service android:name="pebble.shrink.CompressionService"
-            android:label="CompressionService"/>
+            android:label="CompressionService" />
 
         <service android:name="pebble.shrink.SlaveDeviceService"
-            android:label="ShareResourceService"/>
+            android:label="ShareResourceService" />
 
         <activity android:name="pebble.shrink.Help" />
 

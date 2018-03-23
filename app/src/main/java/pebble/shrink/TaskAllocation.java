@@ -18,7 +18,7 @@ public class TaskAllocation {
         return list;
     }
 
-    public long getBase(int rank){
+    public static long getBase(int rank){
         fileSize_t = 0;
         if(list != null){
             for(int i=0; i<list.size(); i++){
@@ -26,7 +26,7 @@ public class TaskAllocation {
                     for(int j=0; j<i; j++){
                         fileSize_t = fileSize_t + list.get(j).getAllocatedSpace();
                     }
-                    return fileSize_t+1;
+                    return fileSize_t;
                 }
             }
         }

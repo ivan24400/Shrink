@@ -18,15 +18,10 @@ public class CompressionUtils {
 
     public static boolean isLocal = false;
 
-    public static String ACTION_COMPRESS_REMOTE_LOCAL = "compressionUtils_write_header";
     public static String ACTION_COMPRESS_REMOTE = "compressionUtils_compress_remote";
     public static String ACTION_COMPRESS_LOCAL = "compressionUtils_compress_local";
 
-    static {
-        System.loadLibrary("dcrz");
-    }
-
-    private native static int dcrzCompress(boolean append, String input, String output);
+    private native static int dcrzCompress(boolean append, boolean isLast, String input, String output);
 
     public static void writeHeader(int method, String inFile) {
         File in = new File(inFile);
@@ -64,7 +59,7 @@ public class CompressionUtils {
             return Deflate.compressFile(isLocal, inFile, outFile.toString());
 
         } else if (method == DCRZ) {
-            return CompressionUtils.dcrzCompress(isLocal, inFile, outFile.toString());
+            return CompressionUtils.dcrzCompress(isLocal, true, inFile, outFile.toString());
         }
         return -1;
     }

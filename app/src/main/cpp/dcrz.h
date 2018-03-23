@@ -36,6 +36,7 @@ extern "C" {
 
 FILE *in, *out;
 bool isLastBlock;
+bool isLastChunk;
 
 // Input and Temp buffer
 uint8_t *ibuffer;

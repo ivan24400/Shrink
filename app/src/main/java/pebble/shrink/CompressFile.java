@@ -93,6 +93,10 @@ public class CompressFile extends AppCompatActivity {
         }
     }
 
+    public static int getAlgorithm(){
+        return spAlgorithm.getSelectedItemPosition();
+    }
+
     public void onClickReceiverSwitch(View view){
       if(((Switch)view).isChecked()){
           distributor = new Distributor(CompressFile.this);

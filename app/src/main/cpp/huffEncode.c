@@ -243,7 +243,7 @@ void writeBit(uint8_t bit, bool isFlush) {
     }
 
     if (bit) {
-        bitBuffer = bitBuffer | (1 << wCursor);
+        bitBuffer = bitBuffer | (uint8_t)(1 << wCursor);
     }
     wCursor--;
 }
@@ -256,7 +256,7 @@ void writeBit(uint8_t bit, bool isFlush) {
 void writeByte(uint8_t data) {
     int8_t ptr = 7;
     while (ptr >= 0) {
-        writeBit(((data >> ptr--) & 0x01), false);
+        writeBit((uint8_t)(((data >> ptr--) & 0x01)), false);
     }
 }
 
@@ -286,7 +286,7 @@ void writeHeader(Node *root, uint32_t totalSymbols) {
     uint8_t byte = 0;
     uint32_t b1 = 0;
 
-    if (isLastBlock) { //  declared in dcrz.h
+    if (isLastBlock && isLastChunk) { //  declared in dcrz.h
         b1 = 0x00800000;
     }
 
@@ -297,13 +297,13 @@ void writeHeader(Node *root, uint32_t totalSymbols) {
     b1 = b1 | (totalSymbols & 0x003fffff);
 
     // Little Endian
-    byte = b1 & 0xff;
+    byte = (uint8_t)(b1 & 0xff);
     fwrite(&byte, sizeof(uint8_t), 1, out);
 
-    byte = (b1 >> 8) & 0xff;
+    byte = (uint8_t)((b1 >> 8) & 0xff);
     fwrite(&byte, sizeof(uint8_t), 1, out);
 
-    byte = (b1 >> 16) & 0xff;
+    byte = (uint8_t)((b1 >> 16) & 0xff);
     fwrite(&byte, sizeof(uint8_t), 1, out);
 
     wCursor = 7;
