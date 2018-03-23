@@ -71,10 +71,12 @@ public class SlaveDeviceService extends Service {
                         @Override
                         public void run() {
                             Intent intent1 = new Intent(SlaveDeviceService.this,ShareResource.class);
-                            NotificationUtils.startNotification(SlaveDeviceService.this,intent1,SlaveDeviceService.this.getString(R.string.initializing));
+                            NotificationUtils.startNotification(SlaveDeviceService.this,intent1);
                             ShareResource.setConnected(SlaveDeviceService.this,true);
                         }
                     });
+
+                    SlaveDeviceService.this.startForeground(NotificationUtils.NOTIFICATION_ID,NotificationUtils.notification);
 
                     InetAddress addr = InetAddress.getByName(SlaveDeviceService.this.getString(R.string.sr_server_ip));
                     int port = intent.getIntExtra(EXTRA_PORT,-1);

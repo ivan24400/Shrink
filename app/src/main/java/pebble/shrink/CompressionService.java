@@ -16,15 +16,16 @@ public class CompressionService extends Service {
         Log.d(TAG, "onstartcommand: start");
         if (intent.getAction().equals(CompressionUtils.ACTION_COMPRESS_LOCAL)) {
 
-            Intent t = new Intent(CompressionService.this,CompressFile.class);
+            Intent tmp = new Intent(CompressionService.this,CompressFile.class);
 
-            NotificationUtils.startNotification(CompressionService.this, t, getString(R.string.compressing));
+            NotificationUtils.startNotification(CompressionService.this, tmp);
             CompressFile.setEnabledWidget(false);
 
             (new Thread(new Runnable() {
                 @Override
                 public void run() {
                     CompressionService.this.startForeground(NotificationUtils.NOTIFICATION_ID, NotificationUtils.notification);
+
                     CompressionUtils.writeHeader(intent.getIntExtra(CompressionUtils.cmethod, 0)
                             , intent.getStringExtra(CompressionUtils.cfile));
 

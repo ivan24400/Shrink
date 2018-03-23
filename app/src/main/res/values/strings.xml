@@ -52,6 +52,7 @@
     <string name="err_connect_failed">Connection failed !</string>
     <string name="err_server_failed">Server crashed !</string>
     <string name="err_os_not_supported">Operating System not Supported !</string>
+    <string name="err_task_allocation">Task Allocation failed !</string>
 
     <!-- Progress -->
     <string name="p_title">Shrink - Network</string>

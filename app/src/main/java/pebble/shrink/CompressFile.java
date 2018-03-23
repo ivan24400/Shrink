@@ -1,7 +1,9 @@
 package pebble.shrink;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -25,7 +27,9 @@ public class CompressFile extends AppCompatActivity {
 
     public static TextView tvTotalDevice;
     public static Button btCompress, btChooseFile;
+
     private static TextView tvFileName;
+    private static int deviceCount = 0;
 
     private static Spinner spAlgorithm;
 
@@ -35,8 +39,6 @@ public class CompressFile extends AppCompatActivity {
 
     private static IntentFilter intentFilter;
     private static WifiReceiver wifiReceiver;
-
-    private static Distributor distributor;
 
 
     @Override
@@ -68,15 +70,14 @@ public class CompressFile extends AppCompatActivity {
         if (fileToCompress != null) {
             int method = spAlgorithm.getSelectedItemPosition();
 
-            Intent intent = new Intent(this, CompressionService.class);
-            intent.putExtra(CompressionUtils.cmethod, method);
-            intent.putExtra(CompressionUtils.cfile, fileToCompress);
-
             if (Integer.parseInt(tvTotalDevice.getText().toString().split(": ")[1]) == 0) {
                 // If no devices are connected
                 CompressionUtils.isLocal = true;
                 WifiOperations.setWifiApEnabled(false);
 
+                Intent intent = new Intent(this, CompressionService.class);
+                intent.putExtra(CompressionUtils.cmethod, method);
+                intent.putExtra(CompressionUtils.cfile, fileToCompress);
                 intent.setAction(CompressionUtils.ACTION_COMPRESS_LOCAL);
                 intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
@@ -84,9 +85,13 @@ public class CompressFile extends AppCompatActivity {
             } else {
                 // If one or more devices are connected
                 CompressionUtils.isLocal = false;
-                intent.setAction(CompressionUtils.ACTION_COMPRESS_REMOTE);
-                intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startService(intent);
+                TaskAllocation ta = new TaskAllocation();
+                if(!ta.allocate(DistributorService.deviceList)){
+                    Toast.makeText(this,getString(R.string.err_task_allocation),Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                DistributorService.startDistribution();
+
             }
         } else {
             Toast.makeText(this, "First choose a file !", Toast.LENGTH_SHORT).show();
@@ -98,15 +103,25 @@ public class CompressFile extends AppCompatActivity {
     }
 
     public void onClickReceiverSwitch(View view){
-      if(((Switch)view).isChecked()){
-          distributor = new Distributor(CompressFile.this);
-          (new Thread(distributor)).start();
+        Intent tintent = new Intent(this,DistributorService.class);
+
+        if(((Switch)view).isChecked()){
+
+            if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+                ((Switch)view).setChecked(true);
+                Toast.makeText(this,getString(R.string.err_os_not_supported),Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            tintent.setAction(DistributorService.ACTION_START_FOREGROUND);
+            startService(tintent);
+
           btChooseFile.setEnabled(false);
           spAlgorithm.setEnabled(false);
         }else{
-          if(distributor != null){
-              distributor.stop();
-          }
+            tintent.setAction(DistributorService.ACTION_STOP_FOREGROUND);
+            startService(tintent);
+
           btChooseFile.setEnabled(true);
           spAlgorithm.setEnabled(true);
       }
@@ -128,6 +143,22 @@ public class CompressFile extends AppCompatActivity {
         } else {
             Log.d(TAG, "Invalid file");
         }
+    }
+
+    public static synchronized void updateDeviceCount(final Context c, final boolean isIncrement){
+        if(isIncrement){
+            deviceCount++;
+        }else{
+            deviceCount--;
+        }
+        CompressFile.cfHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                CompressFile.tvTotalDevice.setText(c.getString(R.string.cf_total_devices,deviceCount));
+
+            }
+        });
+
     }
 
     public static void setEnabledWidget(boolean state){
@@ -156,9 +187,11 @@ public class CompressFile extends AppCompatActivity {
     public void onDestroy() {
         Log.d(TAG, "on destroy");
         unregisterReceiver(wifiReceiver);
-        if(distributor != null){
-            distributor.stop();
-        }
+
+       Intent intent = new Intent(this,DistributorService.class);
+        intent.setAction(DistributorService.ACTION_STOP_FOREGROUND);
+        startService(intent);
+
         NotificationUtils.removeNotification();
 
         super.onDestroy();

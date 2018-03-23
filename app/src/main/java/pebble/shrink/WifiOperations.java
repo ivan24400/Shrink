@@ -140,50 +140,6 @@ public class WifiOperations {
         }
     }
 
-    public static void refreshDeviceCount(final Context context) {
-        Runnable runnable = new Runnable() {
-            public void run() {
-
-                BufferedReader br = null;
-                final AtomicInteger totalDevices = new AtomicInteger(0);
-
-                try {
-                    br = new BufferedReader(new FileReader("/proc/net/arp"));
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        String[] splitted = line.split(" +");
-
-                        if ((splitted != null) && (splitted.length >= 4)) {
-                            // Basic sanity check
-                            String mac = splitted[3];
-
-                            if (mac.matches("..:..:..:..:..:..")) {
-                                boolean isReachable = InetAddress.getByName(splitted[0]).isReachable(500);
-
-                                if (isReachable) {
-                                    totalDevices.incrementAndGet();
-                                }
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    Log.e(this.getClass().toString(), e.toString());
-                } finally {
-                    try {
-                        br.close();
-                    } catch (IOException e) {
-                        Log.e(this.getClass().toString(), e.getMessage());
-                    }
-                }
-
-
-            }
-        };
-
-        Thread mythread = new Thread(runnable);
-        mythread.start();
-    }
-
     public static void stop() {
         Log.d(TAG, "stop " + isMaster);
         if (manager != null) {

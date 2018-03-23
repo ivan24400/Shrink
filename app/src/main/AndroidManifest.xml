@@ -40,6 +40,9 @@
         <service android:name="pebble.shrink.SlaveDeviceService"
             android:label="ShareResourceService" />
 
+        <service android:name="pebble.shrink.DistributorService"
+            android:label="DistributorService" />
+
         <activity android:name="pebble.shrink.Help" />
 
         <activity

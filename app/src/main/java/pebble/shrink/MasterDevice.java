@@ -1,5 +1,6 @@
 package pebble.shrink;
 
+import android.content.Context;
 import android.util.Log;
 
 import java.io.IOException;
@@ -18,7 +19,11 @@ public class MasterDevice implements Runnable {
     private long compressedSize;
     private char battery;
     private int rank;
-    private Object sync;
+
+    private boolean isFileAvailable = false;
+    private Context context;
+    private Object sync,masterSync;
+
     private boolean isLastChunk = true;
     private byte[] buffer = new byte[DataTransfer.BUFFER_SIZE];
 
@@ -27,10 +32,9 @@ public class MasterDevice implements Runnable {
     private OutputStream out;
     private Socket client;
 
-
-    public MasterDevice(Socket s) throws IOException {
+    public MasterDevice(Context c,Socket s) throws IOException {
         this.client = s;
-        this.freeSpace = 0;
+        this.context = c;
     }
 
     public void setAllocatedSpace(long as) {
@@ -53,7 +57,19 @@ public class MasterDevice implements Runnable {
 
     public void setLastChunk(boolean state){ isLastChunk = state; }
 
-    public void notifyMe(){ sync.notify(); }
+    public void notifyMe(Object master){
+        isFileAvailable = true;
+        masterSync = master;
+        sync.notify();
+      try{
+          while(isFileAvailable){
+              masterSync.wait();
+          }
+      }catch (InterruptedException e){
+          e.printStackTrace();
+          Thread.currentThread().interrupt();
+      }
+    }
 
     private void initMetaData() throws IOException {
 
@@ -111,7 +127,7 @@ public class MasterDevice implements Runnable {
             }
 
             // Wait until previous devices send their data
-            while(!Distributor.isFileAvailable){
+            while(!isFileAvailable){
                 try{
                     sync.wait();
                 }catch (InterruptedException e){}
@@ -119,6 +135,8 @@ public class MasterDevice implements Runnable {
 
             // Send File chunk
             DataTransfer.transferChunk(allocatedSpace,out);
+            isFileAvailable = false;
+            masterSync.notify();
 
             // Read Compressed Size
             in.read(buffer,0,8);
@@ -128,7 +146,7 @@ public class MasterDevice implements Runnable {
             }
 
             // Wait until previous devices send their data
-            while(!Distributor.isFileAvailable){
+            while(!isFileAvailable){
                 try{
                     sync.wait();
                 }catch (InterruptedException e){}
@@ -153,7 +171,7 @@ public class MasterDevice implements Runnable {
                 f.printStackTrace();
             }
         }finally{
-            Distributor.updateDeviceCount(false);
+            CompressFile.updateDeviceCount(context,false);
         }
 
     }

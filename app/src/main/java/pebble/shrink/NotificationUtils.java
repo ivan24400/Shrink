@@ -28,7 +28,8 @@ public class NotificationUtils {
     public static Notification notification;
     public static final int NOTIFICATION_ID = 24;
 
-    public static void startNotification(Service s, Intent nintent, String content) {
+    public static void startNotification(Service s, Intent nintent) {
+        removeNotification();
         service = s;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel();
@@ -37,19 +38,9 @@ public class NotificationUtils {
 
         pendingIntent = PendingIntent.getActivity(service, 0, nintent, 0);
 
-        notification = createNotification(content);
+        notification = createNotification(service.getString(R.string.initializing));
         notification.flags |= Notification.FLAG_NO_CLEAR;
-
-        service.startForeground(NOTIFICATION_ID,notification);
     }
-
-    public static void updateNotification(String content) {
-        Notification not = createNotification(content);
-        if (not != null) {
-            nmanager.notify(NOTIFICATION_ID, not);
-        }
-    }
-
 
     public static Notification createNotification(final String content) {
 
@@ -83,6 +74,12 @@ public class NotificationUtils {
         }
     }
 
+    public static void updateNotification(String content) {
+        Notification not = createNotification(content);
+        if (not != null) {
+            nmanager.notify(NOTIFICATION_ID, not);
+        }
+    }
 
     public static void removeNotification() {
         if (nmanager != null) {

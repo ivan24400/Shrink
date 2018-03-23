@@ -37,7 +37,7 @@ public class TaskAllocation {
         list = tmp;
         Collections.sort(list,new SortDevices());
 
-        for(int i=0; i< list.size(); i++){
+        for(int i=1; i <= list.size(); i++){
             list.get(i).setRank(i);
             fileSize_t = fileSize_t + list.get(i).getFreeSpace();
         }

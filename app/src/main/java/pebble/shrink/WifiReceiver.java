@@ -13,7 +13,6 @@ public class WifiReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals("android.net.wifi.WIFI_AP_STATE_CHANGED")) {
-            WifiOperations.refreshDeviceCount(context);
 
             int state = intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE, -1);
             if (WifiManager.WIFI_STATE_ENABLED == state % 10) {
