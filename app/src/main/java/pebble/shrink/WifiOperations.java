@@ -26,10 +26,8 @@ public class WifiOperations {
     private static WifiManager manager;
     private static WifiConfiguration configuration;
 
-    private static final String passwd = "#1a2b3c4d";
-
     private static Method setWifiApEnabled;
-    private static boolean isMaster = false;
+    public static boolean isMaster = false;
 
 
     public static void initWifiOperations(Context c) {
@@ -94,13 +92,17 @@ public class WifiOperations {
                                 manager.setWifiEnabled(true);
                             }
 
-                            for (WifiConfiguration config : manager.getConfiguredNetworks()) {
-                                if (config.SSID.contains(context.getString(R.string.app_name))) {
-                                    manager.removeNetwork(config.networkId);
-                                } else {
-                                    manager.disableNetwork(config.networkId);
-                                }
-                            }
+                           try {
+                               for (WifiConfiguration config : manager.getConfiguredNetworks()) {
+                                   if (config.SSID.contains(context.getString(R.string.app_name))) {
+                                       manager.removeNetwork(config.networkId);
+                                   } else {
+                                       manager.disableNetwork(config.networkId);
+                                   }
+                               }
+                           }catch (NullPointerException ex){
+                               ex.printStackTrace();
+                           }
                             manager.saveConfiguration();
                             int res = manager.addNetwork(configuration);
                             Log.d(TAG, "network add result: " + res + " nid " + configuration.networkId);

@@ -28,15 +28,26 @@ public class DataTransfer {
 
     private static byte[] buffer = new byte[BUFFER_SIZE];
 
-    public static void initFiles(boolean append, final String input, final String output) throws FileNotFoundException{
+    public static void initFiles(final boolean isMaster,final String input, final String output) throws IOException{
+        Log.d(TAG,"input "+input+", output "+output+" ismaster "+WifiOperations.isMaster);
         inputFileName = input;
         outputFileName = output;
-        inputFile = new FileInputStream(input);
-        outputFile = new FileOutputStream(output,append);
+        if(isMaster){
+            inputFile = new FileInputStream(input);
+            outputFile = new FileOutputStream(output,true);
+        }else{
+            File t = new File(input);
+            t.getParentFile().mkdirs();
+            t.createNewFile();
+            inputFile = new FileInputStream(t);
+            t = new File(output);
+            t.createNewFile();
+            outputFile = new FileOutputStream(t);
+        }
     }
 
     public synchronized static void transferChunk(long size, OutputStream out) throws IOException{
-
+        Log.d(TAG,"transferChunk "+size);
         if(out == null || size == 0){
             return;
         }
@@ -53,6 +64,7 @@ public class DataTransfer {
     }
 
     public synchronized static void receiveChunk(long size, InputStream in) throws IOException{
+        Log.d(TAG,"receive Chunk "+size);
 
         if(in == null || size == 0){
             return;
@@ -67,7 +79,9 @@ public class DataTransfer {
             outputFile.write(buffer,0,readBytes);
             outputFile.flush();
             size = size - readBytes;
+            Log.d(TAG,"receive Chunk end "+size);
         }
+        Log.d(TAG,"receive Chunk end "+size);
     }
 
     public static void releaseFiles(){
@@ -85,10 +99,12 @@ public class DataTransfer {
 
     public static void deleteFiles(){
             releaseFiles();
+        return;/*
            if( (new File(inputFileName)).delete() || (new File(outputFileName)).delete() ){
                Log.d(TAG,"Delete success");
            }else{
                Log.d(TAG,"Delete failed");
            }
+           */
     }
 }

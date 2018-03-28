@@ -58,13 +58,19 @@ public class MasterDevice implements Runnable {
 
     public void setLastChunk(boolean state){ isLastChunk = state; }
 
-    public void notifyMe(Object master){
+    public synchronized void notifyMe(Object thread){
+        Log.d(TAG,"notify Me");
         isFileAvailable = true;
-        masterSync = master;
-        sync.notify();
+        masterSync = thread;
+        synchronized (sync){
+            sync.notify();
+        }
+
       try{
-          while(isFileAvailable){
-              masterSync.wait();
+          synchronized (masterSync) {
+              while (isFileAvailable) {
+                  masterSync.wait();
+              }
           }
       }catch (InterruptedException e){
           e.printStackTrace();
@@ -89,29 +95,7 @@ public class MasterDevice implements Runnable {
 
         Log.d(TAG, "free space " + Long.toString(freeSpace) + " , battery " + battery);
 
-        // Sending meta data
-        i = 0;
-        int shift = 56;
-        while (i < 8) {
-            buffer[i++] = (byte) ((allocatedSpace >> shift) & 0xFF);
-            shift = shift - 8;
-        }
 
-        byte meta = 0;
-        if(isLastChunk){
-            meta = (byte)(meta | 0x80);
-        }
-        if(CompressFile.getAlgorithm() == CompressionUtils.DEFLATE){
-            meta = (byte)(meta | 0x00);
-        }else{
-            meta = (byte)(meta | 0x01);
-        }
-
-        buffer[i] = meta;
-
-        out.write(buffer, 0, DataTransfer.HEADER_SIZE);
-        out.flush();
-        Log.d(TAG,"sent: "+Arrays.toString(buffer));
     }
 
     @Override
@@ -122,48 +106,83 @@ public class MasterDevice implements Runnable {
 
             initMetaData();
 
-            if(in.read() != DataTransfer.READY){
-                // READY
-                throw new IOException("Invalid signal");
-            }
-
             // Wait until previous devices send their data
+            synchronized (sync){
             while(!isFileAvailable){
                 try{
                     sync.wait();
                 }catch (InterruptedException e){}
             }
+            }
+
+            // Sending meta data
+           int i = 0;
+            int shift = 56;
+            while (i < 8) {
+                buffer[i++] = (byte) ((allocatedSpace >> shift) & 0xFF);
+                shift = shift - 8;
+            }
+
+            byte meta = 0;
+            if(isLastChunk){
+                meta = (byte)(meta | 0x80);
+            }
+            if(CompressFile.getAlgorithm() == CompressionUtils.DEFLATE){
+                meta = (byte)(meta | 0x00);
+            }else{
+                meta = (byte)(meta | 0x01);
+            }
+
+            buffer[i] = meta;
+
+            out.write(buffer, 0, DataTransfer.HEADER_SIZE);
+            out.flush();
+            Log.d(TAG,"sent: "+Arrays.toString(buffer));
+
 
             // Send File chunk
             DataTransfer.transferChunk(allocatedSpace,out);
             isFileAvailable = false;
-            masterSync.notify();
+            synchronized (masterSync){
+                masterSync.notify();
+            }
+            Log.d(TAG,"send file chunk");
 
             // Read Compressed Size
-            in.read(buffer,0,8);
-            DistributorService.dcrWorker();
-            int i = 0; // free space base
+            in.read(buffer,0,8); // sizeof long
+            i = 0; // free space base
             while (i < 8) { // free space length is 8 bytes
                 compressedSize = (compressedSize << 8)| (long)(buffer[i++] & 0xFF); // Big Endian
             }
+            DistributorService.dcrWorker();
+            Log.d(TAG,"read compressed size "+compressedSize);
 
             // Wait until previous devices send their data
-            while(!isFileAvailable && (DistributorService.getWorkerCount() != 0)){
-                try{
-                    sync.wait();
-                }catch (InterruptedException e){}
+            synchronized (sync) {
+                while (!isFileAvailable) {
+                    try {
+                        sync.wait();
+                    } catch (InterruptedException e) {
+                    }
+                }
             }
-
-            // Ready to receive data
+            Log.d(TAG,"finished waiting");
             out.write(DataTransfer.READY);
+            out.flush();
 
             // Write to file
             DataTransfer.receiveChunk(compressedSize,in);
-
+            isFileAvailable = false;
+            synchronized (masterSync){
+                masterSync.notify();
+            }
+            out.write(DataTransfer.READY);
+            out.flush();
+            Log.d(TAG,"receive compressed file chunk");
             // End of process
             client.close();
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             Log.d(TAG, "Connection failed");
             e.printStackTrace();
 
@@ -173,7 +192,12 @@ public class MasterDevice implements Runnable {
                 f.printStackTrace();
             }
         }finally{
-            CompressFile.updateDeviceCount(context,false);
+            CompressFile.handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    CompressFile.updateDeviceCount(context,false);
+                }
+            });
         }
 
     }

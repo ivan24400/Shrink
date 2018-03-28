@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 
@@ -24,18 +25,14 @@ public class DistributorService extends Service {
     public static final String ACTION_START_FOREGROUND = "ps.DistributorService.start";
     public static final String ACTION_STOP_FOREGROUND = "ps.DistributorService.stop";
 
+    public static Object sync = new Object();
+
     private static final int MAX_DEVICES_COUNT = 9;
     private static int workerCount = 0;
     private static ServerSocket server;
     private static ExecutorService executor = Executors.newFixedThreadPool(MAX_DEVICES_COUNT);
 
     public static List<MasterDevice> deviceList = new LinkedList<>();
-    private static boolean isStopped = false;
-
-
-    private synchronized boolean isStopped() {
-        return this.isStopped;
-    }
 
     public synchronized static void incrWorker(){
         workerCount++;
@@ -46,10 +43,6 @@ public class DistributorService extends Service {
         if(workerCount == 0){
             gatherResults();
         }
-    }
-
-    public synchronized static int getWorkerCount(){
-        return workerCount;
     }
 
     @Override
@@ -63,26 +56,38 @@ public class DistributorService extends Service {
                 @Override
                 public void run() {
                     try {
-                        DistributorService.this.startForeground(NotificationUtils.NOTIFICATION_ID,NotificationUtils.notification);
 
+                        CompressFile.handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                CompressFile.setEnabledWidget(false);
+                            }
+                        });
+                        synchronized(sync) {
+                            while (CompressFile.fileToCompress == null) {
+                                sync.wait();
+                            }
+                        }
                         // Write Header
                         CompressionUtils.writeHeader(intent.getIntExtra(CompressionUtils.cmethod,0),CompressFile.fileToCompress);
 
-                        DataTransfer.initFiles(true, CompressFile.fileToCompress, CompressFile.fileToCompress + ".dcrz");
+                        DataTransfer.initFiles(true,CompressFile.fileToCompress, CompressFile.fileToCompress + ".dcrz");
 
                         server = new ServerSocket(0);
                         WifiOperations.setWifiApSsid(DistributorService.this.getString(R.string.sr_ssid) + "_" + server.getLocalPort());
                         WifiOperations.setWifiApEnabled(true);
 
-                        while (!isStopped()) {
+                        CompressFile.handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                CompressFile.setEnabledWidget(true);
+                            }
+                        });
+
+                        while (true) {
                             Socket client = server.accept();
                             CompressFile.updateDeviceCount(DistributorService.this,true);
                             Log.d(TAG, "Connected " + client.getInetAddress());
-
-                            if (isStopped()) {
-                                Log.d(TAG, "Server is stopped");
-                                return;
-                            }
 
                             MasterDevice masterDevice = new MasterDevice(DistributorService.this,client);
                             deviceList.add(masterDevice);
@@ -90,8 +95,12 @@ public class DistributorService extends Service {
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (RejectedExecutionException e){
+                        e.printStackTrace();
                     }
-                    CompressFile.cfHandler.post(new Runnable() {
+                    CompressFile.handler.post(new Runnable() {
                         @Override
                         public void run() {
                             NotificationUtils.updateNotification(DistributorService.this.getString(R.string.completed));
@@ -102,6 +111,7 @@ public class DistributorService extends Service {
                 }
             })).start();
         }else if(intent.getAction().equals(ACTION_STOP_FOREGROUND)){
+            Log.d(TAG,"action stop foreground");
             stop();
         }
 
@@ -113,21 +123,23 @@ public class DistributorService extends Service {
         (new Thread(new Runnable() {
             @Override
             public void run() {
-                CompressFile.cfHandler.post(new Runnable() {
+                Log.d(TAG,"start distribution: distributing");
+                CompressFile.handler.post(new Runnable() {
                     @Override
                     public void run() {
                         CompressFile.setEnabledWidget(false);
                         NotificationUtils.updateNotification(context.getString(R.string.distributing));
                     }
                 });
-                    for (int i = 1; i <= deviceList.size() ; i++) {
+                    for (int i = 0; i < deviceList.size() ; i++) {
                             if(deviceList.get(i).getAllocatedSpace() == 0) {
                                 break;
                             }else {
                                 deviceList.get(i).notifyMe(this);
                             }
                     }
-                CompressFile.cfHandler.post(new Runnable() {
+                    Log.d(TAG,"start distribution: compressing");
+                CompressFile.handler.post(new Runnable() {
                     @Override
                     public void run() {
                         NotificationUtils.updateNotification(context.getString(R.string.compressing));
@@ -139,7 +151,7 @@ public class DistributorService extends Service {
     }
 
     public synchronized static void gatherResults(){
-        CompressFile.cfHandler.post(new Runnable() {
+        CompressFile.handler.post(new Runnable() {
             @Override
             public void run() {
                 NotificationUtils.updateNotification(NotificationUtils.getContext().getString(R.string.gather));
@@ -160,18 +172,17 @@ public class DistributorService extends Service {
     }
 
     public synchronized void stop() {
-        this.isStopped = true;
         WifiOperations.stop();
         DataTransfer.releaseFiles();
         try {
-            if(server != null) {
+            if(server != null && !server.isClosed()) {
                 server.close();
             }
             if(executor != null){
                 executor.shutdownNow();
                 executor.awaitTermination(1, TimeUnit.SECONDS);
             }
-            CompressFile.cfHandler.post(new Runnable() {
+            CompressFile.handler.post(new Runnable() {
                 @Override
                 public void run() {
                     CompressFile.setEnabledWidget(true);

@@ -2,15 +2,19 @@ package pebble.shrink;
 
 import android.util.Log;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.util.zip.CRC32;
 import java.io.FileInputStream;
 import java.io.IOException;
 
 
 public class CompressionUtils {
+    private static String TAG = "CompressionUtils";
 
     public static final int DEFLATE = 0;
     public static final int DCRZ = 1;
@@ -22,7 +26,9 @@ public class CompressionUtils {
     public static boolean isLocal = false;
 
     public static String ACTION_COMPRESS_LOCAL = "compressionUtils_compress_local";
-    private static String TAG = "CompressionUtils";
+
+    private static final int bufferSize = 4096;
+    private static byte[] buffer = new byte[bufferSize];
 
     private native static int dcrzCompress(boolean append, boolean isLast, String input, String output);
 
@@ -71,14 +77,14 @@ public class CompressionUtils {
         long crc = 1;
         try {
             System.out.println(name);
-            FileInputStream file = new FileInputStream(name);
+            BufferedInputStream file = new BufferedInputStream(new FileInputStream(name));
             CRC32 obj = new CRC32();
             int cnt;
-            while ((cnt = file.read()) != -1) {
-                obj.update(cnt);
+            while ((cnt = file.read(buffer,0,bufferSize)) != -1) {
+                obj.update(buffer,0,cnt);
             }
             crc = obj.getValue();
-            Log.d(TAG,"CRc is "+crc);
+            Log.d(TAG,"CRc is "+Long.toHexString(crc));
             file.close();
         } catch (IOException e) {
             e.printStackTrace();

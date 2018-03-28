@@ -32,7 +32,7 @@ public class CompressionService extends Service {
                     CompressionUtils.compress(intent.getIntExtra(CompressionUtils.cmethod, 0)
                             , true,intent.getStringExtra(CompressionUtils.cfile));
 
-                    CompressFile.cfHandler.post(new Runnable() {
+                    CompressFile.handler.post(new Runnable() {
                         @Override
                         public void run() {
                             NotificationUtils.updateNotification(getString(R.string.completed));

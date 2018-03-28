@@ -35,7 +35,7 @@ public class CompressFile extends AppCompatActivity {
 
     public static String fileToCompress;
 
-    public static Handler cfHandler;
+    public static Handler handler;
 
     private static IntentFilter intentFilter;
     private static WifiReceiver wifiReceiver;
@@ -45,7 +45,7 @@ public class CompressFile extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.compress_activity);
-        cfHandler = new Handler(Looper.getMainLooper());
+        handler = new Handler(Looper.getMainLooper());
 
         getSupportActionBar().setTitle(R.string.cf_title);
         getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
@@ -91,7 +91,6 @@ public class CompressFile extends AppCompatActivity {
                     return;
                 }
                 DistributorService.startDistribution(this);
-
             }
         } else {
             Toast.makeText(this, "First choose a file !", Toast.LENGTH_SHORT).show();
@@ -117,13 +116,11 @@ public class CompressFile extends AppCompatActivity {
             tintent.setAction(DistributorService.ACTION_START_FOREGROUND);
             startService(tintent);
 
-          btChooseFile.setEnabled(false);
           spAlgorithm.setEnabled(false);
         }else{
             tintent.setAction(DistributorService.ACTION_STOP_FOREGROUND);
             startService(tintent);
 
-          btChooseFile.setEnabled(true);
           spAlgorithm.setEnabled(true);
       }
     }
@@ -137,7 +134,10 @@ public class CompressFile extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         if (requestCode == FILE_CHOOSE_REQUEST) {
             if (resultCode == RESULT_OK) {
-                fileToCompress = intent.getStringExtra(FileChooser.EXTRA_FILE_PATH);
+                synchronized(DistributorService.sync){
+                    fileToCompress = intent.getStringExtra(FileChooser.EXTRA_FILE_PATH);
+                    DistributorService.sync.notify();
+                }
                 tvFileName.setText(getString(R.string.cf_file_name, fileToCompress));
                 TaskAllocation.setFileSize((new File(fileToCompress)).length());
             }
@@ -151,8 +151,11 @@ public class CompressFile extends AppCompatActivity {
             deviceCount++;
         }else{
             deviceCount--;
+            if(deviceCount == 0){
+                setEnabledWidget(true);
+            }
         }
-        CompressFile.cfHandler.post(new Runnable() {
+        CompressFile.handler.post(new Runnable() {
             @Override
             public void run() {
                 CompressFile.tvTotalDevice.setText(c.getString(R.string.cf_total_devices,deviceCount));

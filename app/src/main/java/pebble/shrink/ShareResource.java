@@ -134,8 +134,8 @@ public class ShareResource extends AppCompatActivity {
                 } else {
                     deviceStatus.setText(context.getString(R.string.sr_device_status, "Disconnected"));
                     connect.setText(context.getString(R.string.sr_connect));
-                    mpriority.setEnabled(state);
-                    mfreeSpace.setEnabled(state);
+                    mpriority.setEnabled(!state);
+                    mfreeSpace.setEnabled(!state);
                 }
     }
 

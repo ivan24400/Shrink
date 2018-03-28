@@ -1,5 +1,7 @@
 package pebble.shrink;
 
+import android.util.Log;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -10,7 +12,10 @@ public class TaskAllocation {
     private static List<MasterDevice> list;
     private static int index = 0;
 
+    private static final String TAG="TaskAllocation";
+
     public static void setFileSize(long size){
+        Log.d(TAG,"filesize "+size);
         fileSize = size;
     }
 
@@ -38,7 +43,7 @@ public class TaskAllocation {
 
         Collections.sort(list,new SortDevices());
 
-        for(int i=1; i <= list.size(); i++){
+        for(int i=0; i < list.size(); i++){
             list.get(i).setRank(i);
             fileSize_t = fileSize_t + list.get(i).getFreeSpace();
         }
@@ -48,6 +53,7 @@ public class TaskAllocation {
         DistributorService.incrWorker();
         for(;index < list.size(); index++){
             if((fileSize - list.get(index).getFreeSpace()) <= 0){
+                Log.d(TAG,"index "+index+" set allocated space "+fileSize);
                 list.get(index).setAllocatedSpace(fileSize);
                 list.get(index).setLastChunk(true);
                 return true;

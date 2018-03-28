@@ -40,6 +40,8 @@ public class NotificationUtils {
 
         notification = createNotification(service.getString(R.string.initializing));
         notification.flags |= Notification.FLAG_NO_CLEAR;
+
+        service.startForeground(NOTIFICATION_ID,notification);
     }
 
     public static Notification createNotification(final String content) {
