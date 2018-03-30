@@ -8,6 +8,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.media.RingtoneManager;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
@@ -38,13 +39,10 @@ public class NotificationUtils {
 
         pendingIntent = PendingIntent.getActivity(service, 0, nintent, 0);
 
-        notification = createNotification(service.getString(R.string.initializing));
-        notification.flags |= Notification.FLAG_NO_CLEAR;
-
-        service.startForeground(NOTIFICATION_ID,notification);
+        notification = createNotification(service.getString(R.string.initializing),false);
     }
 
-    public static Notification createNotification(final String content) {
+    public static Notification createNotification(final String content,final boolean isLast) {
 
         nbuilder = new NotificationCompat.Builder(service)
                 .setChannel(CHANNEL_ID)
@@ -58,6 +56,9 @@ public class NotificationUtils {
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setAutoCancel(false);
 
+        if(isLast){
+            nbuilder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+        }
         return nbuilder.build();
     }
 
@@ -81,7 +82,12 @@ public class NotificationUtils {
     }
 
     public static void updateNotification(String content) {
-        Notification not = createNotification(content);
+        Notification not = null;
+        if(content.equals(service.getString(R.string.completed))){
+            not = createNotification(content,true);
+        }else{
+            not = createNotification(content,false);
+        }
         if (not != null) {
             nmanager.notify(NOTIFICATION_ID, not);
         }

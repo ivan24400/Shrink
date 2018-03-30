@@ -162,9 +162,6 @@ public class SlaveDeviceService extends Service {
                     }
                 }finally{
                     WifiOperations.setWifiEnabled(false);
-                    stopForeground(false);
-                    stopSelf();
-
                     ShareResource.handler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -172,7 +169,10 @@ public class SlaveDeviceService extends Service {
                             ShareResource.setConnected(SlaveDeviceService.this,false);
                         }
                     });
+                    stopForeground(false);
+                    stopSelf();
                 }
+
             }
         })).start();
 

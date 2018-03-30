@@ -72,7 +72,7 @@ public class ShareResource extends AppCompatActivity {
                 String metaData = DeviceOperations.getDeviceInfo(ShareResource.this);
                 final long fs = Long.parseLong(metaData.split("::")[0]);
 
-                SlaveDeviceService.freeSpace = fs;
+                SlaveDeviceService.freeSpace = fs/2;
                 SlaveDeviceService.batteryClass = metaData.split("::")[1].charAt(0);
 
                 ShareResource.this.runOnUiThread(new Runnable() {
@@ -84,8 +84,8 @@ public class ShareResource extends AppCompatActivity {
                             ShareResource.mpriority.setSelection(0);
                         }
                         ShareResource.deviceName.setText(getString(R.string.sr_device_name, Settings.Secure.getString(getContentResolver(), "bluetooth_name")));
-                        ShareResource.freeSpace.setText(getString(R.string.sr_freespace, fs));
-                        ShareResource.mfreeSpace.setText(Long.toString(fs));
+                        ShareResource.freeSpace.setText(getString(R.string.sr_freespace, SlaveDeviceService.freeSpace));
+                        ShareResource.mfreeSpace.setText(Long.toString(SlaveDeviceService.freeSpace));
                     }
                 });
             }

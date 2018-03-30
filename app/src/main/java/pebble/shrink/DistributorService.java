@@ -55,6 +55,7 @@ public class DistributorService extends Service {
             (new Thread(new Runnable() {
                 @Override
                 public void run() {
+                    DistributorService.this.startForeground(NotificationUtils.NOTIFICATION_ID,NotificationUtils.notification);
                     try {
 
                         CompressFile.handler.post(new Runnable() {
@@ -106,13 +107,13 @@ public class DistributorService extends Service {
                             NotificationUtils.updateNotification(DistributorService.this.getString(R.string.completed));
                         }
                     });
-                    stop();
+                    stop(DistributorService.this);
                     Log.d(TAG, "after executor shutdown");
                 }
             })).start();
         }else if(intent.getAction().equals(ACTION_STOP_FOREGROUND)){
             Log.d(TAG,"action stop foreground");
-            stop();
+            stop(DistributorService.this);
         }
 
         return START_NOT_STICKY;
@@ -167,11 +168,12 @@ public class DistributorService extends Service {
                         device.notifyMe(this);
                     }
                 }
+                try{server.close();}catch (IOException e){e.printStackTrace();}
             }
         })).start();
     }
 
-    public synchronized void stop() {
+    public static synchronized void stop(Service service) {
         WifiOperations.stop();
         DataTransfer.releaseFiles();
         try {
@@ -188,8 +190,10 @@ public class DistributorService extends Service {
                     CompressFile.setWidgetEnabled(true);
                 }
             });
-            stopForeground(false);
-            stopSelf();
+            deviceList.clear();
+            workerCount = 0;
+            service.stopForeground(false);
+            service.stopSelf();
 
         } catch (Exception e) {
             e.printStackTrace();

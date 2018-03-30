@@ -17,8 +17,6 @@ public class DataTransfer {
 
     private static FileInputStream inputFile;
     private static FileOutputStream outputFile;
-    private static String inputFileName;
-    private static String outputFileName;
 
     private static int readBytes = 0;
 
@@ -30,8 +28,6 @@ public class DataTransfer {
 
     public static void initFiles(final boolean isMaster,final String input, final String output) throws IOException{
         Log.d(TAG,"input "+input+", output "+output+" ismaster "+WifiOperations.isMaster);
-        inputFileName = input;
-        outputFileName = output;
         if(isMaster){
             inputFile = new FileInputStream(input);
             outputFile = new FileOutputStream(output,true);

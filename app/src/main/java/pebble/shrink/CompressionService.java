@@ -75,7 +75,7 @@ public class CompressionService extends Service {
                 public void run() {
                     CompressionService.this.startForeground(NotificationUtils.NOTIFICATION_ID, NotificationUtils.notification);
 
-                    CompressFile.handler.post(new Runnable() {
+                    Decompressor.handler.post(new Runnable() {
                         @Override
                         public void run() {
                             NotificationUtils.updateNotification(CompressionService.this.getString(R.string.decompressing));

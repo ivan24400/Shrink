@@ -112,6 +112,9 @@ static{
                     if(manager != null) {
                         if (!state) {
                             if (manager.isWifiEnabled()) {
+                                if(configuration != null){
+                                    manager.removeNetwork(configuration.networkId);
+                                }
                                 manager.setWifiEnabled(false);
                             }
                         } else {
@@ -120,18 +123,6 @@ static{
                                 manager.setWifiEnabled(true);
                             }
 
-                           try {
-                               for (WifiConfiguration config : manager.getConfiguredNetworks()) {
-                                   if (config.SSID.contains(context.getString(R.string.app_name))) {
-                                       manager.removeNetwork(config.networkId);
-                                   } else {
-                                       manager.disableNetwork(config.networkId);
-                                   }
-                               }
-                           }catch (NullPointerException ex){
-                               ex.printStackTrace();
-                           }
-                            manager.saveConfiguration();
                             int res = manager.addNetwork(configuration);
                             Log.d(TAG, "network add result: " + res + " nid " + configuration.networkId);
 
