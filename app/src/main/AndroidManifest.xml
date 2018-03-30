@@ -50,6 +50,20 @@
             android:theme="@android:style/Theme.Holo.Light"
             android:label="Select a file" />
 
+        <activity android:name="pebble.shrink.Decompressor" android:label="@string/app_name" >
+            <intent-filter android:label="@string/df_title">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:scheme="file" />
+                <data android:scheme="content"/>
+                <data android:host="*" android:mimeType="*/*" />
+                <data android:pathPattern=".*\\.dcrz" />
+                <data android:pathPattern=".*\\..*\\.dcrz" />
+            </intent-filter>
+        </activity>
+
+
     </application>
 
 </manifest>

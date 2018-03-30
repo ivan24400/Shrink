@@ -32,7 +32,7 @@ public class CompressFile extends AppCompatActivity {
     private static int deviceCount = 0;
 
     private static Spinner spAlgorithm;
-
+    private static Switch swRemote;
     public static String fileToCompress;
 
     public static Handler handler;
@@ -54,6 +54,7 @@ public class CompressFile extends AppCompatActivity {
         tvFileName = (TextView) findViewById(R.id.tvCFfileName);
         btCompress = (Button) findViewById(R.id.btCFcompress);
         spAlgorithm = (Spinner) findViewById(R.id.spCFmethod);
+        swRemote = (Switch)findViewById(R.id.swCFdone);
         btChooseFile = (Button)findViewById(R.id.btCFchooseFile);
 
         WifiOperations.initWifiOperations(CompressFile.this);
@@ -70,7 +71,7 @@ public class CompressFile extends AppCompatActivity {
         if (fileToCompress != null) {
             int method = spAlgorithm.getSelectedItemPosition();
 
-            if (Integer.parseInt(tvTotalDevice.getText().toString().split(": ")[1]) == 0) {
+            if (!swRemote.isChecked()) {
                 // If no devices are connected
                 CompressionUtils.isLocal = true;
                 WifiOperations.setWifiApEnabled(false);
@@ -152,7 +153,13 @@ public class CompressFile extends AppCompatActivity {
         }else{
             deviceCount--;
             if(deviceCount == 0){
-                setEnabledWidget(true);
+                setWidgetEnabled(true);
+                CompressFile.handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        CompressFile.swRemote.setChecked(false);
+                    }
+                });
             }
         }
         CompressFile.handler.post(new Runnable() {
@@ -165,7 +172,7 @@ public class CompressFile extends AppCompatActivity {
 
     }
 
-    public static void setEnabledWidget(boolean state){
+    public static void setWidgetEnabled(boolean state){
         btCompress.setEnabled(state);
     }
 
@@ -191,6 +198,7 @@ public class CompressFile extends AppCompatActivity {
     public void onDestroy() {
         Log.d(TAG, "on destroy");
         unregisterReceiver(wifiReceiver);
+        deviceCount = 0;
 
        Intent intent = new Intent(this,DistributorService.class);
         intent.setAction(DistributorService.ACTION_STOP_FOREGROUND);

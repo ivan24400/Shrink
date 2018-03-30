@@ -34,6 +34,7 @@
     <string name="receiving">Receiving data</string>
     <string name="sending">Sending data</string>
     <string name="compressing">Compressing</string>
+    <string name="decompressing">Decompressing</string>
     <string name="completed">Completed</string>
     <string name="processing">Processing</string>
     <string name="gather">Gathering results</string>
@@ -54,8 +55,13 @@
     <string name="err_connect_failed">Connection failed !</string>
     <string name="err_server_failed">Server crashed !</string>
     <string name="err_os_not_supported">Operating System not Supported !</string>
+    <string name="err_invalid_config">Invalid Configuration !</string>
     <string name="err_task_allocation">Task Allocation failed !</string>
 
+    <!-- Decompress -->
+    <string name="df_title">Decompressor</string>
+    <string name="df_filename">FileName: %1$s</string>
+    <string name="df_decompress">Decompress</string>
     <!-- Progress -->
     <string name="p_title">Shrink - Network</string>
     <string name="p_scanning">Looking for server ...</string>

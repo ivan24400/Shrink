@@ -26,10 +26,17 @@ public class WifiOperations {
     private static WifiManager manager;
     private static WifiConfiguration configuration;
 
-    private static Method setWifiApEnabled;
+    private static Method setWifiApEnabled,getWifiApState;
     public static boolean isMaster = false;
 
-
+static{
+    try {
+        setWifiApEnabled = WifiManager.class.getMethod("setWifiApEnabled", WifiConfiguration.class, boolean.class);
+        getWifiApState = WifiManager.class.getMethod("getWifiApState");
+    }catch (NoSuchMethodException e){
+        e.printStackTrace();
+    }
+}
     public static void initWifiOperations(Context c) {
         context = c;
         manager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
@@ -47,9 +54,18 @@ public class WifiOperations {
 
     public static void setWifiApSsid(String ssid) {
         Log.d(TAG, "setwifissis " + ssid);
-        configuration = new WifiConfiguration();
-        configuration.SSID = "\"" + ssid + "\"";
-        configuration.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
+        if(getWifiApState != null){
+            try{
+                if(WifiManager.WIFI_STATE_ENABLED == ((int)getWifiApState.invoke(manager) % 10)){
+                    setWifiApEnabled(false);
+                }
+                configuration = new WifiConfiguration();
+                configuration.SSID = ssid;
+                configuration.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
     }
 
     public static boolean setWifiApEnabled(boolean state) {
@@ -58,12 +74,24 @@ public class WifiOperations {
             manager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         }
         try {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-                setWifiApEnabled = WifiManager.class.getMethod("setWifiApEnabled", WifiConfiguration.class, boolean.class);
-                return (Boolean) setWifiApEnabled.invoke(manager, configuration, state);
-            } else {
-                Toast.makeText(context, R.string.err_os_not_supported, Toast.LENGTH_LONG).show();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+                CompressFile.handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(context, R.string.err_os_not_supported, Toast.LENGTH_LONG).show();
+                    }
+                });
                 return false;
+        }else if (setWifiApEnabled == null || configuration == null && state) {
+                CompressFile.handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(context, R.string.err_invalid_config, Toast.LENGTH_LONG).show();
+                    }
+                });
+                return false;
+            } else {
+                return (Boolean) setWifiApEnabled.invoke(manager, configuration, state);
             }
         } catch (Exception e) {
             e.printStackTrace();

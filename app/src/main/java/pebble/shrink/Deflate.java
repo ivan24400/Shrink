@@ -64,19 +64,11 @@ public class Deflate {
      * @param input Name of the file to decompress
      * @return error code
      */
-    public static int decompressFile(String input) {
+    public static int decompressFile(String input,String output) {
         try {
             fin = new FileInputStream(input);
-            int iLength = input.length();
-
-            StringBuilder output;
-            if (input.substring(iLength - 4).equals("dcrz")) {
-                output = new StringBuilder(input.substring(0, iLength - 5));
-            } else {
-                output = new StringBuilder(input + "_1");
-            }
-
             fout = new FileOutputStream(output.toString());
+            fin.skip(5); // Skip the header
             InflaterInputStream iin = new InflaterInputStream(fin);
 
             copyData(iin, fout);

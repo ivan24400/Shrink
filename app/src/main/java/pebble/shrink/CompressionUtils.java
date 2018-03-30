@@ -20,17 +20,19 @@ public class CompressionUtils {
     public static final int DCRZ = 1;
     public static final byte MASK_LAST_CHUNK = (byte)0x80;
 
-    public static String cmethod = "COMPRESSION_METHOD";
-    public static String cfile = "COMPRESSION_FILE";
+    public static final String cmethod = "COMPRESSION_METHOD";
+    public static final String cfile = "COMPRESSION_FILE";
 
     public static boolean isLocal = false;
 
-    public static String ACTION_COMPRESS_LOCAL = "compressionUtils_compress_local";
+    public static final String ACTION_COMPRESS_LOCAL = "compressionUtils_compress_local";
+    public static final String ACTION_DECOMPRESS_LOCAL = "compressionUtils_decompress_local";
 
     private static final int bufferSize = 4096;
     private static byte[] buffer = new byte[bufferSize];
 
     private native static int dcrzCompress(boolean append, boolean isLast, String input, String output);
+    private native static int dcrzDecompress(String input,String output);
 
     public static void writeHeader(int method, String inFile) {
         File in = new File(inFile);
@@ -50,11 +52,11 @@ public class CompressionUtils {
                 out.write(CompressionUtils.DCRZ);
             }
 
-            int shift = 0;
-            while (shift <= 24) {
-                byte data = (byte) ((crc >> shift) & 0xff); // Little Endian
+            int shift = 24;
+            while (shift >= 0) {
+                byte data = (byte) ((crc >> shift) & 0xff); // Big Endian
                 out.write(data);
-                shift = shift + 8;
+                shift = shift - 8;
             }
             out.close();
         } catch (IOException e) {
@@ -73,6 +75,32 @@ public class CompressionUtils {
         return -1;
     }
 
+    public static int decompress(String infile) throws IOException{
+        StringBuilder outFile = new StringBuilder(infile);
+        outFile.delete(infile.length()-5,infile.length());
+
+        if(new File(outFile.toString()).exists()){
+            outFile.insert(outFile.lastIndexOf("."),"_1");
+        }
+        FileInputStream input = new FileInputStream(infile);
+        int algorithm = input.read();
+        long crc = 0;
+        int i = 0;
+        while(i < 4){
+            crc = (crc << 8) | (long)input.read();
+            i++;
+        }
+        Log.d(TAG,"decompress crc = "+Long.toHexString(crc));
+
+        if(algorithm == DEFLATE){
+            return Deflate.decompressFile(infile,outFile.toString());
+        }else if(algorithm == DCRZ){
+            return dcrzDecompress(infile,outFile.toString());
+        }else{
+            throw new IOException("Invalid File");
+        }
+    }
+
     public static long computeCrc32(String name) {
         long crc = 1;
         try {
@@ -84,7 +112,7 @@ public class CompressionUtils {
                 obj.update(buffer,0,cnt);
             }
             crc = obj.getValue();
-            Log.d(TAG,"CRc is "+Long.toHexString(crc));
+            Log.d(TAG,"compress crc = "+Long.toHexString(crc));
             file.close();
         } catch (IOException e) {
             e.printStackTrace();

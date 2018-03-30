@@ -56,7 +56,7 @@ JNIEXPORT jint JNICALL Java_pebble_shrink_CompressionUtils_dcrzCompress
  * @param _output output file name
  * @return error code. 0 for no error
  */
-JNIEXPORT jint JNICALL Java_pebble_shrink_Compression_dcrzDecompress
+JNIEXPORT jint JNICALL Java_pebble_shrink_CompressionUtils_dcrzDecompress
         (JNIEnv *env, jclass cls, jstring _input, jstring _output) {
     // Decompression
     const char *input = (*env)->GetStringUTFChars(env, _input, 0);
@@ -74,6 +74,8 @@ JNIEXPORT jint JNICALL Java_pebble_shrink_Compression_dcrzDecompress
         (*env)->ReleaseStringUTFChars(env, _output, output);
         return ERROR;
     }
+    uint8_t buffer[5];
+    fread(buffer,sizeof(uint8_t),5,in); // Skip header
 
     error = dcrzDecode();
 

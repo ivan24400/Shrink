@@ -60,7 +60,7 @@ public class DistributorService extends Service {
                         CompressFile.handler.post(new Runnable() {
                             @Override
                             public void run() {
-                                CompressFile.setEnabledWidget(false);
+                                CompressFile.setWidgetEnabled(false);
                             }
                         });
                         synchronized(sync) {
@@ -80,7 +80,7 @@ public class DistributorService extends Service {
                         CompressFile.handler.post(new Runnable() {
                             @Override
                             public void run() {
-                                CompressFile.setEnabledWidget(true);
+                                CompressFile.setWidgetEnabled(true);
                             }
                         });
 
@@ -127,7 +127,7 @@ public class DistributorService extends Service {
                 CompressFile.handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        CompressFile.setEnabledWidget(false);
+                        CompressFile.setWidgetEnabled(false);
                         NotificationUtils.updateNotification(context.getString(R.string.distributing));
                     }
                 });
@@ -185,7 +185,7 @@ public class DistributorService extends Service {
             CompressFile.handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    CompressFile.setEnabledWidget(true);
+                    CompressFile.setWidgetEnabled(true);
                 }
             });
             stopForeground(false);
