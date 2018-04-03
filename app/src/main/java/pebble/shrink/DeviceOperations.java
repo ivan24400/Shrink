@@ -30,7 +30,7 @@ public class DeviceOperations {
 
         // Free space in Bytes
 
-        long freeSpace = 0,totalSpace = 0;
+        long freeSpace = 0, totalSpace = 0;
         StatFs statFs = new StatFs(Environment.getExternalStorageDirectory().getPath());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             freeSpace = statFs.getBlockSizeLong() * statFs.getAvailableBlocksLong();
@@ -41,10 +41,10 @@ public class DeviceOperations {
         }
 
         // Subtract unavailable minimum storage of android.
-        if((freeSpace/2 - (long)0.1*totalSpace) > 0){
-            freeSpace = freeSpace/2 - (long)0.1*totalSpace;
-        }else {
-            freeSpace = freeSpace/2;
+        if ((freeSpace / 2 - (long) 0.1 * totalSpace) > 0) {
+            freeSpace = freeSpace / 2 - (long) 0.1 * totalSpace;
+        } else {
+            freeSpace = freeSpace / 2;
         }
         //  Battery
         Intent batteryIntent = context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));

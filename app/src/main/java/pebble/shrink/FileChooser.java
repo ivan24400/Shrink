@@ -28,6 +28,7 @@ public class FileChooser extends ListActivity {
 
     private static final String TAG = "FileChooser";
     private File dir;
+    private static final String homePath = Environment.getExternalStorageDirectory().getAbsolutePath();
     private ArrayList<File> files;
     private FileChooserListAdapter adapter;
 
@@ -42,7 +43,7 @@ public class FileChooser extends ListActivity {
         ((ViewGroup) getListView().getParent()).addView(emptyView);
         getListView().setEmptyView(emptyView);
 
-        dir = Environment.getExternalStorageDirectory();
+        dir = new File(homePath);
 
         files = new ArrayList<>();
 
@@ -147,9 +148,9 @@ public class FileChooser extends ListActivity {
 
     @Override
     public void onBackPressed() {
-        if(dir.equals(Environment.getExternalStorageDirectory())){
+        if (dir.equals(new File(homePath))) {
             super.onBackPressed();
-        }else{
+        } else {
             dir = dir.getParentFile();
             refreshFileList();
         }

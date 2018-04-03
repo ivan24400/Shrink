@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
@@ -20,12 +21,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class ShareResource extends AppCompatActivity {
-
-    public String TAG = "Share Resource";
+    static final String tmp_file = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Shrink/tmp.dat";
+    static final String tmpc_file = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Shrink/tmp.dat.dcrz";
+    static final String TAG = "Share Resource";
 
     private static TextView deviceName, deviceStatus, freeSpace;
     public static Spinner mpriority;
-    private static EditText mfreeSpace;
+    static EditText mfreeSpace;
     public static Button connect;
     public static boolean isConnect = false;
 
@@ -72,15 +74,15 @@ public class ShareResource extends AppCompatActivity {
                 String metaData = DeviceOperations.getDeviceInfo(ShareResource.this);
                 final long fs = Long.parseLong(metaData.split("::")[0]);
 
-                SlaveDeviceService.freeSpace = fs/2;
+                SlaveDeviceService.freeSpace = fs / 2;
                 SlaveDeviceService.batteryClass = metaData.split("::")[1].charAt(0);
 
                 ShareResource.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if(SlaveDeviceService.batteryClass == 'A'){
+                        if (SlaveDeviceService.batteryClass == 'A') {
                             ShareResource.mpriority.setSelection(1);
-                        }else{
+                        } else {
                             ShareResource.mpriority.setSelection(0);
                         }
                         ShareResource.deviceName.setText(getString(R.string.sr_device_name, Settings.Secure.getString(getContentResolver(), "bluetooth_name")));
@@ -126,24 +128,24 @@ public class ShareResource extends AppCompatActivity {
 
     public static void setConnected(final Context context, final boolean state) {
         isConnect = state;
-                if (state) {
-                    deviceStatus.setText(context.getString(R.string.sr_device_status,"Connected"));
-                    connect.setText(context.getString(R.string.sr_disconnect));
-                    mpriority.setEnabled(!state);
-                    mfreeSpace.setEnabled(!state);
-                } else {
-                    deviceStatus.setText(context.getString(R.string.sr_device_status, "Disconnected"));
-                    connect.setText(context.getString(R.string.sr_connect));
-                    mpriority.setEnabled(!state);
-                    mfreeSpace.setEnabled(!state);
-                }
+        if (state) {
+            deviceStatus.setText(context.getString(R.string.sr_device_status, "Connected"));
+            connect.setText(context.getString(R.string.sr_disconnect));
+            mpriority.setEnabled(!state);
+            mfreeSpace.setEnabled(!state);
+        } else {
+            deviceStatus.setText(context.getString(R.string.sr_device_status, "Disconnected"));
+            connect.setText(context.getString(R.string.sr_connect));
+            mpriority.setEnabled(!state);
+            mfreeSpace.setEnabled(!state);
+        }
     }
 
     public void clickSRconnect(View view) {
         Log.d(TAG, "clickconnect " + isConnect);
         if (!isConnect) {
             if (Long.parseLong(mfreeSpace.getText().toString()) > SlaveDeviceService.freeSpace) {
-                Toast.makeText(this, R.string.sr_err_maxspace, Toast.LENGTH_LONG).show();
+                Toast.makeText(this, R.string.sr_err_maxspace, Toast.LENGTH_SHORT).show();
             } else {
                 DeviceOperations.displayProgress(ShareResource.this, getString(R.string.p_title), getString(R.string.p_scanning));
                 (new Thread(new Runnable() {

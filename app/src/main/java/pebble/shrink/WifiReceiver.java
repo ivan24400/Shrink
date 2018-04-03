@@ -15,10 +15,11 @@ public class WifiReceiver extends BroadcastReceiver {
         if (intent.getAction().equals("android.net.wifi.WIFI_AP_STATE_CHANGED")) {
 
             int state = intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE, -1);
-            if (WifiManager.WIFI_STATE_ENABLED == state % 10) {
-                Log.d(TAG, "wifi hotspot enabled state: " + state);
-            } else {
-                Log.d(TAG, "wifi hotspot other state: " + state);
+            Log.d(TAG, "wifi hotspot state: " + state);
+            if(state%10 == WifiManager.WIFI_STATE_DISABLED){
+                if(CompressFile.swRemote.isChecked()){
+                    CompressFile.swRemote.setChecked(false);
+                }
             }
         }
     }

@@ -11,7 +11,9 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 
-    <uses-feature android:name="android.hardware.wifi" android:required="true" />
+    <uses-feature
+        android:name="android.hardware.wifi"
+        android:required="true" />
 
     <application
         android:allowBackup="true"
@@ -34,30 +36,37 @@
             android:name="pebble.shrink.ShareResource"
             android:parentActivityName=".Shrink" />
 
-        <service android:name="pebble.shrink.CompressionService"
+        <service
+            android:name="pebble.shrink.CompressionService"
             android:label="CompressionService" />
 
-        <service android:name="pebble.shrink.SlaveDeviceService"
+        <service
+            android:name="pebble.shrink.SlaveDeviceService"
             android:label="ShareResourceService" />
 
-        <service android:name="pebble.shrink.DistributorService"
+        <service
+            android:name="pebble.shrink.DistributorService"
             android:label="DistributorService" />
-
-        <activity android:name="pebble.shrink.Help" />
 
         <activity
             android:name="pebble.shrink.FileChooser"
             android:theme="@android:style/Theme.Holo.Light"
             android:label="Select a file" />
 
-        <activity android:name="pebble.shrink.Decompressor" android:label="@string/app_name" >
+        <activity
+            android:name="pebble.shrink.Decompressor"
+            android:label="@string/app_name">
             <intent-filter android:label="@string/df_title">
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.BROWSABLE" />
-                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:scheme="file" />
-                <data android:scheme="content"/>
-                <data android:host="*" android:mimeType="*/*" />
+                <data android:scheme="content" />
+                <data
+                    android:host="*"
+                    android:mimeType="*/*" />
                 <data android:pathPattern=".*\\.dcrz" />
                 <data android:pathPattern=".*\\..*\\.dcrz" />
             </intent-filter>

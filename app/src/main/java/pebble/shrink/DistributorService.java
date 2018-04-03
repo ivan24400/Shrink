@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 
@@ -34,13 +35,13 @@ public class DistributorService extends Service {
 
     public static List<MasterDevice> deviceList = new LinkedList<>();
 
-    public synchronized static void incrWorker(){
+    public synchronized static void incrWorker() {
         workerCount++;
     }
 
-    public synchronized static void dcrWorker(){
+    public synchronized static void dcrWorker() {
         workerCount--;
-        if(workerCount == 0){
+        if (workerCount == 0) {
             gatherResults();
         }
     }
@@ -48,14 +49,14 @@ public class DistributorService extends Service {
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
 
-        if(intent.getAction().equals(ACTION_START_FOREGROUND)) {
+        if (intent.getAction().equals(ACTION_START_FOREGROUND)) {
 
             Intent nintent = new Intent(DistributorService.this, CompressFile.class);
             NotificationUtils.startNotification(DistributorService.this, nintent);
             (new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    DistributorService.this.startForeground(NotificationUtils.NOTIFICATION_ID,NotificationUtils.notification);
+                    DistributorService.this.startForeground(NotificationUtils.NOTIFICATION_ID, NotificationUtils.notification);
                     try {
 
                         CompressFile.handler.post(new Runnable() {
@@ -64,15 +65,15 @@ public class DistributorService extends Service {
                                 CompressFile.setWidgetEnabled(false);
                             }
                         });
-                        synchronized(sync) {
+                        synchronized (sync) {
                             while (CompressFile.fileToCompress == null) {
                                 sync.wait();
                             }
                         }
                         // Write Header
-                        CompressionUtils.writeHeader(intent.getIntExtra(CompressionUtils.cmethod,0),CompressFile.fileToCompress);
+                        CompressionUtils.writeHeader(intent.getIntExtra(CompressionUtils.cmethod, 0), CompressFile.fileToCompress);
 
-                        DataTransfer.initFiles(true,CompressFile.fileToCompress, CompressFile.fileToCompress + ".dcrz");
+                        DataTransfer.initFiles(true, CompressFile.fileToCompress, CompressFile.fileToCompress + ".dcrz");
 
                         server = new ServerSocket(0);
                         WifiOperations.setWifiApSsid(DistributorService.this.getString(R.string.sr_ssid) + "_" + server.getLocalPort());
@@ -87,18 +88,14 @@ public class DistributorService extends Service {
 
                         while (true) {
                             Socket client = server.accept();
-                            CompressFile.updateDeviceCount(DistributorService.this,true);
+                            CompressFile.updateDeviceCount(DistributorService.this, true);
                             Log.d(TAG, "Connected " + client.getInetAddress());
 
-                            MasterDevice masterDevice = new MasterDevice(DistributorService.this,client);
+                            MasterDevice masterDevice = new MasterDevice(DistributorService.this, client);
                             deviceList.add(masterDevice);
                             executor.execute(masterDevice);
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    } catch (RejectedExecutionException e){
+                    } catch (Exception e){
                         e.printStackTrace();
                     }
                     CompressFile.handler.post(new Runnable() {
@@ -107,24 +104,24 @@ public class DistributorService extends Service {
                             NotificationUtils.updateNotification(DistributorService.this.getString(R.string.completed));
                         }
                     });
-                    stop(DistributorService.this);
+                    stop();
                     Log.d(TAG, "after executor shutdown");
                 }
             })).start();
-        }else if(intent.getAction().equals(ACTION_STOP_FOREGROUND)){
-            Log.d(TAG,"action stop foreground");
-            stop(DistributorService.this);
+        } else if (intent.getAction().equals(ACTION_STOP_FOREGROUND)) {
+            Log.d(TAG, "action stop foreground");
+            stop();
         }
 
         return START_NOT_STICKY;
     }
 
-    public static void startDistribution(final Context context){
+    public static void startDistribution(final Context context) {
 
         (new Thread(new Runnable() {
             @Override
             public void run() {
-                Log.d(TAG,"start distribution: distributing");
+                Log.d(TAG, "start distribution: distributing");
                 CompressFile.handler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -132,26 +129,26 @@ public class DistributorService extends Service {
                         NotificationUtils.updateNotification(context.getString(R.string.distributing));
                     }
                 });
-                    for (int i = 0; i < deviceList.size() ; i++) {
-                            if(deviceList.get(i).getAllocatedSpace() == 0) {
-                                break;
-                            }else {
-                                deviceList.get(i).notifyMe(this);
-                            }
+                for (int i = 0; i < deviceList.size(); i++) {
+                    if (deviceList.get(i).getAllocatedSpace() == 0) {
+                        break;
+                    } else {
+                        deviceList.get(i).notifyMe(this);
                     }
-                    Log.d(TAG,"start distribution: compressing");
+                }
+                Log.d(TAG, "start distribution: compressing");
                 CompressFile.handler.post(new Runnable() {
                     @Override
                     public void run() {
                         NotificationUtils.updateNotification(context.getString(R.string.compressing));
                     }
                 });
-                    }
+            }
 
         })).start();
     }
 
-    public synchronized static void gatherResults(){
+    public synchronized static void gatherResults() {
         CompressFile.handler.post(new Runnable() {
             @Override
             public void run() {
@@ -162,38 +159,44 @@ public class DistributorService extends Service {
             @Override
             public void run() {
                 for (MasterDevice device : deviceList) {
-                    if(device.getAllocatedSpace() == 0){
+                    if (device.getAllocatedSpace() == 0) {
                         break;
-                    }else {
+                    } else {
                         device.notifyMe(this);
                     }
                 }
-                try{server.close();}catch (IOException e){e.printStackTrace();}
+                try {
+                    server.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         })).start();
     }
 
-    public static synchronized void stop(Service service) {
+    public synchronized void stop() {
         WifiOperations.stop();
         DataTransfer.releaseFiles();
         try {
-            if(server != null && !server.isClosed()) {
+            if (server != null && !server.isClosed()) {
                 server.close();
             }
-            if(executor != null){
+            if (executor != null) {
                 executor.shutdownNow();
                 executor.awaitTermination(1, TimeUnit.SECONDS);
             }
+
             CompressFile.handler.post(new Runnable() {
                 @Override
                 public void run() {
                     CompressFile.setWidgetEnabled(true);
+                    CompressFile.tvTotalDevice.setText(getString(R.string.cf_total_devices,0));
                 }
             });
             deviceList.clear();
             workerCount = 0;
-            service.stopForeground(false);
-            service.stopSelf();
+            DistributorService.this.stopForeground(false);
+            DistributorService.this.stopSelf();
 
         } catch (Exception e) {
             e.printStackTrace();

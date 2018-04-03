@@ -58,11 +58,16 @@
     <string name="err_invalid_config">Invalid Configuration !</string>
     <string name="err_task_allocation">Task Allocation failed !</string>
     <string name="err_file_corrupt">File Corrupt !</string>
+    <string name="err_wifi_failed">WiFi failed !</string>
+    <string name="err_wifiap_failed">WiFi hotspot failed !</string>
+    <string name="err_file_not_found">File not found !</string>
+    <string name="err_dcmp_failed">Decompression Failed</string>
 
     <!-- Decompress -->
     <string name="df_title">Decompressor</string>
     <string name="df_filename">FileName: %1$s</string>
     <string name="df_decompress">Decompress</string>
+
     <!-- Progress -->
     <string name="p_title">Shrink - Network</string>
     <string name="p_scanning">Looking for server ...</string>

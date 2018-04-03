@@ -15,7 +15,7 @@ import android.widget.TextView;
 
 
 public class Decompressor extends AppCompatActivity {
-    private static final String TAG="Decompressor";
+    private static final String TAG = "Decompressor";
 
     private static Button decompress;
     private static String filename;
@@ -28,30 +28,30 @@ public class Decompressor extends AppCompatActivity {
         setContentView(R.layout.decompress_activity);
         handler = new Handler(Looper.getMainLooper());
 
-        decompress = (Button)findViewById(R.id.btnDecompress);
+        decompress = (Button) findViewById(R.id.btnDecompress);
         tvFileName = (TextView) findViewById(R.id.tvDFfileName);
 
         Intent intent = getIntent();
-        if(intent.getAction().equals(Intent.ACTION_VIEW)){
+        if (intent.getAction().equals(Intent.ACTION_VIEW)) {
             String scheme = intent.getScheme();
-            if(scheme.equals(ContentResolver.SCHEME_FILE)){
+            if (scheme.equals(ContentResolver.SCHEME_FILE)) {
                 Uri uri = intent.getData();
-                Log.d(TAG,"File intent detected uri:"+uri.getPath());
+                Log.d(TAG, "File intent detected uri:" + uri.getPath());
                 filename = uri.getPath();
-                tvFileName.setText(this.getString(R.string.df_filename,filename));
+                tvFileName.setText(this.getString(R.string.df_filename, filename));
             }
         }
 
     }
 
-    public static void setWidgetEnabled(boolean state){
+    public static void setWidgetEnabled(boolean state) {
         decompress.setEnabled(state);
     }
 
-    public void onClickDecompress(View view){
-       Intent intent = new Intent(this,CompressionService.class);
+    public void onClickDecompress(View view) {
+        Intent intent = new Intent(this, CompressionService.class);
         intent.setAction(CompressionUtils.ACTION_DECOMPRESS_LOCAL);
-        intent.putExtra(CompressionUtils.cfile,filename);
+        intent.putExtra(CompressionUtils.cfile, filename);
         startService(intent);
     }
 }

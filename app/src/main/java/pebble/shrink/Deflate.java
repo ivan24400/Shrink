@@ -64,7 +64,7 @@ public class Deflate {
      * @param input Name of the file to decompress
      * @return error code
      */
-    public static int decompressFile(String input,String output) {
+    public static int decompressFile(String input, String output) {
         try {
             fin = new FileInputStream(input);
             fout = new FileOutputStream(output.toString());

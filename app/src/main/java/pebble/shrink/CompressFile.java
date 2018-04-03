@@ -32,7 +32,7 @@ public class CompressFile extends AppCompatActivity {
     private static int deviceCount = 0;
 
     private static Spinner spAlgorithm;
-    private static Switch swRemote;
+    static Switch swRemote;
     public static String fileToCompress;
 
     public static Handler handler;
@@ -54,8 +54,8 @@ public class CompressFile extends AppCompatActivity {
         tvFileName = (TextView) findViewById(R.id.tvCFfileName);
         btCompress = (Button) findViewById(R.id.btCFcompress);
         spAlgorithm = (Spinner) findViewById(R.id.spCFmethod);
-        swRemote = (Switch)findViewById(R.id.swCFdone);
-        btChooseFile = (Button)findViewById(R.id.btCFchooseFile);
+        swRemote = (Switch) findViewById(R.id.swCFdone);
+        btChooseFile = (Button) findViewById(R.id.btCFchooseFile);
 
         WifiOperations.initWifiOperations(CompressFile.this);
 
@@ -63,7 +63,7 @@ public class CompressFile extends AppCompatActivity {
         intentFilter = new IntentFilter();
         intentFilter.addAction("android.net.wifi.WIFI_AP_STATE_CHANGED");
 
-        registerReceiver(wifiReceiver,intentFilter);
+        registerReceiver(wifiReceiver, intentFilter);
 
     }
 
@@ -87,8 +87,8 @@ public class CompressFile extends AppCompatActivity {
                 // If one or more devices are connected
                 CompressionUtils.isLocal = false;
                 TaskAllocation ta = new TaskAllocation();
-                if(!ta.allocate()){
-                    Toast.makeText(this,getString(R.string.err_task_allocation),Toast.LENGTH_SHORT).show();
+                if (!ta.allocate()) {
+                    Toast.makeText(this, getString(R.string.err_task_allocation), Toast.LENGTH_SHORT).show();
                     return;
                 }
                 DistributorService.startDistribution(this);
@@ -98,32 +98,32 @@ public class CompressFile extends AppCompatActivity {
         }
     }
 
-    public static int getAlgorithm(){
+    public static int getAlgorithm() {
         return spAlgorithm.getSelectedItemPosition();
     }
 
-    public void onClickReceiverSwitch(View view){
-        Intent tintent = new Intent(this,DistributorService.class);
+    public void onClickReceiverSwitch(View view) {
+        Intent tintent = new Intent(this, DistributorService.class);
         tintent.putExtra(CompressionUtils.cmethod, spAlgorithm.getSelectedItemPosition());
 
-        if(((Switch)view).isChecked()){
+        if (((Switch) view).isChecked()) {
 
-            if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-                ((Switch)view).setChecked(true);
-                Toast.makeText(this,getString(R.string.err_os_not_supported),Toast.LENGTH_SHORT).show();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                ((Switch) view).setChecked(true);
+                Toast.makeText(this, getString(R.string.err_os_not_supported), Toast.LENGTH_SHORT).show();
                 return;
             }
 
             tintent.setAction(DistributorService.ACTION_START_FOREGROUND);
             startService(tintent);
 
-          spAlgorithm.setEnabled(false);
-        }else{
+            spAlgorithm.setEnabled(false);
+        } else {
             tintent.setAction(DistributorService.ACTION_STOP_FOREGROUND);
             startService(tintent);
 
-          spAlgorithm.setEnabled(true);
-      }
+            spAlgorithm.setEnabled(true);
+        }
     }
 
     public void onClickChooseFile(View view) {
@@ -135,24 +135,29 @@ public class CompressFile extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         if (requestCode == FILE_CHOOSE_REQUEST) {
             if (resultCode == RESULT_OK) {
-                synchronized(DistributorService.sync){
-                    fileToCompress = intent.getStringExtra(FileChooser.EXTRA_FILE_PATH);
-                    DistributorService.sync.notify();
+                fileToCompress = intent.getStringExtra(FileChooser.EXTRA_FILE_PATH);
+                File tmp = new File(fileToCompress);
+                if(tmp.exists()) {
+                    synchronized (DistributorService.sync) {
+                        DistributorService.sync.notify();
+                    }
+                    tvFileName.setText(getString(R.string.cf_file_name, fileToCompress));
+                    TaskAllocation.setFileSize((new File(fileToCompress)).length());
+                }else{
+                    Toast.makeText(this,getString(R.string.err_file_not_found),Toast.LENGTH_SHORT).show();
                 }
-                tvFileName.setText(getString(R.string.cf_file_name, fileToCompress));
-                TaskAllocation.setFileSize((new File(fileToCompress)).length());
             }
         } else {
             Log.d(TAG, "Invalid file");
         }
     }
 
-    public static synchronized void updateDeviceCount(final Context c, final boolean isIncrement){
-        if(isIncrement){
+    public static synchronized void updateDeviceCount(final Context c, final boolean isIncrement) {
+        if (isIncrement) {
             deviceCount++;
-        }else{
+        } else {
             deviceCount--;
-            if(deviceCount == 0){
+            if (deviceCount == 0) {
                 setWidgetEnabled(true);
                 CompressFile.handler.post(new Runnable() {
                     @Override
@@ -165,14 +170,14 @@ public class CompressFile extends AppCompatActivity {
         CompressFile.handler.post(new Runnable() {
             @Override
             public void run() {
-                CompressFile.tvTotalDevice.setText(c.getString(R.string.cf_total_devices,deviceCount));
+                CompressFile.tvTotalDevice.setText(c.getString(R.string.cf_total_devices, deviceCount));
 
             }
         });
 
     }
 
-    public static void setWidgetEnabled(boolean state){
+    public static void setWidgetEnabled(boolean state) {
         btCompress.setEnabled(state);
     }
 
@@ -181,6 +186,7 @@ public class CompressFile extends AppCompatActivity {
         Log.d(TAG, "on pause");
         super.onPause();
     }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -200,7 +206,7 @@ public class CompressFile extends AppCompatActivity {
         unregisterReceiver(wifiReceiver);
         deviceCount = 0;
 
-       Intent intent = new Intent(this,DistributorService.class);
+        Intent intent = new Intent(this, DistributorService.class);
         intent.setAction(DistributorService.ACTION_STOP_FOREGROUND);
         startService(intent);
 

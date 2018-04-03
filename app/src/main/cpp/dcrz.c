@@ -14,7 +14,8 @@
  * @return error code. 0 for no error
  */
 JNIEXPORT jint JNICALL Java_pebble_shrink_CompressionUtils_dcrzCompress
-        (JNIEnv *env, jclass cls, jboolean append, jboolean isLast, jstring _input, jstring _output) {
+        (JNIEnv *env, jclass cls, jboolean append, jboolean isLast, jstring _input,
+         jstring _output) {
 
     const char *input = (*env)->GetStringUTFChars(env, _input, 0);
     const char *output = (*env)->GetStringUTFChars(env, _output, 0);
@@ -75,7 +76,7 @@ JNIEXPORT jint JNICALL Java_pebble_shrink_CompressionUtils_dcrzDecompress
         return ERROR;
     }
     uint8_t buffer[5];
-    fread(buffer,sizeof(uint8_t),5,in); // Skip header
+    fread(buffer, sizeof(uint8_t), 5, in); // Skip header
 
     error = dcrzDecode();
 
