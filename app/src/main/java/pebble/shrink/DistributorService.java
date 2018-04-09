@@ -14,10 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
 
 public class DistributorService extends Service {
 
@@ -35,10 +32,16 @@ public class DistributorService extends Service {
 
     public static List<MasterDevice> deviceList = new LinkedList<>();
 
+    /**
+     * Increment worker device count
+     */
     public synchronized static void incrWorker() {
         workerCount++;
     }
 
+    /**
+     * decrement worker device count
+     */
     public synchronized static void dcrWorker() {
         workerCount--;
         if (workerCount == 0) {
@@ -52,7 +55,7 @@ public class DistributorService extends Service {
         if (intent.getAction().equals(ACTION_START_FOREGROUND)) {
 
             Intent nintent = new Intent(DistributorService.this, CompressFile.class);
-            NotificationUtils.startNotification(DistributorService.this, nintent);
+            NotificationUtils.initNotification(DistributorService.this, nintent);
             (new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -116,6 +119,10 @@ public class DistributorService extends Service {
         return START_NOT_STICKY;
     }
 
+    /**
+     * Start distributing file among slave devices
+     * @param context Current context
+     */
     public static void startDistribution(final Context context) {
 
         (new Thread(new Runnable() {
@@ -148,6 +155,9 @@ public class DistributorService extends Service {
         })).start();
     }
 
+    /**
+     * Receive compressed output from all slave devices
+     */
     public synchronized static void gatherResults() {
         CompressFile.handler.post(new Runnable() {
             @Override
@@ -174,6 +184,9 @@ public class DistributorService extends Service {
         })).start();
     }
 
+    /**
+     * Stop all threads including this
+     */
     public synchronized void stop() {
         WifiOperations.stop();
         DataTransfer.releaseFiles();
@@ -203,6 +216,11 @@ public class DistributorService extends Service {
         }
     }
 
+    /**
+     * Un neccesarily required.
+     * @param intent
+     * @return nothing
+     */
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {

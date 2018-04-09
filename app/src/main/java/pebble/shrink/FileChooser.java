@@ -20,10 +20,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-/**
- * Created by Ivan on 14-03-2018.
- */
-
 public class FileChooser extends ListActivity {
 
     private static final String TAG = "FileChooser";
@@ -58,6 +54,9 @@ public class FileChooser extends ListActivity {
         super.onResume();
     }
 
+    /**
+     * Refresh files and folders available
+     */
     private void refreshFileList() {
         files.clear();
 
@@ -90,6 +89,9 @@ public class FileChooser extends ListActivity {
         }
     }
 
+    /**
+     * This class displays each item in the list using custom view.
+     */
     private static class FileChooserListAdapter extends ArrayAdapter<File> {
 
         private List<File> fileList;
@@ -127,6 +129,9 @@ public class FileChooser extends ListActivity {
         }
     }
 
+    /**
+     * This class sorts all items in folders-first format
+     */
     private static class FileComparator implements Comparator<File> {
 
         public int compare(File f1, File f2) {

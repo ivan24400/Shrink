@@ -21,7 +21,6 @@ public class Deflate {
     /**
      * Copy byte-wise data from input to output streams
      * and closes them.
-     *
      * @param in  Input stream
      * @param out Output stream
      * @throws IOException I/O related exceptions
@@ -38,7 +37,6 @@ public class Deflate {
 
     /**
      * Compress a file with given name.
-     *
      * @param input Name of the file to compress
      * @return error code
      */
@@ -60,7 +58,6 @@ public class Deflate {
 
     /**
      * Decompress a file with given name.
-     *
      * @param input Name of the file to decompress
      * @return error code
      */

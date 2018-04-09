@@ -19,25 +19,10 @@ public class TaskAllocation {
         fileSize = size;
     }
 
-    public List<MasterDevice> getDeviceList() {
-        return list;
-    }
-
-    public static long getBase(int rank) {
-        fileSize_t = 0;
-        if (list != null) {
-            for (int i = 0; i < list.size(); i++) {
-                if (list.get(i).getRank() == rank) {
-                    for (int j = 0; j < i; j++) {
-                        fileSize_t = fileSize_t + list.get(j).getAllocatedSpace();
-                    }
-                    return fileSize_t;
-                }
-            }
-        }
-        return -1;
-    }
-
+    /**
+     * Allocate file chunk to slave devices
+     * @return allocate error status
+     */
     public boolean allocate() {
         list = DistributorService.deviceList;
 
@@ -68,19 +53,9 @@ public class TaskAllocation {
         return false;
     }
 
-    public boolean reallocate(int rank) {
-        for (MasterDevice device : list) {
-            if (rank == device.getRank()) {
-                if (list.get(++index).getFreeSpace() >= device.getAllocatedSpace()) {
-                    list.get(index).setAllocatedSpace(device.getAllocatedSpace());
-                    list.get(index).setRank(rank);
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
+    /**
+     * This class sorts devices in ascending battery and descending free space.
+     */
     private class SortDevices implements Comparator<MasterDevice> {
 
         @Override

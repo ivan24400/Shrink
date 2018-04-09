@@ -14,7 +14,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-// Master threads
 public class MasterDevice implements Runnable {
 
     private static final String TAG = "MasterDevice";
@@ -73,6 +72,10 @@ public class MasterDevice implements Runnable {
         isLastChunk = state;
     }
 
+    /**
+     * Tells this thread to continue processing
+     * @param thread Parent thread
+     */
     public synchronized void notifyMe(Object thread) {
         Log.d(TAG, "notify Me");
         isFileAvailable = true;
@@ -93,6 +96,10 @@ public class MasterDevice implements Runnable {
         }
     }
 
+    /**
+     * Receive slave device info and start heartbeat
+     * @throws IOException
+     */
     private void initMetaData() throws IOException {
 
         // Receiving metadata
@@ -153,6 +160,9 @@ public class MasterDevice implements Runnable {
         executor.scheduleAtFixedRate(hb,0,DataTransfer.HEARTBEAT_TIMEOUT, TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * Sends and receive data from corresponding slave device.
+     */
     @Override
     public void run() {
         try {

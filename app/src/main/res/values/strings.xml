@@ -62,6 +62,8 @@
     <string name="err_wifiap_failed">WiFi hotspot failed !</string>
     <string name="err_file_not_found">File not found !</string>
     <string name="err_dcmp_failed">Decompression Failed</string>
+    <string name="err_cmp_failed">Compression Failed</string>
+    <string name="err_permission_denied">Permission not granted !</string>
 
     <!-- Decompress -->
     <string name="df_title">Decompressor</string>

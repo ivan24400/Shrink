@@ -66,6 +66,9 @@ public class ShareResource extends AppCompatActivity {
         registerReceiver(wifiScanner, intentFilter);
     }
 
+    /**
+     * Initialize text views with their corresponding values
+     */
     public void initDeviceStat() {
         (new Thread(new Runnable() {
 
@@ -126,6 +129,11 @@ public class ShareResource extends AppCompatActivity {
         super.onDestroy();
     }
 
+    /**
+     * Modifiy enabled status of widgets
+     * @param context Current context
+     * @param state enabled or disabled
+     */
     public static void setConnected(final Context context, final boolean state) {
         isConnect = state;
         if (state) {
@@ -141,6 +149,10 @@ public class ShareResource extends AppCompatActivity {
         }
     }
 
+    /**
+     * Connect to master device
+     * @param view Current view
+     */
     public void clickSRconnect(View view) {
         Log.d(TAG, "clickconnect " + isConnect);
         if (!isConnect) {

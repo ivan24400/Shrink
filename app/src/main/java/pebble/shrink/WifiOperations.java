@@ -48,7 +48,6 @@ public class WifiOperations {
 
     public static void setWifiApSsid(String ssid) {
         Log.d(TAG, "setwifissis " + ssid);
-        if (getWifiApState != null) {
             if(manager == null){
                 manager = (WifiManager) activity.getBaseContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
             }
@@ -62,7 +61,6 @@ public class WifiOperations {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
     }
 
     public static void setWifiApEnabled(boolean state) {
@@ -71,6 +69,9 @@ public class WifiOperations {
             manager = (WifiManager) activity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         }
         try {
+            if((int)getWifiApState.invoke(manager) % 10 == WifiManager.WIFI_STATE_DISABLED && !state){
+                return;
+            }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 activity.runOnUiThread(new Runnable() {
                     @Override
@@ -86,6 +87,9 @@ public class WifiOperations {
                     }
                 });
             } else {
+               if((int)getWifiApState.invoke(manager) % 10 == WifiManager.WIFI_STATE_ENABLED && state){
+                   setWifiApEnabled.invoke(manager, configuration, false);
+               }
                 boolean ret = (Boolean) setWifiApEnabled.invoke(manager, configuration, state);
                 if (!ret) {
                     activity.runOnUiThread(new Runnable() {
@@ -116,7 +120,7 @@ public class WifiOperations {
                             if (configuration != null) {
                                 manager.removeNetwork(configuration.networkId);
                             }
-                            if(manager.setWifiEnabled(false)) {
+                            if(!manager.setWifiEnabled(false)) {
                                 activity.runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
@@ -128,7 +132,7 @@ public class WifiOperations {
                     } else {
                         isMaster = false;
                         if (!manager.isWifiEnabled()) {
-                            if(manager.setWifiEnabled(true)){
+                            if(!manager.setWifiEnabled(true)){
                                 activity.runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
@@ -164,6 +168,9 @@ public class WifiOperations {
         }
     }
 
+    /**
+     * @return is connected to master device
+     */
     public static boolean isConnected(){
         if(manager != null){
             if(manager.getConnectionInfo().getSSID().contains("SHRINK")){
@@ -175,6 +182,9 @@ public class WifiOperations {
         return false;
     }
 
+    /**
+     * Shutdown wifi or wifiAP
+     */
     public static void stop() {
         Log.d(TAG, "stop " + isMaster);
         if (manager != null) {

@@ -17,6 +17,7 @@ public class DataTransfer {
 
     private static FileInputStream inputFile;
     private static FileOutputStream outputFile;
+    private static String inputFileName,outputFileName;
 
     private static int readBytes = 0;
 
@@ -27,8 +28,17 @@ public class DataTransfer {
 
     private static byte[] buffer = new byte[BUFFER_SIZE];
 
+    /**
+     * Initialize input and output files
+     * @param isMaster is master or slave mode
+     * @param input input file name
+     * @param output output file name
+     * @throws IOException
+     */
     public static void initFiles(final boolean isMaster, final String input, final String output) throws IOException {
         Log.d(TAG, "input " + input + ", output " + output + " ismaster " + WifiOperations.isMaster);
+        inputFileName = input;
+        outputFileName = output;
         if (isMaster) {
             inputFile = new FileInputStream(input);
             outputFile = new FileOutputStream(output, true);
@@ -43,6 +53,12 @@ public class DataTransfer {
         }
     }
 
+    /**
+     * Send data from file to given output stream
+     * @param size number of bytes to send
+     * @param out stream to send data
+     * @throws IOException
+     */
     public synchronized static void transferChunk(long size, OutputStream out) throws IOException {
         Log.d(TAG, "transferChunk " + size);
         if (out == null || size == 0) {
@@ -60,6 +76,12 @@ public class DataTransfer {
         }
     }
 
+    /**
+     * Receive data from given stream
+     * @param size number of bytes to receive
+     * @param in stream to receive data from
+     * @throws IOException
+     */
     public synchronized static void receiveChunk(long size, InputStream in) throws IOException {
         Log.d(TAG, "receive Chunk " + size);
 
@@ -81,6 +103,9 @@ public class DataTransfer {
         Log.d(TAG, "receive Chunk end " + size);
     }
 
+    /**
+     * Close input and output file streams
+     */
     public static void releaseFiles() {
         try {
             if (inputFile != null) {
@@ -94,9 +119,12 @@ public class DataTransfer {
         }
     }
 
+    /**
+     * Delete input and output files
+     */
     public static void deleteFiles() {
         releaseFiles();
-        return;/*
+        /*
            if( (new File(inputFileName)).delete() || (new File(outputFileName)).delete() ){
                Log.d(TAG,"Delete success");
            }else{

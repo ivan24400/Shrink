@@ -51,16 +51,14 @@ public class SlaveDeviceService extends Service {
 
         // hb port
         shift = 24;
-        while(shift >= 0){
-            buffer[i++] = (byte)((hbPort >> shift) & 0xFF);
+        while (shift >= 0) {
+            buffer[i++] = (byte) ((hbPort >> shift) & 0xFF);
             shift = shift - 8;
         }
 
         out.write(buffer, 0, DataTransfer.HEADER_SIZE + 4);
         out.flush();
         Log.d(TAG, "sent: " + Arrays.toString(buffer));
-
-
     }
 
     @Override
@@ -75,7 +73,7 @@ public class SlaveDeviceService extends Service {
                         @Override
                         public void run() {
                             Intent intent1 = new Intent(SlaveDeviceService.this, ShareResource.class);
-                            NotificationUtils.startNotification(SlaveDeviceService.this, intent1);
+                            NotificationUtils.initNotification(SlaveDeviceService.this, intent1);
                         }
                     });
 
@@ -86,11 +84,12 @@ public class SlaveDeviceService extends Service {
                                 try {
                                     hbOut.write(DataTransfer.READY);
                                     hbOut.flush();
-                                    Log.d(TAG,"master alive");
-                               } catch (IOException e) {
-                                  Log.d(TAG,"master dead");
+                                    Log.d(TAG, "master alive");
+                                } catch (IOException e) {
+                                    Log.d(TAG, "master dead");
                                     e.printStackTrace();
-                               }
+                                    stop();
+                                }
                             }
                         }
                     };
@@ -103,20 +102,19 @@ public class SlaveDeviceService extends Service {
                     try {
                         slaveHeart = new ServerSocket(0);
                         hbPort = slaveHeart.getLocalPort();
-                        Log.d(TAG,"hbPort "+hbPort);
+                        Log.d(TAG, "hbPort " + hbPort);
                         slave = new Socket(addr, port);
                         in = slave.getInputStream();
                         out = slave.getOutputStream();
 
                         SlaveDeviceService.batteryClass = ShareResource.mpriority.getSelectedItemPosition() == 0 ? 'B' : 'A';
-                        Log.d(TAG,"freespace: "+ShareResource.mfreeSpace.getText().toString().trim().replace("\"",""));
-                        SlaveDeviceService.freeSpace = Long.parseLong(ShareResource.mfreeSpace.getText().toString().trim().replace("\"",""));
+                        Log.d(TAG, "freespace: " + ShareResource.mfreeSpace.getText().toString().trim().replace("\"", ""));
+                        SlaveDeviceService.freeSpace = Long.parseLong(ShareResource.mfreeSpace.getText().toString().trim().replace("\"", ""));
 
                         initMetaData();
 
-
                         master = slaveHeart.accept();
-                        Log.d(TAG,"master hb connected "+master.toString());
+                        Log.d(TAG, "master hb connected " + master.toString());
                         hbOut = master.getOutputStream();
 
                         executer = Executors.newSingleThreadScheduledExecutor();
@@ -125,9 +123,7 @@ public class SlaveDeviceService extends Service {
                         e.printStackTrace();
                     }
 
-
-
-// Receiving allocated space and algorithm type
+                    // Receiving allocated space and algorithm type
                     in.read(buffer, 0, DataTransfer.HEADER_SIZE);
                     Log.d(TAG, "read: " + Arrays.toString(buffer));
 
@@ -147,7 +143,9 @@ public class SlaveDeviceService extends Service {
                         algorithm = CompressionUtils.DEFLATE;
                     }
                     Log.d(TAG, "Allocated Space is " + Long.toString(allocatedSpace) + " algorithm is " + algorithm + " islast chunk " + isLastChunk);
-
+                    if (allocatedSpace < 1) {
+                        throw new IOException("Invalid allocatedSpace value");
+                    }
                     DataTransfer.initFiles(false, ShareResource.tmpc_file, ShareResource.tmp_file);
 
                     Log.d(TAG, "receiving data");
@@ -170,7 +168,9 @@ public class SlaveDeviceService extends Service {
 
                     Log.d(TAG, "compressing file");
                     // Compress chunk
-                    CompressionUtils.compress(algorithm, isLastChunk, ShareResource.tmp_file);
+                    if (CompressionUtils.compress(algorithm, isLastChunk, ShareResource.tmp_file) != 0) {
+                        throw new IOException("Compression failed");
+                    }
 
                     // Send compressed size to master device.
                     compressedSize = (new File(ShareResource.tmpc_file)).length();
@@ -196,9 +196,7 @@ public class SlaveDeviceService extends Service {
                     // Send compressed output to master
                     DataTransfer.transferChunk(compressedSize, out);
 
-                    in.read();
-
-                    DataTransfer.deleteFiles();
+                    in.read(); //READY signal
 
                     // End of process
                     slave.close();
@@ -211,30 +209,38 @@ public class SlaveDeviceService extends Service {
                         e1.printStackTrace();
                     }
                 } finally {
-                    WifiOperations.setWifiEnabled(false);
-                    ShareResource.handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            NotificationUtils.updateNotification(SlaveDeviceService.this.getString(R.string.completed));
-                        }
-                    });
-                    try {
-                        if(executer != null) {
-                            executer.shutdownNow();
-                            executer.awaitTermination(3, TimeUnit.SECONDS);
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-
-                    stopForeground(false);
-                    stopSelf();
+                    stop();
                 }
 
             }
         })).start();
 
         return START_NOT_STICKY;
+    }
+
+    /**
+     * Stop all operations
+     */
+    private void stop() {
+        WifiOperations.setWifiEnabled(false);
+        ShareResource.handler.post(new Runnable() {
+            @Override
+            public void run() {
+                NotificationUtils.updateNotification(getString(R.string.completed));
+            }
+        });
+        try {
+            if (executer != null) {
+                executer.shutdownNow();
+                executer.awaitTermination(3, TimeUnit.SECONDS);
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        DataTransfer.deleteFiles();
+        SlaveDeviceService.this.stopForeground(false);
+        SlaveDeviceService.this.stopSelf();
+
     }
 
     @Nullable

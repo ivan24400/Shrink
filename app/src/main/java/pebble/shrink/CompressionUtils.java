@@ -32,10 +32,28 @@ public class CompressionUtils {
     private static final int bufferSize = 4096;
     private static byte[] buffer = new byte[bufferSize];
 
+    /**
+     * Compress file using dcrz method
+     * @param append to either append or overwrite output file
+     * @param isLast used by slave device to specify if last chunk of input file
+     * @param input input file name
+     * @param output output file name
+     * @return error status
+     */
     private native static int dcrzCompress(boolean append, boolean isLast, String input, String output);
 
+    /**
+     * Decompress a dcrz compressed file
+     * @param input input file name
+     * @param output output file name
+     */
     private native static int dcrzDecompress(String input, String output);
 
+    /**
+     * Writes header information to output file of compression
+     * @param method compression method
+     * @param inFile name of file to write header
+     */
     public static void writeHeader(int method, String inFile) {
         File in = new File(inFile);
         try {
@@ -66,6 +84,13 @@ public class CompressionUtils {
         }
     }
 
+    /**
+     * Compress a file
+     * @param method compression method
+     * @param isLast is last chunk of the original file
+     * @param inFile file to be compressed
+     * @return error status
+     */
     public static int compress(int method, boolean isLast, String inFile) {
         StringBuilder outFile = new StringBuilder(inFile);
         outFile.append(".dcrz");
@@ -77,6 +102,12 @@ public class CompressionUtils {
         return -1;
     }
 
+    /**
+     * Decompress a dcrz file
+     * @param infile file to decompress
+     * @return error status
+     * @throws IOException
+     */
     public static int decompress(String infile) throws IOException {
         StringBuilder outFile = new StringBuilder(infile);
         outFile.delete(infile.length() - 5, infile.length());
@@ -98,11 +129,15 @@ public class CompressionUtils {
             return Deflate.decompressFile(infile, outFile.toString());
         } else if (algorithm == DCRZ) {
             return dcrzDecompress(infile, outFile.toString());
-        } else {
-            throw new IOException("Invalid File");
         }
+        return -1;
     }
 
+    /**
+     * Compute CRC32 of a file
+     * @param name file name whose crc32 has to generated
+     * @return crc32
+     */
     public static long computeCrc32(String name) {
         long crc = 1;
         try {
@@ -122,6 +157,12 @@ public class CompressionUtils {
         return crc;
     }
 
+    /**
+     * Compute CRC32 of a file
+     * @param file InputStream whose crc32 is to be generated
+     * @return crc32
+     * @throws IOException
+     */
     public static long computeCRC32(InputStream file) throws IOException{
         CRC32 obj = new CRC32();
         int cnt;

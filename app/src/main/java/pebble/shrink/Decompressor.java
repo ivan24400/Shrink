@@ -44,10 +44,18 @@ public class Decompressor extends AppCompatActivity {
 
     }
 
+    /**
+     * Enable or disable widget
+     * @param state enable or disable
+     */
     public static void setWidgetEnabled(boolean state) {
         decompress.setEnabled(state);
     }
 
+    /**
+     * Start decompression of dcrz file
+     * @param view Current view
+     */
     public void onClickDecompress(View view) {
         Intent intent = new Intent(this, CompressionService.class);
         intent.setAction(CompressionUtils.ACTION_DECOMPRESS_LOCAL);

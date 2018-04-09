@@ -25,7 +25,10 @@ public class DeviceOperations {
 
     public static ProgressDialog progress;
 
-
+    /**
+     * @param context Current context
+     * @return free space and battery class seperated by "::";
+     */
     public static String getDeviceInfo(Context context) {
 
         // Free space in Bytes
@@ -65,6 +68,12 @@ public class DeviceOperations {
         return Long.toString(freeSpace) + "::" + Character.toString(batteryClass);
     }
 
+    /**
+     * Display a progress dialog
+     * @param c Current context
+     * @param title title of dialog
+     * @param msg content of dialog
+     */
     public static void displayProgress(Context c, String title, String msg) {
         if (progress != null && progress.isShowing()) {
             progress.dismiss();
@@ -77,7 +86,9 @@ public class DeviceOperations {
                 });
     }
 
-
+    /**
+     * Removes progress dialog
+     */
     public static void removeProgress() {
         if (progress != null && progress.isShowing()) {
             progress.dismiss();

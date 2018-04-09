@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -47,6 +48,13 @@ public class CompressFile extends AppCompatActivity {
         setContentView(R.layout.compress_activity);
         handler = new Handler(Looper.getMainLooper());
 
+       if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+           if(!Settings.System.canWrite(this)){
+               Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
+               startActivity(intent);
+       }
+        }
+
         getSupportActionBar().setTitle(R.string.cf_title);
         getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
 
@@ -66,10 +74,14 @@ public class CompressFile extends AppCompatActivity {
         registerReceiver(wifiReceiver, intentFilter);
 
     }
-
+    /**
+     * Start compression algorithm either locally
+     * or in distributed way
+     * @param view Current view
+     */
     public void onClickCompress(View view) {
         if (fileToCompress != null) {
-            int method = spAlgorithm.getSelectedItemPosition();
+            int method = getAlgorithm();
 
             if (!swRemote.isChecked()) {
                 // If no devices are connected
@@ -97,23 +109,34 @@ public class CompressFile extends AppCompatActivity {
             Toast.makeText(this, "First choose a file !", Toast.LENGTH_SHORT).show();
         }
     }
-
+    /**
+     * Return user selected algorithm
+     * @return algorithm
+     */
     public static int getAlgorithm() {
         return spAlgorithm.getSelectedItemPosition();
     }
 
+    /**
+     * Start/stop distributed compression service
+     * @param view Current view
+     */
     public void onClickReceiverSwitch(View view) {
         Intent tintent = new Intent(this, DistributorService.class);
-        tintent.putExtra(CompressionUtils.cmethod, spAlgorithm.getSelectedItemPosition());
+        tintent.putExtra(CompressionUtils.cmethod, getAlgorithm());
 
         if (((Switch) view).isChecked()) {
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                ((Switch) view).setChecked(true);
+                ((Switch) view).setChecked(false);
                 Toast.makeText(this, getString(R.string.err_os_not_supported), Toast.LENGTH_SHORT).show();
                 return;
             }
-
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                if(!Settings.System.canWrite(this)){
+                    NotificationUtils.permErrorDialog(CompressFile.this);
+                }
+            }
             tintent.setAction(DistributorService.ACTION_START_FOREGROUND);
             startService(tintent);
 
@@ -126,11 +149,22 @@ public class CompressFile extends AppCompatActivity {
         }
     }
 
+    /**
+     * Starts a file chooser
+     * @param view Current view
+     */
     public void onClickChooseFile(View view) {
         Intent intent = new Intent(this, FileChooser.class);
         startActivityForResult(intent, FILE_CHOOSE_REQUEST);
     }
 
+    /**
+     * When user optionally selects a file
+     * from the file chooser
+     * @param requestCode custom code to verify file choose operation
+     * @param resultCode is a file selected
+     * @param intent result of file chooser activity
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         if (requestCode == FILE_CHOOSE_REQUEST) {
@@ -152,6 +186,11 @@ public class CompressFile extends AppCompatActivity {
         }
     }
 
+    /**
+     * Represents total connected slave devices
+     * @param c Current context
+     * @param isIncrement to increment or decrement device count
+     */
     public static synchronized void updateDeviceCount(final Context c, final boolean isIncrement) {
         if (isIncrement) {
             deviceCount++;
@@ -177,6 +216,10 @@ public class CompressFile extends AppCompatActivity {
 
     }
 
+    /**
+     * Enable or disable widgets
+     * @param state to enable or disable
+     */
     public static void setWidgetEnabled(boolean state) {
         btCompress.setEnabled(state);
     }
