@@ -13,8 +13,16 @@
         android:text="FileName: NA" />
 
     <Button
+        android:id="@+id/btDFchooseFile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
         android:layout_gravity="center"
-        android:id="@+id/btnDecompress"
+        android:text="@string/cf_choose_file" />
+
+    <Button
+        android:layout_gravity="center"
+        android:id="@+id/btDFdecompress"
         android:layout_width="wrap_content"
         android:layout_marginTop="20dp"
         android:layout_height="wrap_content"

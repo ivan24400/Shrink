@@ -16,7 +16,6 @@ public class WifiScanner extends BroadcastReceiver {
 
     private static final String TAG = "WifiScanner";
 
-
     @Override
     public void onReceive(final Context context, Intent intent) {
 
@@ -81,10 +80,10 @@ public class WifiScanner extends BroadcastReceiver {
                             context.startService(dintent);
 
                         }
-                    } else {
-                        ShareResource.setConnected(context, false);
-                        Log.d("WifiScanner", "Wifi Disconnected");
                     }
+                }else {
+                    ShareResource.setConnected(context, false);
+                    Log.d("WifiScanner", "Wifi Disconnected");
                 }
                 break;
         }

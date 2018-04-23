@@ -58,7 +58,7 @@ public class CompressionService extends Service {
                         }
                     });
                     stopForeground(false);
-                    stopSelf();
+                    //stopSelf();
                 }
             })).start();
 
@@ -105,7 +105,7 @@ public class CompressionService extends Service {
                         });
                     }
                     stopForeground(false);
-                    stopSelf();
+                    //stopSelf();
                 }
             })).start();
         }

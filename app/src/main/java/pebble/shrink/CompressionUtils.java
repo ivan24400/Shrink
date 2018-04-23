@@ -1,6 +1,7 @@
 package pebble.shrink;
 
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -17,17 +18,19 @@ import java.io.IOException;
 public class CompressionUtils {
     private static String TAG = "CompressionUtils";
 
+    public static final int ERR_INVALID_CRC = -24000;
     public static final int DEFLATE = 0;
     public static final int DCRZ = 1;
     public static final byte MASK_LAST_CHUNK = (byte) 0x80;
 
     public static final String cmethod = "COMPRESSION_METHOD";
     public static final String cfile = "COMPRESSION_FILE";
-
+    public static long crc = 0;
     public static boolean isLocal = false;
 
     public static final String ACTION_COMPRESS_LOCAL = "compressionUtils_compress_local";
     public static final String ACTION_DECOMPRESS_LOCAL = "compressionUtils_decompress_local";
+
 
     private static final int bufferSize = 4096;
     private static byte[] buffer = new byte[bufferSize];
@@ -64,7 +67,7 @@ public class CompressionUtils {
             outFile.append(".dcrz");
             FileOutputStream out = new FileOutputStream(outFile.toString());
 
-            long crc = computeCrc32(inFile);
+            crc = computeCrc32(inFile);
 
             if (method == DEFLATE) {
                 out.write(CompressionUtils.DEFLATE);
@@ -109,28 +112,45 @@ public class CompressionUtils {
      * @throws IOException
      */
     public static int decompress(String infile) throws IOException {
+        int result=-24;
+
         StringBuilder outFile = new StringBuilder(infile);
         outFile.delete(infile.length() - 5, infile.length());
+        String outFileExt = outFile.substring(outFile.lastIndexOf("."));
+        String outFileName = outFile.substring(0,outFile.lastIndexOf("."));
+        String outFileNameT = outFileName;
 
-        if (new File(outFile.toString()).exists()) {
-            outFile.insert(outFile.lastIndexOf("."), "_1");
+        boolean isFileExist = true;
+        int count = 0;
+        while(isFileExist){
+            if (new File(outFileNameT + outFileExt).exists()) {
+                count++;
+                outFileNameT = outFileName + "_"+count;
+            }else{
+                isFileExist = false;
+            }
         }
+
         FileInputStream input = new FileInputStream(infile);
         int algorithm = input.read();
-        long crc = 0;
         int i = 0;
         while (i < 4) {
             crc = (crc << 8) | (long) input.read();
             i++;
         }
-        Log.d(TAG, "decompress crc = " + Long.toHexString(crc));
 
         if (algorithm == DEFLATE) {
-            return Deflate.decompressFile(infile, outFile.toString());
+            result = Deflate.decompressFile(infile, outFileNameT + outFileExt);
         } else if (algorithm == DCRZ) {
-            return dcrzDecompress(infile, outFile.toString());
+            result = dcrzDecompress(infile,outFileNameT + outFileExt);
         }
-        return -1;
+
+        long crcOutput = computeCrc32(outFileNameT + outFileExt);
+        Log.d(TAG, "decompress crc = " + Long.toHexString(crc)+"\tdecompress crcOutput = "+ Long.toHexString(crcOutput));
+        if(crc != crcOutput){
+            result = ERR_INVALID_CRC;
+        }
+        return result;
     }
 
     /**
@@ -149,7 +169,7 @@ public class CompressionUtils {
                 obj.update(buffer, 0, cnt);
             }
             crc = obj.getValue();
-            Log.d(TAG, "compress crc = " + Long.toHexString(crc));
+            Log.d(TAG, "compressUtils crc = " + Long.toHexString(crc));
             file.close();
         } catch (IOException e) {
             e.printStackTrace();

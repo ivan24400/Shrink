@@ -115,8 +115,8 @@ public class NotificationUtils {
      * Remove notification
      */
     public static void removeNotification() {
-        if (nmanager != null) {
-            nmanager.cancel(NOTIFICATION_ID);
+        if (service != null) {
+            service.stopSelf();
         }
     }
 
@@ -125,10 +125,10 @@ public class NotificationUtils {
      * @param c Current context
      */
 
-    public static void permErrorDialog(final Context c){
+    public static void errorDialog(final Context c, final String text){
         AlertDialog.Builder builder = new AlertDialog.Builder(c);
         builder.setTitle(c.getString(R.string.app_name))
-                .setMessage(c.getString(R.string.err_permission_denied))
+                .setMessage(text)
                 .setOnDismissListener(new DialogInterface.OnDismissListener() {
                     @Override
                     public void onDismiss(DialogInterface dialog) {

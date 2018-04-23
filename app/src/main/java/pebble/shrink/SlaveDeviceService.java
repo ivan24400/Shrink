@@ -239,7 +239,6 @@ public class SlaveDeviceService extends Service {
         }
         DataTransfer.deleteFiles();
         SlaveDeviceService.this.stopForeground(false);
-        SlaveDeviceService.this.stopSelf();
 
     }
 

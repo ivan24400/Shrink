@@ -93,7 +93,6 @@ public class CompressFile extends AppCompatActivity {
                 intent.putExtra(CompressionUtils.cfile, fileToCompress);
                 intent.setAction(CompressionUtils.ACTION_COMPRESS_LOCAL);
                 intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
                 startService(intent);
             } else {
                 // If one or more devices are connected
@@ -134,7 +133,7 @@ public class CompressFile extends AppCompatActivity {
             }
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
                 if(!Settings.System.canWrite(this)){
-                    NotificationUtils.permErrorDialog(CompressFile.this);
+                    NotificationUtils.errorDialog(CompressFile.this,getString(R.string.err_permission_denied));
                 }
             }
             tintent.setAction(DistributorService.ACTION_START_FOREGROUND);
@@ -155,6 +154,7 @@ public class CompressFile extends AppCompatActivity {
      */
     public void onClickChooseFile(View view) {
         Intent intent = new Intent(this, FileChooser.class);
+        intent.setAction(FileChooser.FILE_CHOOSER_ALL);
         startActivityForResult(intent, FILE_CHOOSE_REQUEST);
     }
 
@@ -194,7 +194,7 @@ public class CompressFile extends AppCompatActivity {
     public static synchronized void updateDeviceCount(final Context c, final boolean isIncrement) {
         if (isIncrement) {
             deviceCount++;
-        } else {
+        } else if(deviceCount > 0){
             deviceCount--;
             if (deviceCount == 0) {
                 setWidgetEnabled(true);
@@ -213,7 +213,6 @@ public class CompressFile extends AppCompatActivity {
 
             }
         });
-
     }
 
     /**

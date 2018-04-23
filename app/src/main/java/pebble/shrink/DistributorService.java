@@ -209,8 +209,6 @@ public class DistributorService extends Service {
             deviceList.clear();
             workerCount = 0;
             DistributorService.this.stopForeground(false);
-            DistributorService.this.stopSelf();
-
         } catch (Exception e) {
             e.printStackTrace();
         }

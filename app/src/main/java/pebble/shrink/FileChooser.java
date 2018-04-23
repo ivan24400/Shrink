@@ -15,6 +15,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -22,8 +23,13 @@ import java.util.List;
 
 public class FileChooser extends ListActivity {
 
+    public static final String FILE_CHOOSER_DCRZ = "pebble.shrink.FileChooser.dcrz";
+    public static final String FILE_CHOOSER_ALL = "pebble.shrink.FileChooser.all";
+    public static final String FILE_CHOOSER_MODE = "pebble.shrink.FileChooser.mode";
+
     private static final String TAG = "FileChooser";
     private File dir;
+    private boolean isDcrzOnly = false;
     private static final String homePath = Environment.getExternalStorageDirectory().getAbsolutePath();
     private ArrayList<File> files;
     private FileChooserListAdapter adapter;
@@ -39,8 +45,8 @@ public class FileChooser extends ListActivity {
         ((ViewGroup) getListView().getParent()).addView(emptyView);
         getListView().setEmptyView(emptyView);
 
+        isDcrzOnly = getIntent().getAction().equals(FILE_CHOOSER_DCRZ);
         dir = new File(homePath);
-
         files = new ArrayList<>();
 
         adapter = new FileChooserListAdapter(this, files);
@@ -60,8 +66,22 @@ public class FileChooser extends ListActivity {
     private void refreshFileList() {
         files.clear();
 
-        File[] tmpFiles = dir.listFiles();
-
+        File[] tmpFiles;
+        if(isDcrzOnly) {
+            tmpFiles =  dir.listFiles(new FileFilter() {
+                @Override
+                public boolean accept(File pathname) {
+                    if(pathname.isDirectory()){
+                        return true;
+                    }else if(pathname.getName().matches(".*\\.dcrz")){
+                        return true;
+                    }
+                    return false;
+                }
+            });
+        }else {
+            tmpFiles = dir.listFiles();
+        }
         if (tmpFiles != null && tmpFiles.length > 0) {
             for (File f : tmpFiles) {
                 if (f.isHidden()) {
