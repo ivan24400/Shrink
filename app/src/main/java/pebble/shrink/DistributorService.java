@@ -28,7 +28,7 @@ public class DistributorService extends Service {
     private static final int MAX_DEVICES_COUNT = 9;
     private static int workerCount = 0;
     private static ServerSocket server;
-    private static ExecutorService executor = Executors.newFixedThreadPool(MAX_DEVICES_COUNT);
+    private static ExecutorService executor;
 
     public static List<MasterDevice> deviceList = new LinkedList<>();
 
@@ -89,6 +89,7 @@ public class DistributorService extends Service {
                             }
                         });
 
+                        executor = Executors.newFixedThreadPool(MAX_DEVICES_COUNT);
                         while (true) {
                             Socket client = server.accept();
                             CompressFile.updateDeviceCount(DistributorService.this, true);
@@ -98,15 +99,9 @@ public class DistributorService extends Service {
                             deviceList.add(masterDevice);
                             executor.execute(masterDevice);
                         }
-                    } catch (Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    CompressFile.handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            NotificationUtils.updateNotification(DistributorService.this.getString(R.string.completed));
-                        }
-                    });
                     stop();
                     Log.d(TAG, "after executor shutdown");
                 }
@@ -189,6 +184,12 @@ public class DistributorService extends Service {
      */
     public synchronized void stop() {
         WifiOperations.stop();
+        CompressFile.handler.post(new Runnable() {
+            @Override
+            public void run() {
+                NotificationUtils.updateNotification(DistributorService.this.getString(R.string.completed));
+            }
+        });
         DataTransfer.releaseFiles();
         try {
             if (server != null && !server.isClosed()) {

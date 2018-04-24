@@ -22,7 +22,7 @@ public class DataTransfer {
     private static int readBytes = 0;
 
     public static final int READY = 1;
-    public static final int HEARTBEAT_TIMEOUT = 3000;
+    public static final int HEARTBEAT_TIMEOUT = 1000;
     public static final int BUFFER_SIZE = 4096;
     public static final int HEADER_SIZE = 9; // freeSpace = 8, battery = 1 && allocatedSpace = 8, algorithm = 1
 

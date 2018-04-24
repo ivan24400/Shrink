@@ -100,6 +100,9 @@ public class NotificationUtils {
      * @param content text
      */
     public static void updateNotification(String content) {
+        if(service == null){
+            return;
+        }
         Notification not = null;
         if (content.equals(service.getString(R.string.completed))) {
             not = createNotification(content);

@@ -198,12 +198,6 @@ public class CompressFile extends AppCompatActivity {
             deviceCount--;
             if (deviceCount == 0) {
                 setWidgetEnabled(true);
-                CompressFile.handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        CompressFile.swRemote.setChecked(false);
-                    }
-                });
             }
         }
         CompressFile.handler.post(new Runnable() {

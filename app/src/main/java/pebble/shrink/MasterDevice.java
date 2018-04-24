@@ -104,7 +104,6 @@ public class MasterDevice implements Runnable {
 
         // Receiving metadata
         in.read(buffer, 0, DataTransfer.HEADER_SIZE + 4);
-        Log.d(TAG, "read: " + Arrays.toString(buffer));
 
         // Read Free Space
         int i = 0; // free space base
@@ -124,14 +123,14 @@ public class MasterDevice implements Runnable {
         Log.d(TAG, "free space " + Long.toString(freeSpace) + " , battery " + battery+ ", port "+hbPort);
 
         slave = new Socket(master.getInetAddress(),hbPort);
-        slave.setSoTimeout(DataTransfer.HEARTBEAT_TIMEOUT+2000);
+        slave.setSoTimeout(DataTransfer.HEARTBEAT_TIMEOUT);
 
         Runnable hb = new Runnable() {
             @Override
             public void run() {
                try {
                     if(slave != null) {
-                        Log.d(TAG,"slave alive "+slave.isConnected());
+                        Log.d(TAG,Thread.currentThread().getName()+"slave alive "+slave.isConnected());
 
                         if(slave.getInputStream().read() < 0){
                             throw new IOException("slave died");

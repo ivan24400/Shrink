@@ -125,7 +125,6 @@ public class SlaveDeviceService extends Service {
 
                     // Receiving allocated space and algorithm type
                     in.read(buffer, 0, DataTransfer.HEADER_SIZE);
-                    Log.d(TAG, "read: " + Arrays.toString(buffer));
 
                     int i = 0;
                     while (i < 8) {
