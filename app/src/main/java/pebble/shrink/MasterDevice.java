@@ -6,10 +6,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.net.InetAddress;
 import java.net.Socket;
-import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -17,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 public class MasterDevice implements Runnable {
 
     private static final String TAG = "MasterDevice";
-
+    private String threadName;
     private long freeSpace;
     private long allocatedSpace;
     private long compressedSize;
@@ -60,8 +57,8 @@ public class MasterDevice implements Runnable {
         return battery;
     }
 
-    public int getRank() {
-        return rank;
+    public String getName() {
+        return threadName;
     }
 
     public void setRank(int r) {
@@ -77,7 +74,7 @@ public class MasterDevice implements Runnable {
      * @param thread Parent thread
      */
     public synchronized void notifyMe(Object thread) {
-        Log.d(TAG, "notify Me");
+        Log.d(TAG, threadName+": notify Me");
         isFileAvailable = true;
         masterSync = thread;
         synchronized (sync) {
@@ -130,7 +127,7 @@ public class MasterDevice implements Runnable {
             public void run() {
                try {
                     if(slave != null) {
-                        Log.d(TAG,Thread.currentThread().getName()+"slave alive "+slave.isConnected());
+                        Log.d(TAG,threadName+" slave alive "+slave.isConnected());
 
                         if(slave.getInputStream().read() < 0){
                             throw new IOException("slave died");
@@ -138,6 +135,7 @@ public class MasterDevice implements Runnable {
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
+                   DistributorService.deviceList.remove(MasterDevice.this);
                     try {
                         if(master != null) {
                             master.close();
@@ -167,7 +165,7 @@ public class MasterDevice implements Runnable {
         try {
             in = master.getInputStream();
             out = master.getOutputStream();
-
+            threadName = Thread.currentThread().getName();
             initMetaData();
 
             // Wait until previous devices send their data
@@ -202,7 +200,7 @@ public class MasterDevice implements Runnable {
 
             out.write(buffer, 0, DataTransfer.HEADER_SIZE);
             out.flush();
-            Log.d(TAG, "sent: " + Arrays.toString(buffer));
+            Log.d(TAG, threadName+" allocatedSpace: " +allocatedSpace);
 
 
             // Send File chunk
@@ -211,7 +209,7 @@ public class MasterDevice implements Runnable {
             synchronized (masterSync) {
                 masterSync.notify();
             }
-            Log.d(TAG, "send file chunk");
+            Log.d(TAG, threadName+"send file chunk");
 
             // Read Compressed Size
             in.read(buffer, 0, 8); // sizeof long
@@ -220,7 +218,7 @@ public class MasterDevice implements Runnable {
                 compressedSize = (compressedSize << 8) | (long) (buffer[i++] & 0xFF); // Big Endian
             }
             DistributorService.dcrWorker();
-            Log.d(TAG, "read compressed size " + compressedSize);
+            Log.d(TAG, threadName+": read compressed size " + compressedSize);
 
             // Wait until previous devices send their data
             synchronized (sync) {
@@ -231,7 +229,7 @@ public class MasterDevice implements Runnable {
                     }
                 }
             }
-            Log.d(TAG, "finished waiting");
+            Log.d(TAG,threadName+": receiving compressed chunk");
             out.write(DataTransfer.READY);
             out.flush();
 
@@ -243,7 +241,6 @@ public class MasterDevice implements Runnable {
             }
             out.write(DataTransfer.READY);
             out.flush();
-            Log.d(TAG, "receive compressed file chunk");
 
             // End of process
             master.close();
@@ -261,6 +258,7 @@ public class MasterDevice implements Runnable {
                 f.printStackTrace();
             }
         } finally {
+            Log.d(TAG,threadName+" done");
             TaskAllocation.list.remove(MasterDevice.this);
             try {
                 executor.shutdownNow();
@@ -277,6 +275,9 @@ public class MasterDevice implements Runnable {
                 });
             }
         }
-
+    }
+    @Override
+    public String toString(){
+        return threadName;
     }
 }

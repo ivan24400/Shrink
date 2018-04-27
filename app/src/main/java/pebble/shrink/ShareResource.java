@@ -154,7 +154,7 @@ public class ShareResource extends AppCompatActivity {
      * @param view Current view
      */
     public void clickSRconnect(View view) {
-        Log.d(TAG, "clickconnect " + isConnect);
+        Log.d(TAG, "clickconnect " + isConnect+" editText: "+Long.parseLong(mfreeSpace.getText().toString())+" freeSpace: "+SlaveDeviceService.freeSpace);
         if (!isConnect) {
             if (Long.parseLong(mfreeSpace.getText().toString()) > SlaveDeviceService.freeSpace) {
                 Toast.makeText(this, R.string.sr_err_maxspace, Toast.LENGTH_SHORT).show();

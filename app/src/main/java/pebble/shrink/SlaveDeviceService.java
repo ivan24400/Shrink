@@ -58,7 +58,7 @@ public class SlaveDeviceService extends Service {
 
         out.write(buffer, 0, DataTransfer.HEADER_SIZE + 4);
         out.flush();
-        Log.d(TAG, "sent: " + Arrays.toString(buffer));
+        Log.d(TAG, "freeSpace: " + freeSpace+" battery: "+batteryClass);
     }
 
     @Override
@@ -200,7 +200,7 @@ public class SlaveDeviceService extends Service {
                     // End of process
                     slave.close();
 
-                } catch (IOException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                     try {
                         slave.close();

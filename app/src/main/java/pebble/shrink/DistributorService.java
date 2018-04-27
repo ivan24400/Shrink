@@ -135,6 +135,7 @@ public class DistributorService extends Service {
                     if (deviceList.get(i).getAllocatedSpace() == 0) {
                         break;
                     } else {
+                        Log.d(TAG,i+": distributing to "+deviceList.get(i).getName());
                         deviceList.get(i).notifyMe(this);
                     }
                 }
@@ -154,6 +155,7 @@ public class DistributorService extends Service {
      * Receive compressed output from all slave devices
      */
     public synchronized static void gatherResults() {
+        Log.d(TAG,"gather results");
         CompressFile.handler.post(new Runnable() {
             @Override
             public void run() {
@@ -163,10 +165,11 @@ public class DistributorService extends Service {
         (new Thread(new Runnable() {
             @Override
             public void run() {
-                for (MasterDevice device : deviceList) {
+                for (MasterDevice device:deviceList) {
                     if (device.getAllocatedSpace() == 0) {
                         break;
                     } else {
+                        Log.d(TAG,":gathering from "+device.getName());
                         device.notifyMe(this);
                     }
                 }

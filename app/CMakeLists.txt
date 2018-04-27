@@ -11,3 +11,8 @@ add_library( dcrz SHARED
              src/main/cpp/mtf.c
              src/main/cpp/dcrzEncode.c
 )
+
+target_link_libraries(dcrz
+                    android
+                    log
+                    )

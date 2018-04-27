@@ -32,7 +32,7 @@ public class Decompressor extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.decompress_activity);
         handler = new Handler(Looper.getMainLooper());
-
+        filename = null;
         decompress = (Button) findViewById(R.id.btDFdecompress);
         chooseFile = (Button) findViewById(R.id.btDFchooseFile);
         tvFileName = (TextView) findViewById(R.id.tvDFfileName);
@@ -100,10 +100,14 @@ public class Decompressor extends AppCompatActivity {
      * @param view Current view
      */
     public void onClickDecompress(View view) {
-        Intent intent = new Intent(this, CompressionService.class);
-        intent.setAction(CompressionUtils.ACTION_DECOMPRESS_LOCAL);
-        intent.putExtra(CompressionUtils.cfile, filename);
-        startService(intent);
+        if(filename != null) {
+            Intent intent = new Intent(this, CompressionService.class);
+            intent.setAction(CompressionUtils.ACTION_DECOMPRESS_LOCAL);
+            intent.putExtra(CompressionUtils.cfile, filename);
+            startService(intent);
+        }else {
+            Toast.makeText(this, "First choose a file !", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override

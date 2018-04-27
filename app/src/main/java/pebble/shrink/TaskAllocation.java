@@ -10,7 +10,6 @@ public class TaskAllocation {
 
     private static long fileSize, fileSize_t;
     static List<MasterDevice> list;
-    private static int index = 0;
 
     private static final String TAG = "TaskAllocation";
 
@@ -27,7 +26,7 @@ public class TaskAllocation {
         list = DistributorService.deviceList;
 
         Collections.sort(list, new SortDevices());
-
+        Log.d(TAG,"AFter sorting: "+list.toString());
         for (int i = 0; i < list.size(); i++) {
             list.get(i).setRank(i);
             fileSize_t = fileSize_t + list.get(i).getFreeSpace();
@@ -38,15 +37,16 @@ public class TaskAllocation {
         }
 
         DistributorService.incrWorker();
-        for (; index < list.size(); index++) {
+        for (int index=0; index < list.size(); index++) {
             if ((fileSize - list.get(index).getFreeSpace()) <= 0) {
-                Log.d(TAG, "index " + index + " set allocated space " + fileSize);
+                Log.d(TAG, "index " + index + " final set allocated space " + fileSize);
                 list.get(index).setAllocatedSpace(fileSize);
                 list.get(index).setLastChunk(true);
                 return true;
             } else {
                 DistributorService.incrWorker();
-                list.get(index).setAllocatedSpace(fileSize - list.get(index).getFreeSpace());
+                Log.d(TAG, "index " + index + " set allocated space " + (list.get(index).getFreeSpace()));
+                list.get(index).setAllocatedSpace(list.get(index).getFreeSpace());
                 fileSize = fileSize - list.get(index).getFreeSpace();
             }
         }

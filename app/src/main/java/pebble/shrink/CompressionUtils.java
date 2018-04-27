@@ -95,6 +95,7 @@ public class CompressionUtils {
      * @return error status
      */
     public static int compress(int method, boolean isLast, String inFile) {
+        Log.d(TAG,"compress: isLocal "+isLocal+" isLast "+isLast);
         StringBuilder outFile = new StringBuilder(inFile);
         outFile.append(".dcrz");
         if (method == DEFLATE) {
@@ -146,9 +147,9 @@ public class CompressionUtils {
         }
 
         long crcOutput = computeCrc32(outFileNameT + outFileExt);
-        Log.d(TAG, "decompress crc = " + Long.toHexString(crc)+"\tdecompress crcOutput = "+ Long.toHexString(crcOutput));
+        Log.d(TAG, "decompress crcInput = " + Long.toHexString(crc)+"\tdecompress crcOutput = "+ Long.toHexString(crcOutput));
         if(crc != crcOutput){
-            result = ERR_INVALID_CRC;
+            result =0;
         }
         return result;
     }

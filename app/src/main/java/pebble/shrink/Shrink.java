@@ -33,7 +33,7 @@ public class Shrink extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.shrink_activity);
-
+        Log.d(TAG,"before check");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             String[] permissions = new String[3];
             int i = 0;
@@ -48,6 +48,7 @@ public class Shrink extends AppCompatActivity {
                 ActivityCompat.requestPermissions(Shrink.this, permissions, MULTI_PERMISSION_GROUP_ID);
             }
         }
+        Log.d(TAG,"after check");
         btCompress = (Button) findViewById(R.id.btScompress);
         btCompress.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -73,6 +74,8 @@ public class Shrink extends AppCompatActivity {
                 });
             }
         });
+        Log.d(TAG,"last line");
+
     }
 
     /**
@@ -105,9 +108,11 @@ public class Shrink extends AppCompatActivity {
         switch (requestCode) {
             case MULTI_PERMISSION_GROUP_ID:
                 Log.d(TAG, "granted permissions: " + Arrays.toString(grantResults));
-                for (int perm : grantResults) {
-                    if (perm == PackageManager.PERMISSION_DENIED) {
-                        NotificationUtils.errorDialog(Shrink.this, getString(R.string.err_permission_denied));
+                if(grantResults != null) {
+                    for (int perm : grantResults) {
+                        if (perm == PackageManager.PERMISSION_DENIED) {
+                            NotificationUtils.errorDialog(Shrink.this, getString(R.string.err_permission_denied));
+                        }
                     }
                 }
         }

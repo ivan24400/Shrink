@@ -59,17 +59,17 @@ public class DataTransfer {
      * @param out stream to send data
      * @throws IOException
      */
-    public synchronized static void transferChunk(long size, OutputStream out) throws IOException {
+    public synchronized static void transferChunk(long size, OutputStream out) throws IOException,ArrayIndexOutOfBoundsException {
         Log.d(TAG, "transferChunk " + size);
-        if (out == null || size == 0) {
+        if (out == null || size == 0 || inputFile == null) {
             return;
         }
-        if (size < BUFFER_SIZE) {
-            inputFile.read(buffer, 0, (int) size);
-            return;
-        }
-        while (size != 0) {
-            readBytes = inputFile.read(buffer, 0, BUFFER_SIZE);
+        while (size > 0) {
+            if(size >= BUFFER_SIZE){
+                readBytes = inputFile.read(buffer, 0, BUFFER_SIZE);
+            }else{
+                readBytes = inputFile.read(buffer, 0, (int)size);
+            }
             out.write(buffer, 0, readBytes);
             out.flush();
             size = size - readBytes;
@@ -82,7 +82,7 @@ public class DataTransfer {
      * @param in stream to receive data from
      * @throws IOException
      */
-    public synchronized static void receiveChunk(long size, InputStream in) throws IOException {
+    public synchronized static void receiveChunk(long size, InputStream in) throws IOException,ArrayIndexOutOfBoundsException {
         Log.d(TAG, "receive Chunk " + size);
 
         if (in == null || size == 0) {
@@ -93,14 +93,12 @@ public class DataTransfer {
             outputFile.write(buffer, 0, readBytes);
             return;
         }
-        while (size != 0) {
+        while (size > 0) {
             readBytes = in.read(buffer, 0, BUFFER_SIZE);
             outputFile.write(buffer, 0, readBytes);
             outputFile.flush();
             size = size - readBytes;
-            Log.d(TAG, "receive Chunk end " + size);
         }
-        Log.d(TAG, "receive Chunk end " + size);
     }
 
     /**
