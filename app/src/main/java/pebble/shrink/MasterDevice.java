@@ -1,7 +1,9 @@
 package pebble.shrink;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,11 +21,11 @@ public class MasterDevice implements Runnable {
     private long allocatedSpace;
     private long compressedSize;
     private char battery;
-    private int rank;
     private int hbPort;
     private boolean ishbClose = false;
 
     private boolean isFileAvailable = false;
+    private boolean isOperationOn = false;
     private Context context;
     private Object sync, masterSync;
 
@@ -61,9 +63,6 @@ public class MasterDevice implements Runnable {
         return threadName;
     }
 
-    public void setRank(int r) {
-        rank = r;
-    }
 
     public void setLastChunk(boolean state) {
         isLastChunk = state;
@@ -118,7 +117,9 @@ public class MasterDevice implements Runnable {
         }
 
         Log.d(TAG, "free space " + Long.toString(freeSpace) + " , battery " + battery+ ", port "+hbPort);
-
+        if(freeSpace <= 0 || battery >= 'C' || hbPort <= 0){
+            throw new IOException("Invalid values");
+        }
         slave = new Socket(master.getInetAddress(),hbPort);
         slave.setSoTimeout(DataTransfer.HEARTBEAT_TIMEOUT);
 
@@ -177,7 +178,7 @@ public class MasterDevice implements Runnable {
                     }
                 }
             }
-
+            isOperationOn = true;
             // Sending meta data
             int i = 0;
             int shift = 56;
@@ -218,7 +219,6 @@ public class MasterDevice implements Runnable {
                 compressedSize = (compressedSize << 8) | (long) (buffer[i++] & 0xFF); // Big Endian
             }
             DistributorService.dcrWorker();
-            Log.d(TAG, threadName+": read compressed size " + compressedSize);
 
             // Wait until previous devices send their data
             synchronized (sync) {
@@ -229,7 +229,7 @@ public class MasterDevice implements Runnable {
                     }
                 }
             }
-            Log.d(TAG,threadName+": receiving compressed chunk");
+            Log.d(TAG,threadName+": receiving compressed chunk: "+compressedSize);
             out.write(DataTransfer.READY);
             out.flush();
 
@@ -257,9 +257,20 @@ public class MasterDevice implements Runnable {
             } catch (IOException f) {
                 f.printStackTrace();
             }
+
+            if(isOperationOn && DistributorService.isDistributorActive){
+                CompressFile.handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(context,context.getString(R.string.err_device_failed),Toast.LENGTH_SHORT).show();
+                    }
+                });
+                Intent tintent = new Intent(context,DistributorService.class);
+                tintent.setAction(DistributorService.ACTION_STOP_FOREGROUND);
+                context.startService(tintent);
+            }
         } finally {
             Log.d(TAG,threadName+" done");
-            TaskAllocation.list.remove(MasterDevice.this);
             try {
                 executor.shutdownNow();
                 executor.awaitTermination(3,TimeUnit.SECONDS);
@@ -274,6 +285,7 @@ public class MasterDevice implements Runnable {
                     }
                 });
             }
+
         }
     }
     @Override

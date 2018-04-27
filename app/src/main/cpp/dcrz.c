@@ -22,7 +22,11 @@ JNIEXPORT jint JNICALL Java_pebble_shrink_CompressionUtils_dcrzCompress
 
     int error = 0;
     isLastChunk = isLast;
+
     in = fopen(input, "rb");
+    logFile = fopen("/sdcard/shrink.txt","w");
+    fprintf(logFile,"isLastChunk: %d\n",isLastChunk);
+
     MY_MALLOC(ibuffer, uint8_t*, BUFFER_SIZE, sizeof(uint8_t))
     if (append) {
         out = fopen(output, "ab");
@@ -43,6 +47,7 @@ JNIEXPORT jint JNICALL Java_pebble_shrink_CompressionUtils_dcrzCompress
     MY_FREE(ibuffer);
     fclose(in);
     fclose(out);
+    fclose(logFile);
     if(!error){
         remove(output);
     }

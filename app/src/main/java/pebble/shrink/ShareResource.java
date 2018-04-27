@@ -131,8 +131,9 @@ public class ShareResource extends AppCompatActivity {
 
     /**
      * Modifiy enabled status of widgets
+     *
      * @param context Current context
-     * @param state enabled or disabled
+     * @param state   enabled or disabled
      */
     public static void setConnected(final Context context, final boolean state) {
         isConnect = state;
@@ -151,13 +152,18 @@ public class ShareResource extends AppCompatActivity {
 
     /**
      * Connect to master device
+     *
      * @param view Current view
      */
     public void clickSRconnect(View view) {
-        Log.d(TAG, "clickconnect " + isConnect+" editText: "+Long.parseLong(mfreeSpace.getText().toString())+" freeSpace: "+SlaveDeviceService.freeSpace);
         if (!isConnect) {
-            if (Long.parseLong(mfreeSpace.getText().toString()) > SlaveDeviceService.freeSpace) {
+            if (mfreeSpace.getText().toString().isEmpty()) {
                 Toast.makeText(this, R.string.sr_err_maxspace, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (Long.parseLong(mfreeSpace.getText().toString()) == 0 || Long.parseLong(mfreeSpace.getText().toString()) > SlaveDeviceService.freeSpace) {
+                    Toast.makeText(this, R.string.sr_err_maxspace, Toast.LENGTH_SHORT).show();
+
             } else {
                 DeviceOperations.displayProgress(ShareResource.this, getString(R.string.p_title), getString(R.string.p_scanning));
                 (new Thread(new Runnable() {
@@ -167,6 +173,7 @@ public class ShareResource extends AppCompatActivity {
                     }
                 })).start();
             }
+
         } else {
             // Disconnect
             WifiOperations.setWifiEnabled(false);

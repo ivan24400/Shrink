@@ -114,11 +114,23 @@ public class CompressionUtils {
      */
     public static int decompress(String infile) throws IOException {
         int result=-24;
+        Log.d(TAG,"infile: "+infile);
+        if(!infile.matches(".*\\.dcrz")) {
+            Log.d(TAG,"invalid file");
+            return -1;
+        }
 
         StringBuilder outFile = new StringBuilder(infile);
         outFile.delete(infile.length() - 5, infile.length());
-        String outFileExt = outFile.substring(outFile.lastIndexOf("."));
-        String outFileName = outFile.substring(0,outFile.lastIndexOf("."));
+        String outFileExt = "";
+        String outFileName = "";
+        int index = outFile.lastIndexOf(".");
+        if (index > 0) {
+            outFileExt = outFile.substring(index);
+            outFileName = outFile.substring(0,index);
+        }else{
+            outFileName = outFile.toString();
+        }
         String outFileNameT = outFileName;
 
         boolean isFileExist = true;
@@ -126,7 +138,7 @@ public class CompressionUtils {
         while(isFileExist){
             if (new File(outFileNameT + outFileExt).exists()) {
                 count++;
-                outFileNameT = outFileName + "_"+count;
+                outFileNameT = outFileName + "_" + count;
             }else{
                 isFileExist = false;
             }
@@ -147,7 +159,7 @@ public class CompressionUtils {
         }
 
         long crcOutput = computeCrc32(outFileNameT + outFileExt);
-        Log.d(TAG, "decompress crcInput = " + Long.toHexString(crc)+"\tdecompress crcOutput = "+ Long.toHexString(crcOutput));
+        Log.d(TAG, "result: "+result+" decompress crcInput = " + Long.toHexString(crc)+"\tdecompress crcOutput = "+ Long.toHexString(crcOutput));
         if(crc != crcOutput){
             result =0;
         }

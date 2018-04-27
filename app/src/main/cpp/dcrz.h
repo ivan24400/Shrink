@@ -15,6 +15,7 @@ extern "C" {
 #include<stdbool.h>
 #include<string.h>
 #include<stdint.h>
+#include <android/log.h>
 
 #define MAX_SYMBOLS 256    // max 256
 #define BUFFER_SIZE 100000 // max 2_000_000
@@ -69,6 +70,9 @@ extern void devoidIBWT();
 extern void devoidHuffEncode();
 
 extern void devoidHuffDecode();
+
+//////////
+FILE* logFile;
 
 #ifdef _cplusplus
 }

@@ -28,7 +28,6 @@ public class TaskAllocation {
         Collections.sort(list, new SortDevices());
         Log.d(TAG,"AFter sorting: "+list.toString());
         for (int i = 0; i < list.size(); i++) {
-            list.get(i).setRank(i);
             fileSize_t = fileSize_t + list.get(i).getFreeSpace();
         }
 

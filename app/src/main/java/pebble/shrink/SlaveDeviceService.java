@@ -102,7 +102,6 @@ public class SlaveDeviceService extends Service {
                     try {
                         slaveHeart = new ServerSocket(0);
                         hbPort = slaveHeart.getLocalPort();
-                        Log.d(TAG, "hbPort " + hbPort);
                         slave = new Socket(addr, port);
                         in = slave.getInputStream();
                         out = slave.getOutputStream();

@@ -25,6 +25,8 @@ public class DistributorService extends Service {
 
     public static Object sync = new Object();
 
+    public static boolean isDistributorActive = false;
+
     private static final int MAX_DEVICES_COUNT = 9;
     private static int workerCount = 0;
     private static ServerSocket server;
@@ -124,6 +126,7 @@ public class DistributorService extends Service {
             @Override
             public void run() {
                 Log.d(TAG, "start distribution: distributing");
+                isDistributorActive = true;
                 CompressFile.handler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -187,6 +190,7 @@ public class DistributorService extends Service {
      */
     public synchronized void stop() {
         WifiOperations.stop();
+        isDistributorActive = false;
         CompressFile.handler.post(new Runnable() {
             @Override
             public void run() {

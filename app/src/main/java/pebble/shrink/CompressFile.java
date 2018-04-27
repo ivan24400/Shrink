@@ -133,7 +133,10 @@ public class CompressFile extends AppCompatActivity {
             }
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
                 if(!Settings.System.canWrite(this)){
-                    NotificationUtils.errorDialog(CompressFile.this,getString(R.string.err_permission_denied));
+                    Toast.makeText(this,getString(R.string.err_permission_denied),Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
+                    startActivity(intent);
+                    return;
                 }
             }
             tintent.setAction(DistributorService.ACTION_START_FOREGROUND);

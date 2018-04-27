@@ -33,49 +33,43 @@ public class Shrink extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.shrink_activity);
-        Log.d(TAG,"before check");
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             String[] permissions = new String[3];
             int i = 0;
             if (ActivityCompat.checkSelfPermission(Shrink.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 permissions[i++] = Manifest.permission.ACCESS_COARSE_LOCATION;
             }
-            if (ActivityCompat.checkSelfPermission(Shrink.this, Manifest.permission_group.STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.checkSelfPermission(Shrink.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 permissions[i++] = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+            }
+            if (ActivityCompat.checkSelfPermission(Shrink.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 permissions[i++] = Manifest.permission.READ_EXTERNAL_STORAGE;
             }
-            if (permissions.length > 0) {
+            Log.d(TAG,"not granted is "+i);
+            if (i > 0) {
                 ActivityCompat.requestPermissions(Shrink.this, permissions, MULTI_PERMISSION_GROUP_ID);
             }
         }
-        Log.d(TAG,"after check");
         btCompress = (Button) findViewById(R.id.btScompress);
         btCompress.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                btCompress.setOnClickListener(new View.OnClickListener() {
+                AlertDialog.Builder builder = new AlertDialog.Builder(Shrink.this);
+                builder.setTitle("Choose mode");
+                builder.setItems(R.array.operation_mode, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(Shrink.this);
-                        builder.setTitle("Choose mode");
-                        builder.setItems(R.array.operation_mode, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                if (which == 0) {
-                                    onClickCompressFile();
-                                } else {
-                                    onClickDecompressFile();
-                                }
-                            }
-                        });
-                        builder.show();
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (which == 0) {
+                            onClickCompressFile();
+                        } else {
+                            onClickDecompressFile();
+                        }
                     }
                 });
+                builder.show();
             }
         });
-        Log.d(TAG,"last line");
-
     }
 
     /**
@@ -108,7 +102,7 @@ public class Shrink extends AppCompatActivity {
         switch (requestCode) {
             case MULTI_PERMISSION_GROUP_ID:
                 Log.d(TAG, "granted permissions: " + Arrays.toString(grantResults));
-                if(grantResults != null) {
+                if (grantResults != null) {
                     for (int perm : grantResults) {
                         if (perm == PackageManager.PERMISSION_DENIED) {
                             NotificationUtils.errorDialog(Shrink.this, getString(R.string.err_permission_denied));

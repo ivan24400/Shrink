@@ -25,7 +25,7 @@
     <string name="sr_server_ip">192.168.43.1</string>
     <string name="sr_tmp_file">temp.dat</string>
     <string name="sr_tmpc_file">temp.dat.dcrz</string>
-    <string name="sr_err_maxspace">Value should be less or equal to given freespace</string>
+    <string name="sr_err_maxspace">Invalid free space !</string>
     <string name="sr_ssid">SHRINK</string>
 
     <!-- NotificationUtils -->
@@ -64,6 +64,7 @@
     <string name="err_file_not_found">File not found !</string>
     <string name="err_dcmp_failed">Decompression Failed</string>
     <string name="err_cmp_failed">Compression Failed</string>
+    <string name="err_device_failed">A slave was disconnected !</string>
     <string name="err_permission_denied">Permission not granted !</string>
 
     <!-- Decompress -->
