@@ -42,13 +42,13 @@ int8_t dcrzEncode() {
 
         if (!(tbuffer1 = mtfEncode(ibuffer, symbolsRead))) {
             devoidEncode();
-            return 11;
+            return ERR_MTF_1;
         }
         devoidMTF();
 
         if (!(tbuffer2 = rleEncode(tbuffer1, symbolsRead))) {
             devoidEncode();
-            return 12;
+            return ERR_RLE_1;
         }
 
         if (utilizeRLE) {
@@ -59,32 +59,32 @@ int8_t dcrzEncode() {
 
         if (!(tbuffer1 = bwt(tbuffer2, rbufferIndex))) {
             devoidEncode();
-            return 13;
+            return ERR_BWT;
         }
         MY_FREE(tbuffer2);
 
         if (!(tbuffer2 = mtfEncode(tbuffer1, rbufferIndex + 3))) {
             devoidEncode();
-            return 14;
+            return ERR_MTF_2;
         }
         MY_FREE(tbuffer1);
 
 
         if (!(tbuffer1 = rleEncode(tbuffer2, rbufferIndex + 3))) {
             devoidEncode();
-            return 15;
+            return ERR_RLE_2;
         }
 
         if (!utilizeRLE) {
             if (!huffEncode(tbuffer2, rbufferIndex + 3)) {
                 devoidEncode();
-                return 16;
+                return ERR_HUFF;
             }
         } else {
             MY_FREE(tbuffer2);
             if (!huffEncode(tbuffer1, rbufferIndex)) {
                 devoidEncode();
-                return 17;
+                return ERR_HUFF;
             }
         }
 

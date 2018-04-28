@@ -33,11 +33,11 @@ int8_t dcrzDecode() {
     do {
         if (!(tbuffer1 = huffDecode())) {
             devoidDecode();
-            return 10;
+            return ERR_HUFF;
         }
         if (!(tbuffer2 = rleDecode(tbuffer1, symbolsRead))) {
             devoidDecode();
-            return 11;
+            return ERR_RLE_1;
         }
         if (utilizeRLE) {
             MY_FREE(tbuffer1);
@@ -47,14 +47,14 @@ int8_t dcrzDecode() {
 
         if (!(tbuffer1 = mtfDecode(tbuffer2, rbufferIndex))) {
             devoidDecode();
-            return 12;
+            return ERR_MTF_1;
         }
         devoidMTF();
         MY_FREE(tbuffer2);
 
         if (!(tbuffer2 = ibwt(tbuffer1, rbufferIndex))) {
             devoidDecode();
-            return 13;
+            return ERR_BWT;
         }
         MY_FREE(tbuffer1);
 
@@ -62,7 +62,7 @@ int8_t dcrzDecode() {
 
         if (!(tbuffer1 = rleDecode(tbuffer2, rbufferIndex))) {
             devoidDecode();
-            return 14;
+            return ERR_RLE_2;
         }
         if (utilizeRLE) {
             MY_FREE(tbuffer2);
@@ -70,7 +70,7 @@ int8_t dcrzDecode() {
 
         if (!(tbuffer2 = mtfDecode(tbuffer1, rbufferIndex))) {
             devoidDecode();
-            return 15;
+            return ERR_MTF_2;
         }
         MY_FREE(tbuffer1);
 

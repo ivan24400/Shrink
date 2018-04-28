@@ -46,17 +46,11 @@ public class CompressFile extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.compress_activity);
-        handler = new Handler(Looper.getMainLooper());
-
-       if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-           if(!Settings.System.canWrite(this)){
-               Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
-               startActivity(intent);
-       }
-        }
 
         getSupportActionBar().setTitle(R.string.cf_title);
         getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
+
+        handler = new Handler(Looper.getMainLooper());
 
         tvTotalDevice = (TextView) findViewById(R.id.tvCFtotalDevices);
         tvFileName = (TextView) findViewById(R.id.tvCFfileName);
@@ -133,6 +127,7 @@ public class CompressFile extends AppCompatActivity {
             }
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
                 if(!Settings.System.canWrite(this)){
+                    ((Switch) view).setChecked(false);
                     Toast.makeText(this,getString(R.string.err_permission_denied),Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
                     startActivity(intent);

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
@@ -141,6 +142,12 @@ public class SlaveDeviceService extends Service {
                         algorithm = CompressionUtils.DEFLATE;
                     }
                     Log.d(TAG, "Allocated Space is " + Long.toString(allocatedSpace) + " algorithm is " + algorithm + " islast chunk " + isLastChunk);
+                    ShareResource.handler.post(new Runnable(){
+                        @Override
+                        public void run(){
+                            Toast.makeText(SlaveDeviceService.this,"isLastChunk: "+isLastChunk,Toast.LENGTH_LONG).show();
+                        }
+                    });
                     if (allocatedSpace < 1) {
                         throw new IOException("Invalid allocatedSpace value");
                     }

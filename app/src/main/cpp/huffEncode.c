@@ -3,7 +3,6 @@
  */
 
 #include "huffman.h"
-long byteCount=0;
 /**
  * Deallocate binary tree nodes
  */
@@ -229,7 +228,6 @@ void writeBit(uint8_t bit, bool isFlush) {
 
     if (isFlush && ((wCursor < 7) && (wCursor >= -1))) {
         fwrite(&bitBuffer, sizeof(uint8_t), 1, out);
-        byteCount++;
         bitBuffer = 0;
         wCursor = 7;
         return;
@@ -239,7 +237,6 @@ void writeBit(uint8_t bit, bool isFlush) {
 
     if (wCursor < 0) {
         fwrite(&bitBuffer, sizeof(uint8_t), 1, out);
-        byteCount++;
         bitBuffer = 0;
         wCursor = 7;
     }
@@ -287,8 +284,9 @@ void writeTree(Node *node) {
 void writeHeader(Node *root, uint32_t totalSymbols) {
     uint8_t byte = 0;
     uint32_t b1 = 0;
-    __android_log_print(ANDROID_LOG_DEBUG,"JNI_HUFFMAN","huffEncode: isLastBlock %d isLastChunk %d\n");
+    __android_log_print(ANDROID_LOG_DEBUG,"JNI_HUFFMAN","huffEncode: isLastBlock %d isLastChunk %d\n",isLastBlock,isLastChunk);
     fflush(stdout);
+    fprintf(logFile,"huffmanEncode: isLastBlock %d isLastChunk %d\n",isLastBlock,isLastChunk);
     if (isLastBlock && isLastChunk) { //  declared in dcrz.h
         b1 = 0x00800000;
     }
@@ -299,17 +297,15 @@ void writeHeader(Node *root, uint32_t totalSymbols) {
 
     b1 = b1 | (totalSymbols & 0x003fffff);
 
-    fprintf(logFile,"Writing header %x @ %lu");
-
     // Little Endian
     byte = (uint8_t) (b1 & 0xff);
-    fwrite(&byte, sizeof(uint8_t), 1, out); byteCount++;
+    fwrite(&byte, sizeof(uint8_t), 1, out);
 
     byte = (uint8_t) ((b1 >> 8) & 0xff);
-    fwrite(&byte, sizeof(uint8_t), 1, out); byteCount++;
+    fwrite(&byte, sizeof(uint8_t), 1, out);
 
     byte = (uint8_t) ((b1 >> 16) & 0xff);
-    fwrite(&byte, sizeof(uint8_t), 1, out); byteCount++;
+    fwrite(&byte, sizeof(uint8_t), 1, out);
 
     wCursor = 7;
     writeTree(root);

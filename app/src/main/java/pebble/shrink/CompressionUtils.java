@@ -37,9 +37,10 @@ public class CompressionUtils {
 
     /**
      * Compress file using dcrz method
+     *
      * @param append to either append or overwrite output file
      * @param isLast used by slave device to specify if last chunk of input file
-     * @param input input file name
+     * @param input  input file name
      * @param output output file name
      * @return error status
      */
@@ -47,13 +48,15 @@ public class CompressionUtils {
 
     /**
      * Decompress a dcrz compressed file
-     * @param input input file name
+     *
+     * @param input  input file name
      * @param output output file name
      */
     private native static int dcrzDecompress(String input, String output);
 
     /**
      * Writes header information to output file of compression
+     *
      * @param method compression method
      * @param inFile name of file to write header
      */
@@ -66,13 +69,19 @@ public class CompressionUtils {
             StringBuilder outFile = new StringBuilder(inFile);
             outFile.append(".dcrz");
             FileOutputStream out = new FileOutputStream(outFile.toString());
-
             crc = computeCrc32(inFile);
 
             if (method == DEFLATE) {
-                out.write(CompressionUtils.DEFLATE);
+                int header1 = 1; // default 1 chunk of entire file
+                if (!isLocal) {
+                    header1 = DistributorService.deviceList.size();
+                    Log.d(TAG,"writeheader headercount: "+header1);
+                    header1 = header1 << 2; // 2 bits = max algorithms is 4
+                }
+                header1 = header1 | DEFLATE;
+                out.write(header1);
             } else if (method == DCRZ) {
-                out.write(CompressionUtils.DCRZ);
+                out.write(method);
             }
 
             int shift = 24;
@@ -89,13 +98,14 @@ public class CompressionUtils {
 
     /**
      * Compress a file
+     *
      * @param method compression method
      * @param isLast is last chunk of the original file
      * @param inFile file to be compressed
      * @return error status
      */
     public static int compress(int method, boolean isLast, String inFile) {
-        Log.d(TAG,"compress: isLocal "+isLocal+" isLast "+isLast);
+        Log.d(TAG, "compress: isLocal " + isLocal + " isLast " + isLast);
         StringBuilder outFile = new StringBuilder(inFile);
         outFile.append(".dcrz");
         if (method == DEFLATE) {
@@ -108,15 +118,16 @@ public class CompressionUtils {
 
     /**
      * Decompress a dcrz file
+     *
      * @param infile file to decompress
      * @return error status
      * @throws IOException
      */
     public static int decompress(String infile) throws IOException {
-        int result=-24;
-        Log.d(TAG,"infile: "+infile);
-        if(!infile.matches(".*\\.dcrz")) {
-            Log.d(TAG,"invalid file");
+        long result = 0;
+        Log.d(TAG, "infile: " + infile);
+        if (!infile.matches(".*\\.dcrz")) {
+            Log.d(TAG, "invalid file");
             return -1;
         }
 
@@ -127,47 +138,65 @@ public class CompressionUtils {
         int index = outFile.lastIndexOf(".");
         if (index > 0) {
             outFileExt = outFile.substring(index);
-            outFileName = outFile.substring(0,index);
-        }else{
+            outFileName = outFile.substring(0, index);
+        } else {
             outFileName = outFile.toString();
         }
         String outFileNameT = outFileName;
 
         boolean isFileExist = true;
         int count = 0;
-        while(isFileExist){
+        while (isFileExist) {
             if (new File(outFileNameT + outFileExt).exists()) {
                 count++;
                 outFileNameT = outFileName + "_" + count;
-            }else{
+            } else {
                 isFileExist = false;
             }
         }
 
         FileInputStream input = new FileInputStream(infile);
-        int algorithm = input.read();
-        int i = 0;
+        int header1 = input.read();
+        long i = 0;
         while (i < 4) {
             crc = (crc << 8) | (long) input.read();
             i++;
         }
 
-        if (algorithm == DEFLATE) {
-            result = Deflate.decompressFile(infile, outFileNameT + outFileExt);
-        } else if (algorithm == DCRZ) {
-            result = dcrzDecompress(infile,outFileNameT + outFileExt);
+        if ((header1 & 0x01) == DEFLATE) {
+            int chunkCount = (header1 & 0xfc) >>> 2; //2 bits = max algorithms is 4
+            Log.d(TAG,"chunkCount: "+chunkCount);
+            long skip = 0; // header size
+            do {
+                Log.d(TAG,"current chunk "+chunkCount+" skip: "+skip);
+                i = Deflate.decompressFile(skip,infile, outFileNameT + outFileExt);
+                if(i == -1){
+                    result = i;
+                    break;
+                }
+                skip = skip + i;
+
+                chunkCount--;
+            } while (chunkCount > 0);
+            if(result != -1){
+                result = 0;
+            }
+            Log.d(TAG,"deflate decompress result: "+result);
+        } else if ((header1 & 0x01) == DCRZ) {
+            result = dcrzDecompress(infile, outFileNameT + outFileExt);
         }
 
         long crcOutput = computeCrc32(outFileNameT + outFileExt);
-        Log.d(TAG, "result: "+result+" decompress crcInput = " + Long.toHexString(crc)+"\tdecompress crcOutput = "+ Long.toHexString(crcOutput));
-        if(crc != crcOutput){
-            result =0;
+        Log.d(TAG, "result: " + result + " decompress crcInput = " + Long.toHexString(crc) + "\tdecompress crcOutput = " + Long.toHexString(crcOutput));
+        if (crc != crcOutput) {
+            result = 0;
         }
-        return result;
+        return (int) result;
     }
 
     /**
      * Compute CRC32 of a file
+     *
      * @param name file name whose crc32 has to generated
      * @return crc32
      */
@@ -192,11 +221,12 @@ public class CompressionUtils {
 
     /**
      * Compute CRC32 of a file
+     *
      * @param file InputStream whose crc32 is to be generated
      * @return crc32
      * @throws IOException
      */
-    public static long computeCRC32(InputStream file) throws IOException{
+    public static long computeCRC32(InputStream file) throws IOException {
         CRC32 obj = new CRC32();
         int cnt;
         while ((cnt = file.read(buffer, 0, bufferSize)) != -1) {

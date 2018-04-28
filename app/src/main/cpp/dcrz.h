@@ -19,8 +19,15 @@ extern "C" {
 
 #define MAX_SYMBOLS 256    // max 256
 #define BUFFER_SIZE 100000 // max 2_000_000
-#define ERROR 99
-#define SUCCESS 24
+#define ERROR -99
+#define ERR_RLE_1 -11
+#define ERR_MTF_1 -12
+#define ERR_BWT -13
+#define ERR_RLE_2 -14
+#define ERR_MTF_2 -15
+#define ERR_HUFF -16
+
+#define SUCCESS -24
 
 #define MY_MALLOC(ptr, type, num, size) ptr = (type)malloc(num*size);                                \
                 if(!ptr) {                                    \

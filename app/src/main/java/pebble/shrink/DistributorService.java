@@ -75,8 +75,6 @@ public class DistributorService extends Service {
                                 sync.wait();
                             }
                         }
-                        // Write Header
-                        CompressionUtils.writeHeader(intent.getIntExtra(CompressionUtils.cmethod, 0), CompressFile.fileToCompress);
 
                         DataTransfer.initFiles(true, CompressFile.fileToCompress, CompressFile.fileToCompress + ".dcrz");
 
@@ -125,6 +123,9 @@ public class DistributorService extends Service {
         (new Thread(new Runnable() {
             @Override
             public void run() {
+                // Write Header
+                CompressionUtils.writeHeader(CompressFile.getAlgorithm(), CompressFile.fileToCompress);
+
                 Log.d(TAG, "start distribution: distributing");
                 isDistributorActive = true;
                 CompressFile.handler.post(new Runnable() {
