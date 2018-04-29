@@ -230,6 +230,7 @@ public class MasterDevice implements Runnable {
                 }
             }
             Log.d(TAG,threadName+": receiving compressed chunk: "+compressedSize);
+            DataTransfer.writeLong(compressedSize,DataTransfer.getOutputStream());
             out.write(DataTransfer.READY);
             out.flush();
 

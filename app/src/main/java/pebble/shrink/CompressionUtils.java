@@ -166,7 +166,7 @@ public class CompressionUtils {
         if ((header1 & 0x01) == DEFLATE) {
             int chunkCount = (header1 & 0xfc) >>> 2; //2 bits = max algorithms is 4
             Log.d(TAG,"chunkCount: "+chunkCount);
-            long skip = 0; // header size
+            long skip = 5; // header size
             do {
                 Log.d(TAG,"current chunk "+chunkCount+" skip: "+skip);
                 i = Deflate.decompressFile(skip,infile, outFileNameT + outFileExt);

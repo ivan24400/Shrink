@@ -28,6 +28,9 @@ public class DataTransfer {
 
     private static byte[] buffer = new byte[BUFFER_SIZE];
 
+    public static OutputStream getOutputStream(){ return outputFile; }
+    public static InputStream getInputStream(){ return inputFile; }
+
     /**
      * Initialize input and output files
      * @param isMaster is master or slave mode
@@ -101,6 +104,26 @@ public class DataTransfer {
         }
     }
 
+    // Big Endian
+    public static void writeLong(long data,OutputStream out) throws IOException{
+        int shift = 56;
+        while (shift >= 0) {
+            byte datum = (byte) ((data >> shift) & 0xff); // Big Endian
+            out.write(datum);
+            shift = shift - 8;
+        }
+    }
+
+    // Big Endian
+    public static long readLong(InputStream in) throws IOException{
+        int i = 0;
+        long result=0;
+        while (i < 8) {
+            result = (result << 8) | (long) in.read();
+            i++;
+        }
+        return result;
+    }
     /**
      * Close input and output file streams
      */

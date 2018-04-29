@@ -63,19 +63,12 @@ public class Deflate {
 
             int ret;
             long byteCount = 0;
-            long skipCountIn = 0;
             byte[] buffer = new byte[DEFLATE_BUFFER_SIZE];
-            fin.skip(5);
-
-            while (skip > 0) {
-                if(iin.read() != -1) {
-                    skip--;
-                }
-            }
+            fin.skip(skip);
+            byteCount = DataTransfer.readLong(fin) + 8;
+            Log.d("Deflate","compressed size: "+byteCount);
 
             while ((ret = iin.read(buffer, 0, DEFLATE_BUFFER_SIZE)) != -1) {
-                byteCount = byteCount + ret;
-                Log.d("Deflate","decompress: read-"+ret+"\tbyteCount-"+byteCount);
                 fout.write(buffer, 0, ret);
             }
             iin.close();
