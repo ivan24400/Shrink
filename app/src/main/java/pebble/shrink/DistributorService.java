@@ -177,6 +177,7 @@ public class DistributorService extends Service {
                         device.notifyMe(this);
                     }
                 }
+                isDistributorActive = false;
                 try {
                     server.close();
                 } catch (IOException e) {
@@ -190,15 +191,24 @@ public class DistributorService extends Service {
      * Stop all threads including this
      */
     public synchronized void stop() {
-        WifiOperations.stop();
-        isDistributorActive = false;
+        DistributorService.this.stopForeground(false);
+        NotificationUtils.removeNotification();
         CompressFile.handler.post(new Runnable() {
             @Override
             public void run() {
-                NotificationUtils.updateNotification(DistributorService.this.getString(R.string.completed));
+                if(isDistributorActive) {
+                    NotificationUtils.updateNotification(DistributorService.this.getString(R.string.err_device_failed));
+                }else{
+                    NotificationUtils.updateNotification(DistributorService.this.getString(R.string.completed));
+                    isDistributorActive = false;
+                }
             }
         });
+
+        WifiOperations.stop();
+
         DataTransfer.releaseFiles();
+
         try {
             if (server != null && !server.isClosed()) {
                 server.close();
@@ -217,16 +227,16 @@ public class DistributorService extends Service {
             });
             deviceList.clear();
             workerCount = 0;
-            DistributorService.this.stopForeground(false);
         } catch (Exception e) {
             e.printStackTrace();
+            DistributorService.this.stopSelf();
         }
     }
 
     /**
      * Un neccesarily required.
      * @param intent
-     * @return nothing
+     * @return null
      */
     @Nullable
     @Override

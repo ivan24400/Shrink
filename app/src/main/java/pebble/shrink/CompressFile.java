@@ -51,6 +51,7 @@ public class CompressFile extends AppCompatActivity {
         getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
 
         handler = new Handler(Looper.getMainLooper());
+        fileToCompress = null;
 
         tvTotalDevice = (TextView) findViewById(R.id.tvCFtotalDevices);
         tvFileName = (TextView) findViewById(R.id.tvCFfileName);
@@ -173,8 +174,9 @@ public class CompressFile extends AppCompatActivity {
                     synchronized (DistributorService.sync) {
                         DistributorService.sync.notify();
                     }
-                    tvFileName.setText(getString(R.string.cf_file_name, fileToCompress));
-                    TaskAllocation.setFileSize((new File(fileToCompress)).length());
+                    File tmpFile = new File(fileToCompress);
+                    tvFileName.setText(getString(R.string.cf_file_name, tmpFile.getName()+" ("+tmpFile.length()+" B)"));
+                    TaskAllocation.setFileSize(tmpFile.length());
                 }else{
                     Toast.makeText(this,getString(R.string.err_file_not_found),Toast.LENGTH_SHORT).show();
                 }
@@ -243,8 +245,6 @@ public class CompressFile extends AppCompatActivity {
         Intent intent = new Intent(this, DistributorService.class);
         intent.setAction(DistributorService.ACTION_STOP_FOREGROUND);
         startService(intent);
-
-        NotificationUtils.removeNotification();
 
         super.onDestroy();
 

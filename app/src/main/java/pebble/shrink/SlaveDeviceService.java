@@ -33,6 +33,7 @@ public class SlaveDeviceService extends Service {
     private static OutputStream out, hbOut;
     private static int algorithm;
     private static boolean isLastChunk = true;
+    private static boolean isOperationActive = false;
     private static byte[] buffer = new byte[DataTransfer.BUFFER_SIZE];
 
     public static long freeSpace, allocatedSpace, compressedSize;
@@ -106,7 +107,7 @@ public class SlaveDeviceService extends Service {
                         slave = new Socket(addr, port);
                         in = slave.getInputStream();
                         out = slave.getOutputStream();
-
+                        isOperationActive = true;
                         SlaveDeviceService.batteryClass = ShareResource.mpriority.getSelectedItemPosition() == 0 ? 'B' : 'A';
                         Log.d(TAG, "freespace: " + ShareResource.mfreeSpace.getText().toString().trim().replace("\"", ""));
                         SlaveDeviceService.freeSpace = Long.parseLong(ShareResource.mfreeSpace.getText().toString().trim().replace("\"", ""));
@@ -142,12 +143,7 @@ public class SlaveDeviceService extends Service {
                         algorithm = CompressionUtils.DEFLATE;
                     }
                     Log.d(TAG, "Allocated Space is " + Long.toString(allocatedSpace) + " algorithm is " + algorithm + " islast chunk " + isLastChunk);
-                    ShareResource.handler.post(new Runnable(){
-                        @Override
-                        public void run(){
-                            Toast.makeText(SlaveDeviceService.this,"isLastChunk: "+isLastChunk,Toast.LENGTH_LONG).show();
-                        }
-                    });
+
                     if (allocatedSpace < 1) {
                         throw new IOException("Invalid allocatedSpace value");
                     }
@@ -205,6 +201,7 @@ public class SlaveDeviceService extends Service {
 
                     // End of process
                     slave.close();
+                    isOperationActive = false;
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -231,7 +228,12 @@ public class SlaveDeviceService extends Service {
         ShareResource.handler.post(new Runnable() {
             @Override
             public void run() {
-                NotificationUtils.updateNotification(getString(R.string.completed));
+                if(isOperationActive) {
+                    NotificationUtils.updateNotification(getString(R.string.err_connect_failed));
+                }else{
+                    NotificationUtils.updateNotification(getString(R.string.completed));
+                    isOperationActive = false;
+                }
             }
         });
         try {
@@ -244,7 +246,6 @@ public class SlaveDeviceService extends Service {
         }
         DataTransfer.deleteFiles();
         SlaveDeviceService.this.stopForeground(false);
-
     }
 
     @Nullable

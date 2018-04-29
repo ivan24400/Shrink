@@ -119,6 +119,7 @@ public class NotificationUtils {
      */
     public static void removeNotification() {
         if (service != null) {
+            nmanager.cancel(NOTIFICATION_ID);
             service.stopSelf();
         }
     }

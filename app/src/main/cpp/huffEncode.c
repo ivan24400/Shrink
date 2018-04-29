@@ -284,9 +284,6 @@ void writeTree(Node *node) {
 void writeHeader(Node *root, uint32_t totalSymbols) {
     uint8_t byte = 0;
     uint32_t b1 = 0;
-    __android_log_print(ANDROID_LOG_DEBUG,"JNI_HUFFMAN","huffEncode: isLastBlock %d isLastChunk %d\n",isLastBlock,isLastChunk);
-    fflush(stdout);
-    fprintf(logFile,"huffmanEncode: isLastBlock %d isLastChunk %d\n",isLastBlock,isLastChunk);
     if (isLastBlock && isLastChunk) { //  declared in dcrz.h
         b1 = 0x00800000;
     }

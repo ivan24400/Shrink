@@ -25,7 +25,6 @@ public class FileChooser extends ListActivity {
 
     public static final String FILE_CHOOSER_DCRZ = "pebble.shrink.FileChooser.dcrz";
     public static final String FILE_CHOOSER_ALL = "pebble.shrink.FileChooser.all";
-    public static final String FILE_CHOOSER_MODE = "pebble.shrink.FileChooser.mode";
 
     private static final String TAG = "FileChooser";
     private File dir;

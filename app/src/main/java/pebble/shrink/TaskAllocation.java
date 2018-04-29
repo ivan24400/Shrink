@@ -26,7 +26,6 @@ public class TaskAllocation {
         list = DistributorService.deviceList;
 
         Collections.sort(list, new SortDevices());
-        Log.d(TAG,"AFter sorting: "+list.toString());
         for (int i = 0; i < list.size(); i++) {
             fileSize_t = fileSize_t + list.get(i).getFreeSpace();
         }

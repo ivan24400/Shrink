@@ -97,6 +97,55 @@ public class ShareResource extends AppCompatActivity {
         })).start();
     }
 
+    /**
+     * Modifiy enabled status of widgets
+     *
+     * @param context Current context
+     * @param state   enabled or disabled
+     */
+    public static void setConnected(final Context context, final boolean state) {
+        isConnect = state;
+        mpriority.setEnabled(!state);
+        mfreeSpace.setEnabled(!state);
+        if (state) {
+            deviceStatus.setText(context.getString(R.string.sr_device_status, "Connected"));
+            connect.setText(context.getString(R.string.sr_disconnect));
+        } else {
+            deviceStatus.setText(context.getString(R.string.sr_device_status, "Disconnected"));
+            connect.setText(context.getString(R.string.sr_connect));
+        }
+    }
+
+    /**
+     * Connect to master device
+     *
+     * @param view Current view
+     */
+    public void clickSRconnect(View view) {
+        if (!isConnect) {
+            if (mfreeSpace.getText().toString().isEmpty()) {
+                Toast.makeText(this, R.string.sr_err_maxspace, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (Long.parseLong(mfreeSpace.getText().toString()) == 0 || Long.parseLong(mfreeSpace.getText().toString()) > SlaveDeviceService.freeSpace) {
+                Toast.makeText(this, R.string.sr_err_maxspace, Toast.LENGTH_SHORT).show();
+
+            } else {
+                DeviceOperations.displayProgress(ShareResource.this, getString(R.string.p_title), getString(R.string.p_scanning));
+                (new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        WifiOperations.startScan();
+                    }
+                })).start();
+            }
+
+        } else {
+            // Disconnect
+            WifiOperations.setWifiEnabled(false);
+        }
+    }
+
     @Override
     public void onPause() {
         Log.d(TAG, "on Pause");
@@ -127,57 +176,6 @@ public class ShareResource extends AppCompatActivity {
 
         WifiOperations.stop();
         super.onDestroy();
-    }
-
-    /**
-     * Modifiy enabled status of widgets
-     *
-     * @param context Current context
-     * @param state   enabled or disabled
-     */
-    public static void setConnected(final Context context, final boolean state) {
-        isConnect = state;
-        if (state) {
-            deviceStatus.setText(context.getString(R.string.sr_device_status, "Connected"));
-            connect.setText(context.getString(R.string.sr_disconnect));
-            mpriority.setEnabled(!state);
-            mfreeSpace.setEnabled(!state);
-        } else {
-            deviceStatus.setText(context.getString(R.string.sr_device_status, "Disconnected"));
-            connect.setText(context.getString(R.string.sr_connect));
-            mpriority.setEnabled(!state);
-            mfreeSpace.setEnabled(!state);
-        }
-    }
-
-    /**
-     * Connect to master device
-     *
-     * @param view Current view
-     */
-    public void clickSRconnect(View view) {
-        if (!isConnect) {
-            if (mfreeSpace.getText().toString().isEmpty()) {
-                Toast.makeText(this, R.string.sr_err_maxspace, Toast.LENGTH_SHORT).show();
-                return;
-            }
-            if (Long.parseLong(mfreeSpace.getText().toString()) == 0 || Long.parseLong(mfreeSpace.getText().toString()) > SlaveDeviceService.freeSpace) {
-                    Toast.makeText(this, R.string.sr_err_maxspace, Toast.LENGTH_SHORT).show();
-
-            } else {
-                DeviceOperations.displayProgress(ShareResource.this, getString(R.string.p_title), getString(R.string.p_scanning));
-                (new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        WifiOperations.startScan();
-                    }
-                })).start();
-            }
-
-        } else {
-            // Disconnect
-            WifiOperations.setWifiEnabled(false);
-        }
     }
 
 }

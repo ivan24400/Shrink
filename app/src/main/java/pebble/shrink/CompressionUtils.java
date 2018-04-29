@@ -189,7 +189,7 @@ public class CompressionUtils {
         long crcOutput = computeCrc32(outFileNameT + outFileExt);
         Log.d(TAG, "result: " + result + " decompress crcInput = " + Long.toHexString(crc) + "\tdecompress crcOutput = " + Long.toHexString(crcOutput));
         if (crc != crcOutput) {
-            result = 0;
+            result = -1;
         }
         return (int) result;
     }

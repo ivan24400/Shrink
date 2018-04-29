@@ -19,6 +19,8 @@ public class WifiReceiver extends BroadcastReceiver {
             if(state%10 == WifiManager.WIFI_STATE_DISABLED){
                 if(CompressFile.swRemote.isChecked()){
                     CompressFile.swRemote.setChecked(false);
+                }else if(state%10 == WifiManager.WIFI_STATE_ENABLED){
+                    CompressFile.swRemote.setChecked(true);
                 }
             }
         }

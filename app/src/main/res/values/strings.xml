@@ -2,7 +2,7 @@
     <!-- Shrink -->
     <string name="app_name">Shrink</string>
     <string name="app_title">Compression</string>
-    <string name="app_desc">An application to compress a file both locally and distributed way.</string>
+    <string name="app_desc">An application to compress a file both locally and in a distributed way.</string>
     <string name="info">Info</string>
 
     <!-- Compress file -->
@@ -52,8 +52,8 @@
     <string name="hide">Hide</string>
 
     <!-- Error -->
-    <string name="err_connect_failed">Connection failed !</string>
-    <string name="err_server_failed">Server crashed !</string>
+    <string name="err_connect_failed">Connection interrupted !</string>
+    <string name="err_server_failed">Server lost !</string>
     <string name="err_os_not_supported">Operating System not Supported !</string>
     <string name="err_invalid_config">Invalid Configuration !</string>
     <string name="err_task_allocation">Task Allocation failed !</string>
@@ -62,8 +62,8 @@
     <string name="err_wifi_failed">WiFi failed !</string>
     <string name="err_wifiap_failed">WiFi hotspot failed !</string>
     <string name="err_file_not_found">File not found !</string>
-    <string name="err_dcmp_failed">Decompression Failed</string>
-    <string name="err_cmp_failed">Compression Failed</string>
+    <string name="err_dcmp_failed">Decompression Failed !</string>
+    <string name="err_cmp_failed">Compression Failed !</string>
     <string name="err_device_failed">A slave was disconnected !</string>
     <string name="err_permission_denied">Permission not granted !</string>
 
