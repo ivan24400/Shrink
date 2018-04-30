@@ -15,8 +15,9 @@ public class CompressionService extends Service {
 
     /**
      * Starts a local compression or decompression service
-     * @param intent specifies to compress or decompress
-     * @param flag Additional data about this start request.
+     *
+     * @param intent  specifies to compress or decompress
+     * @param flag    Additional data about this start request.
      * @param startId A unique integer representing this specific request to start.
      */
     @Override
@@ -57,8 +58,7 @@ public class CompressionService extends Service {
                             CompressFile.setWidgetEnabled(true);
                         }
                     });
-                    stopForeground(false);
-                    stopSelf();
+                    NotificationUtils.removeNotification();
                 }
             })).start();
 
@@ -104,8 +104,7 @@ public class CompressionService extends Service {
                             }
                         });
                     }
-                    stopForeground(false);
-                    stopSelf();
+                    NotificationUtils.removeNotification();
                 }
             })).start();
         }

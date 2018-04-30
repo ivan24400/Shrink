@@ -22,25 +22,60 @@ import java.io.File;
 
 public class CompressFile extends AppCompatActivity {
 
-    private String TAG = "CompressFile";
-
     private static final int FILE_CHOOSE_REQUEST = 9;
-
     public static TextView tvTotalDevice;
     public static Button btCompress, btChooseFile;
-
+    public static String fileToCompress;
+    public static Handler handler;
+    static Switch swRemote;
     private static TextView tvFileName;
     private static int deviceCount = 0;
-
     private static Spinner spAlgorithm;
-    static Switch swRemote;
-    public static String fileToCompress;
-
-    public static Handler handler;
-
     private static IntentFilter intentFilter;
     private static WifiReceiver wifiReceiver;
+    private String TAG = "CompressFile";
 
+    /**
+     * Return user selected algorithm
+     *
+     * @return algorithm
+     */
+    public static int getAlgorithm() {
+        return spAlgorithm.getSelectedItemPosition();
+    }
+
+    /**
+     * Represents total connected slave devices
+     *
+     * @param c           Current context
+     * @param isIncrement to increment or decrement device count
+     */
+    public static synchronized void updateDeviceCount(final Context c, final boolean isIncrement) {
+        if (isIncrement) {
+            deviceCount++;
+        } else if (deviceCount > 0) {
+            deviceCount--;
+            if (deviceCount == 0) {
+                setWidgetEnabled(true);
+            }
+        }
+        CompressFile.handler.post(new Runnable() {
+            @Override
+            public void run() {
+                CompressFile.tvTotalDevice.setText(c.getString(R.string.cf_total_devices, deviceCount));
+
+            }
+        });
+    }
+
+    /**
+     * Enable or disable widgets
+     *
+     * @param state to enable or disable
+     */
+    public static void setWidgetEnabled(boolean state) {
+        btCompress.setEnabled(state);
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -69,9 +104,11 @@ public class CompressFile extends AppCompatActivity {
         registerReceiver(wifiReceiver, intentFilter);
 
     }
+
     /**
      * Start compression algorithm either locally
      * or in distributed way
+     *
      * @param view Current view
      */
     public void onClickCompress(View view) {
@@ -100,19 +137,13 @@ public class CompressFile extends AppCompatActivity {
                 DistributorService.startDistribution(this);
             }
         } else {
-            Toast.makeText(this, "First choose a file !", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.err_file_not_selected), Toast.LENGTH_SHORT).show();
         }
-    }
-    /**
-     * Return user selected algorithm
-     * @return algorithm
-     */
-    public static int getAlgorithm() {
-        return spAlgorithm.getSelectedItemPosition();
     }
 
     /**
      * Start/stop distributed compression service
+     *
      * @param view Current view
      */
     public void onClickReceiverSwitch(View view) {
@@ -126,29 +157,38 @@ public class CompressFile extends AppCompatActivity {
                 Toast.makeText(this, getString(R.string.err_os_not_supported), Toast.LENGTH_SHORT).show();
                 return;
             }
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-                if(!Settings.System.canWrite(this)){
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (!Settings.System.canWrite(this)) {
                     ((Switch) view).setChecked(false);
-                    Toast.makeText(this,getString(R.string.err_permission_denied),Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, getString(R.string.err_permission_denied), Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
                     startActivity(intent);
                     return;
                 }
             }
+            if (WifiOperations.isWifiApOn()) {
+                ((Switch) view).setChecked(false);
+                Toast.makeText(this, getString(R.string.err_disable_wifiap), Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (fileToCompress == null) {
+                ((Switch) view).setChecked(false);
+                Toast.makeText(this, getString(R.string.err_file_not_selected), Toast.LENGTH_SHORT).show();
+                return;
+            }
             tintent.setAction(DistributorService.ACTION_START_FOREGROUND);
             startService(tintent);
-
-            spAlgorithm.setEnabled(false);
         } else {
             tintent.setAction(DistributorService.ACTION_STOP_FOREGROUND);
             startService(tintent);
-
-            spAlgorithm.setEnabled(true);
         }
     }
 
     /**
      * Starts a file chooser
+     *
      * @param view Current view
      */
     public void onClickChooseFile(View view) {
@@ -160,9 +200,10 @@ public class CompressFile extends AppCompatActivity {
     /**
      * When user optionally selects a file
      * from the file chooser
+     *
      * @param requestCode custom code to verify file choose operation
-     * @param resultCode is a file selected
-     * @param intent result of file chooser activity
+     * @param resultCode  is a file selected
+     * @param intent      result of file chooser activity
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
@@ -170,15 +211,21 @@ public class CompressFile extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 fileToCompress = intent.getStringExtra(FileChooser.EXTRA_FILE_PATH);
                 File tmp = new File(fileToCompress);
-                if(tmp.exists()) {
+                if (tmp.exists()) {
+                    if (tmp.length() > DeviceOperations.getFreeSpace()) {
+                        Toast.makeText(this, getString(R.string.err_insufficient_storage), Toast.LENGTH_SHORT).show();
+                        fileToCompress = null;
+                        return;
+                    }
+                    tvFileName.setText(getString(R.string.cf_file_name, tmp.getName() + " (" + tmp.length() + " B)"));
+                    TaskAllocation.setFileSize(tmp.length());
+
                     synchronized (DistributorService.sync) {
                         DistributorService.sync.notify();
                     }
-                    File tmpFile = new File(fileToCompress);
-                    tvFileName.setText(getString(R.string.cf_file_name, tmpFile.getName()+" ("+tmpFile.length()+" B)"));
-                    TaskAllocation.setFileSize(tmpFile.length());
-                }else{
-                    Toast.makeText(this,getString(R.string.err_file_not_found),Toast.LENGTH_SHORT).show();
+
+                } else {
+                    Toast.makeText(this, getString(R.string.err_file_not_found), Toast.LENGTH_SHORT).show();
                 }
             }
         } else {
@@ -186,62 +233,12 @@ public class CompressFile extends AppCompatActivity {
         }
     }
 
-    /**
-     * Represents total connected slave devices
-     * @param c Current context
-     * @param isIncrement to increment or decrement device count
-     */
-    public static synchronized void updateDeviceCount(final Context c, final boolean isIncrement) {
-        if (isIncrement) {
-            deviceCount++;
-        } else if(deviceCount > 0){
-            deviceCount--;
-            if (deviceCount == 0) {
-                setWidgetEnabled(true);
-            }
-        }
-        CompressFile.handler.post(new Runnable() {
-            @Override
-            public void run() {
-                CompressFile.tvTotalDevice.setText(c.getString(R.string.cf_total_devices, deviceCount));
-
-            }
-        });
-    }
-
-    /**
-     * Enable or disable widgets
-     * @param state to enable or disable
-     */
-    public static void setWidgetEnabled(boolean state) {
-        btCompress.setEnabled(state);
-    }
-
-    @Override
-    public void onPause() {
-        Log.d(TAG, "on pause");
-        super.onPause();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        Log.d(TAG, "on Resume");
-
-    }
-
-    @Override
-    public void onStop() {
-        Log.d(TAG, "on Stop");
-        super.onStop();
-    }
-
     @Override
     public void onDestroy() {
         Log.d(TAG, "on destroy");
         unregisterReceiver(wifiReceiver);
         deviceCount = 0;
-
+        fileToCompress = null;
         Intent intent = new Intent(this, DistributorService.class);
         intent.setAction(DistributorService.ACTION_STOP_FOREGROUND);
         startService(intent);

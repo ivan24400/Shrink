@@ -18,14 +18,22 @@ import java.io.File;
 
 
 public class Decompressor extends AppCompatActivity {
-    private static final String TAG = "Decompressor";
-
     public static final String ACTION_MAIN = "decompressor.main";
-    private static Button decompress,chooseFile;
+    private static final String TAG = "Decompressor";
     private static final int FILE_CHOOSE_REQUEST = 53;
+    public static Handler handler;
+    private static Button decompress, chooseFile;
     private static String filename;
     private static TextView tvFileName;
-    public static Handler handler;
+
+    /**
+     * Enable or disable widget
+     *
+     * @param state enable or disable
+     */
+    public static void setWidgetEnabled(boolean state) {
+        decompress.setEnabled(state);
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -42,12 +50,11 @@ public class Decompressor extends AppCompatActivity {
             String scheme = intent.getScheme();
             if (scheme.equals(ContentResolver.SCHEME_FILE)) {
                 Uri uri = intent.getData();
-                Log.d(TAG, "File intent detected uri:" + uri.getPath());
                 filename = uri.getPath();
-                if(filename.matches(".*\\.dcrz") && (new File(filename)).exists()) {
+                if (filename.matches(".*\\.dcrz") && (new File(filename)).exists()) {
                     tvFileName.setText(this.getString(R.string.df_filename, filename));
-                }else{
-                    NotificationUtils.errorDialog(this,getString(R.string.err_invalid_file));
+                } else {
+                    NotificationUtils.errorDialog(this, getString(R.string.err_invalid_file));
                 }
             }
         }
@@ -66,9 +73,10 @@ public class Decompressor extends AppCompatActivity {
     /**
      * When user optionally selects a file
      * from the file chooser
+     *
      * @param requestCode custom code to verify file choose operation
-     * @param resultCode is a file selected
-     * @param intent result of file chooser activity
+     * @param resultCode  is a file selected
+     * @param intent      result of file chooser activity
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
@@ -76,10 +84,10 @@ public class Decompressor extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 filename = intent.getStringExtra(FileChooser.EXTRA_FILE_PATH);
                 File tmp = new File(filename);
-                if(tmp.exists()) {
+                if (tmp.exists()) {
                     tvFileName.setText(getString(R.string.df_filename, filename));
-                }else{
-                    Toast.makeText(this,getString(R.string.err_file_not_found),Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, getString(R.string.err_file_not_found), Toast.LENGTH_SHORT).show();
                 }
             }
         } else {
@@ -88,30 +96,23 @@ public class Decompressor extends AppCompatActivity {
     }
 
     /**
-     * Enable or disable widget
-     * @param state enable or disable
-     */
-    public static void setWidgetEnabled(boolean state) {
-        decompress.setEnabled(state);
-    }
-
-    /**
      * Start decompression of dcrz file
+     *
      * @param view Current view
      */
     public void onClickDecompress(View view) {
-        if(filename != null) {
+        if (filename != null) {
             Intent intent = new Intent(this, CompressionService.class);
             intent.setAction(CompressionUtils.ACTION_DECOMPRESS_LOCAL);
             intent.putExtra(CompressionUtils.cfile, filename);
             startService(intent);
-        }else {
+        } else {
             Toast.makeText(this, "First choose a file !", Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
-    public void onDestroy(){
+    public void onDestroy() {
         NotificationUtils.removeNotification();
         super.onDestroy();
     }

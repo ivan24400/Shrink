@@ -79,7 +79,7 @@ extern void devoidHuffEncode();
 extern void devoidHuffDecode();
 
 //////////
-FILE* logFile;
+FILE *logFile;
 
 #ifdef _cplusplus
 }

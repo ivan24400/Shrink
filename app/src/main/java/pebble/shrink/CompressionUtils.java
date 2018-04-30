@@ -1,38 +1,29 @@
 package pebble.shrink;
 
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.CRC32;
-import java.io.FileInputStream;
-import java.io.IOException;
 
 
 public class CompressionUtils {
-    private static String TAG = "CompressionUtils";
-
-    public static final int ERR_INVALID_CRC = -24000;
     public static final int DEFLATE = 0;
     public static final int DCRZ = 1;
     public static final byte MASK_LAST_CHUNK = (byte) 0x80;
-
     public static final String cmethod = "COMPRESSION_METHOD";
     public static final String cfile = "COMPRESSION_FILE";
-    public static long crc = 0;
-    public static boolean isLocal = false;
-
     public static final String ACTION_COMPRESS_LOCAL = "compressionUtils_compress_local";
     public static final String ACTION_DECOMPRESS_LOCAL = "compressionUtils_decompress_local";
-
-
     private static final int bufferSize = 4096;
+    public static long crc = 0;
+    public static boolean isLocal = false;
+    private static String TAG = "CompressionUtils";
     private static byte[] buffer = new byte[bufferSize];
 
     /**
@@ -75,7 +66,7 @@ public class CompressionUtils {
                 int header1 = 1; // default 1 chunk of entire file
                 if (!isLocal) {
                     header1 = DistributorService.deviceList.size();
-                    Log.d(TAG,"writeheader headercount: "+header1);
+                    Log.d(TAG, "writeheader headercount: " + header1);
                     header1 = header1 << 2; // 2 bits = max algorithms is 4
                 }
                 header1 = header1 | DEFLATE;
@@ -165,12 +156,12 @@ public class CompressionUtils {
 
         if ((header1 & 0x01) == DEFLATE) {
             int chunkCount = (header1 & 0xfc) >>> 2; //2 bits = max algorithms is 4
-            Log.d(TAG,"chunkCount: "+chunkCount);
+            Log.d(TAG, "chunkCount: " + chunkCount);
             long skip = 5; // header size
             do {
-                Log.d(TAG,"current chunk "+chunkCount+" skip: "+skip);
-                i = Deflate.decompressFile(skip,infile, outFileNameT + outFileExt);
-                if(i == -1){
+                Log.d(TAG, "current chunk " + chunkCount + " skip: " + skip);
+                i = Deflate.decompressFile(skip, infile, outFileNameT + outFileExt);
+                if (i == -1) {
                     result = i;
                     break;
                 }
@@ -178,16 +169,16 @@ public class CompressionUtils {
 
                 chunkCount--;
             } while (chunkCount > 0);
-            if(result != -1){
+            if (result != -1) {
                 result = 0;
             }
-            Log.d(TAG,"deflate decompress result: "+result);
+            Log.d(TAG, "deflate decompress result: " + result);
         } else if ((header1 & 0x01) == DCRZ) {
             result = dcrzDecompress(infile, outFileNameT + outFileExt);
         }
 
         long crcOutput = computeCrc32(outFileNameT + outFileExt);
-        Log.d(TAG, "result: " + result + " decompress crcInput = " + Long.toHexString(crc) + "\tdecompress crcOutput = " + Long.toHexString(crcOutput));
+        Log.d(TAG, "result: " + result + " decompress crcInput = " + Long.toString(crc) + "\tdecompress crcOutput = " + Long.toHexString(crcOutput));
         if (crc != crcOutput) {
             result = -1;
         }

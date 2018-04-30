@@ -4,15 +4,13 @@ import android.content.Context;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-
 import android.util.Log;
-
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -24,18 +22,33 @@ public class ShareResource extends AppCompatActivity {
     static final String tmp_file = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Shrink/tmp.dat";
     static final String tmpc_file = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Shrink/tmp.dat.dcrz";
     static final String TAG = "Share Resource";
-
-    private static TextView deviceName, deviceStatus, freeSpace;
     public static Spinner mpriority;
-    static EditText mfreeSpace;
     public static Button connect;
     public static boolean isConnect = false;
-
-    private WifiScanner wifiScanner;
-    private static IntentFilter intentFilter;
-
     public static Handler handler;
+    static EditText mfreeSpace;
+    private static TextView deviceName, deviceStatus, freeSpace;
+    private static IntentFilter intentFilter;
+    private WifiScanner wifiScanner;
 
+    /**
+     * Modifiy enabled status of widgets
+     *
+     * @param context Current context
+     * @param state   enabled or disabled
+     */
+    public static void setConnected(final Context context, final boolean state) {
+        isConnect = state;
+        mpriority.setEnabled(!state);
+        mfreeSpace.setEnabled(!state);
+        if (state) {
+            deviceStatus.setText(context.getString(R.string.sr_device_status, "Connected"));
+            connect.setText(context.getString(R.string.sr_disconnect));
+        } else {
+            deviceStatus.setText(context.getString(R.string.sr_device_status, "Disconnected"));
+            connect.setText(context.getString(R.string.sr_connect));
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,25 +111,6 @@ public class ShareResource extends AppCompatActivity {
     }
 
     /**
-     * Modifiy enabled status of widgets
-     *
-     * @param context Current context
-     * @param state   enabled or disabled
-     */
-    public static void setConnected(final Context context, final boolean state) {
-        isConnect = state;
-        mpriority.setEnabled(!state);
-        mfreeSpace.setEnabled(!state);
-        if (state) {
-            deviceStatus.setText(context.getString(R.string.sr_device_status, "Connected"));
-            connect.setText(context.getString(R.string.sr_disconnect));
-        } else {
-            deviceStatus.setText(context.getString(R.string.sr_device_status, "Disconnected"));
-            connect.setText(context.getString(R.string.sr_connect));
-        }
-    }
-
-    /**
      * Connect to master device
      *
      * @param view Current view
@@ -144,24 +138,6 @@ public class ShareResource extends AppCompatActivity {
             // Disconnect
             WifiOperations.setWifiEnabled(false);
         }
-    }
-
-    @Override
-    public void onPause() {
-        Log.d(TAG, "on Pause");
-        super.onPause();
-    }
-
-    @Override
-    public void onResume() {
-        Log.d(TAG, "on Resume");
-        super.onResume();
-    }
-
-    @Override
-    public void onStop() {
-        Log.d(TAG, "on stop");
-        super.onStop();
     }
 
     @Override

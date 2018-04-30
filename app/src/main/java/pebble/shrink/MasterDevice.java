@@ -34,7 +34,7 @@ public class MasterDevice implements Runnable {
 
     private InputStream in;
     private OutputStream out;
-    private Socket master,slave;
+    private Socket master, slave;
     private ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
     public MasterDevice(Context c, Socket s) throws IOException {
@@ -43,12 +43,12 @@ public class MasterDevice implements Runnable {
         sync = new Object();
     }
 
-    public void setAllocatedSpace(long as) {
-        allocatedSpace = as;
-    }
-
     public long getAllocatedSpace() {
         return allocatedSpace;
+    }
+
+    public void setAllocatedSpace(long as) {
+        allocatedSpace = as;
     }
 
     public long getFreeSpace() {
@@ -70,10 +70,11 @@ public class MasterDevice implements Runnable {
 
     /**
      * Tells this thread to continue processing
+     *
      * @param thread Parent thread
      */
     public synchronized void notifyMe(Object thread) {
-        Log.d(TAG, threadName+": notify Me");
+        Log.d(TAG, threadName + ": notify Me");
         isFileAvailable = true;
         masterSync = thread;
         synchronized (sync) {
@@ -94,6 +95,7 @@ public class MasterDevice implements Runnable {
 
     /**
      * Receive slave device info and start heartbeat
+     *
      * @throws IOException
      */
     private void initMetaData() throws IOException {
@@ -111,34 +113,34 @@ public class MasterDevice implements Runnable {
         battery = (char) buffer[i++]; // battery is 1 byte
 
         int j = 0;
-        while(j < 4){
+        while (j < 4) {
             hbPort = (hbPort << 8) | (int) (buffer[i++] & 0xFF);
             j++;
         }
 
-        Log.d(TAG, "free space " + Long.toString(freeSpace) + " , battery " + battery+ ", port "+hbPort);
-        if(freeSpace <= 0 || battery >= 'C' || hbPort <= 0){
+        Log.d(TAG, "free space " + Long.toString(freeSpace) + " , battery " + battery + ", port " + hbPort);
+        if (freeSpace <= 0 || battery >= 'C' || hbPort <= 0) {
             throw new IOException("Invalid values");
         }
-        slave = new Socket(master.getInetAddress(),hbPort);
+        slave = new Socket(master.getInetAddress(), hbPort);
         slave.setSoTimeout(DataTransfer.HEARTBEAT_TIMEOUT);
 
         Runnable hb = new Runnable() {
             @Override
             public void run() {
-               try {
-                    if(slave != null) {
-                        Log.d(TAG,threadName+" slave alive "+slave.isConnected());
+                try {
+                    if (slave != null) {
+                        Log.d(TAG, threadName + " slave alive " + slave.isConnected());
 
-                        if(slave.getInputStream().read() < 0){
+                        if (slave.getInputStream().read() < 0) {
                             throw new IOException("slave died");
                         }
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
-                   DistributorService.deviceList.remove(MasterDevice.this);
+                    DistributorService.deviceList.remove(MasterDevice.this);
                     try {
-                        if(master != null) {
+                        if (master != null) {
                             master.close();
                         }
                     } catch (IOException e1) {
@@ -155,7 +157,7 @@ public class MasterDevice implements Runnable {
                 }
             }
         };
-        executor.scheduleAtFixedRate(hb,0,DataTransfer.HEARTBEAT_TIMEOUT, TimeUnit.MILLISECONDS);
+        executor.scheduleAtFixedRate(hb, 0, DataTransfer.HEARTBEAT_TIMEOUT, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -201,7 +203,7 @@ public class MasterDevice implements Runnable {
 
             out.write(buffer, 0, DataTransfer.HEADER_SIZE);
             out.flush();
-            Log.d(TAG, threadName+" allocatedSpace: " +allocatedSpace);
+            Log.d(TAG, threadName + " allocatedSpace: " + allocatedSpace);
 
 
             // Send File chunk
@@ -210,7 +212,7 @@ public class MasterDevice implements Runnable {
             synchronized (masterSync) {
                 masterSync.notify();
             }
-            Log.d(TAG, threadName+"send file chunk");
+            Log.d(TAG, threadName + "send file chunk");
 
             // Read Compressed Size
             in.read(buffer, 0, 8); // sizeof long
@@ -229,8 +231,8 @@ public class MasterDevice implements Runnable {
                     }
                 }
             }
-            Log.d(TAG,threadName+": receiving compressed chunk: "+compressedSize);
-            DataTransfer.writeLong(compressedSize,DataTransfer.getOutputStream());
+            Log.d(TAG, threadName + ": receiving compressed chunk: " + compressedSize);
+            DataTransfer.writeLong(compressedSize, DataTransfer.getOutputStream());
             out.write(DataTransfer.READY);
             out.flush();
 
@@ -259,26 +261,26 @@ public class MasterDevice implements Runnable {
                 f.printStackTrace();
             }
 
-            if(isOperationOn && DistributorService.isDistributorActive){
+            if (isOperationOn && DistributorService.isDistributorActive) {
                 CompressFile.handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(context,context.getString(R.string.err_device_failed),Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, context.getString(R.string.err_device_failed), Toast.LENGTH_SHORT).show();
                     }
                 });
-                Intent tintent = new Intent(context,DistributorService.class);
+                Intent tintent = new Intent(context, DistributorService.class);
                 tintent.setAction(DistributorService.ACTION_STOP_FOREGROUND);
                 context.startService(tintent);
             }
         } finally {
-            Log.d(TAG,threadName+" done");
+            Log.d(TAG, threadName + " done");
             try {
                 executor.shutdownNow();
-                executor.awaitTermination(3,TimeUnit.SECONDS);
+                executor.awaitTermination(3, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            if(!ishbClose) {
+            if (!ishbClose) {
                 CompressFile.handler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -289,8 +291,9 @@ public class MasterDevice implements Runnable {
 
         }
     }
+
     @Override
-    public String toString(){
+    public String toString() {
         return threadName;
     }
 }

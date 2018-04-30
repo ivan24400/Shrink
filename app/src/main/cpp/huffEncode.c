@@ -3,6 +3,7 @@
  */
 
 #include "huffman.h"
+
 /**
  * Deallocate binary tree nodes
  */

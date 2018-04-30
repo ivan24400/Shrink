@@ -14,13 +14,11 @@ import java.lang.reflect.Method;
 public class WifiOperations {
 
     private static final String TAG = "WifiOperations";
-
+    public static boolean isMaster = false;
     private static Activity activity;
     private static WifiManager manager;
     private static WifiConfiguration configuration;
-
     private static Method setWifiApEnabled, getWifiApState;
-    public static boolean isMaster = false;
 
     static {
         try {
@@ -38,7 +36,7 @@ public class WifiOperations {
 
 
     public static void setWifiSsid(String ssid) {
-        Log.d(TAG, "setwifissis " + ssid);
+        Log.d(TAG, "set wifi ssid " + ssid);
         configuration = new WifiConfiguration();
         configuration.SSID = "\"" + ssid + "\"";
         configuration.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
@@ -46,21 +44,29 @@ public class WifiOperations {
 
     }
 
+    public static boolean isWifiApOn() {
+        try {
+            if (WifiManager.WIFI_STATE_ENABLED == ((int) getWifiApState.invoke(manager) % 10)) {
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public static void setWifiApSsid(String ssid) {
-        Log.d(TAG, "setwifissis " + ssid);
-            if(manager == null){
-                manager = (WifiManager) activity.getBaseContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-            }
-            try {
-                if (WifiManager.WIFI_STATE_ENABLED == ((int) getWifiApState.invoke(manager) % 10)) {
-                    setWifiApEnabled(false);
-                }
-                configuration = new WifiConfiguration();
-                configuration.SSID = ssid;
-                configuration.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        Log.d(TAG, "set wifi ssid: " + ssid);
+        if (manager == null) {
+            manager = (WifiManager) activity.getBaseContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        }
+        try {
+            configuration = new WifiConfiguration();
+            configuration.SSID = ssid;
+            configuration.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void setWifiApEnabled(boolean state) {
@@ -69,16 +75,17 @@ public class WifiOperations {
             manager = (WifiManager) activity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         }
         try {
-            if((int)getWifiApState.invoke(manager) % 10 == WifiManager.WIFI_STATE_DISABLED && !state){
+            if ((int) getWifiApState.invoke(manager) % 10 == WifiManager.WIFI_STATE_DISABLED && !state) {
                 return;
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(activity, R.string.err_invalid_config, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(activity, R.string.err_os_not_supported, Toast.LENGTH_SHORT).show();
                     }
                 });
+                return;
             } else if (setWifiApEnabled == null || configuration == null && state) {
                 activity.runOnUiThread(new Runnable() {
                     @Override
@@ -86,10 +93,8 @@ public class WifiOperations {
                         Toast.makeText(activity, R.string.err_invalid_config, Toast.LENGTH_SHORT).show();
                     }
                 });
+                return;
             } else {
-               if((int)getWifiApState.invoke(manager) % 10 == WifiManager.WIFI_STATE_ENABLED && state){
-                   setWifiApEnabled.invoke(manager, configuration, false);
-               }
                 boolean ret = (Boolean) setWifiApEnabled.invoke(manager, configuration, state);
                 if (!ret) {
                     activity.runOnUiThread(new Runnable() {
@@ -120,7 +125,7 @@ public class WifiOperations {
                             if (configuration != null) {
                                 manager.removeNetwork(configuration.networkId);
                             }
-                            if(!manager.setWifiEnabled(false)) {
+                            if (!manager.setWifiEnabled(false)) {
                                 activity.runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
@@ -132,7 +137,7 @@ public class WifiOperations {
                     } else {
                         isMaster = false;
                         if (!manager.isWifiEnabled()) {
-                            if(!manager.setWifiEnabled(true)){
+                            if (!manager.setWifiEnabled(true)) {
                                 activity.runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
@@ -171,11 +176,11 @@ public class WifiOperations {
     /**
      * @return is connected to master device
      */
-    public static boolean isConnected(){
-        if(manager != null){
-            if(manager.getConnectionInfo().getSSID().contains("SHRINK")){
+    public static boolean isConnected() {
+        if (manager != null) {
+            if (manager.getConnectionInfo().getSSID().contains("SHRINK")) {
                 return true;
-            }else{
+            } else {
                 return false;
             }
         }

@@ -24,19 +24,16 @@ public class WifiScanner extends BroadcastReceiver {
 
             case WifiManager.WIFI_STATE_CHANGED_ACTION:
                 Log.d(TAG, "wifi state changed");
-                if(intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE, WifiManager.WIFI_STATE_UNKNOWN) == WifiManager.WIFI_STATE_DISABLED){
+                if (intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE, WifiManager.WIFI_STATE_UNKNOWN) == WifiManager.WIFI_STATE_DISABLED) {
                     ShareResource.setConnected(context, false);
                     Log.d(TAG, "WIFI STATE DISABLED");
                 }
                 break;
 
             case WifiManager.SCAN_RESULTS_AVAILABLE_ACTION:
-                Log.d(TAG, "wifi scan results available "+!WifiOperations.isConnected());
                 if (!WifiOperations.isConnected()) {
                     List<ScanResult> result = WifiOperations.getWifiManager().getScanResults();
-                    Log.d(TAG,"wifi scan result "+result.size());
                     for (ScanResult scan : result) {
-                        Log.d(TAG, "ap found: " + scan.toString());
                         if (scan.SSID.contains(context.getString(R.string.sr_ssid))) {
                             Log.d(TAG, "shrink connecting to: " + scan.SSID);
                             WifiOperations.setWifiSsid(scan.SSID);
@@ -51,7 +48,6 @@ public class WifiScanner extends BroadcastReceiver {
                 ConnectivityManager conMan = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
                 NetworkInfo netInfo = conMan.getActiveNetworkInfo();
                 if (netInfo != null && netInfo.getType() == ConnectivityManager.TYPE_WIFI) {
-                    Log.d(TAG, "Have Wifi Connection " + netInfo.toString());
 
                     if (netInfo.isConnected()) {
                         final WifiManager wm = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
@@ -81,7 +77,7 @@ public class WifiScanner extends BroadcastReceiver {
 
                         }
                     }
-                }else {
+                } else {
                     ShareResource.setConnected(context, false);
                     Log.d("WifiScanner", "Wifi Disconnected");
                 }

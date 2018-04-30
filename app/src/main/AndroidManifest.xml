@@ -19,8 +19,8 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:resizeableActivity="true"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".Shrink">
@@ -50,19 +50,22 @@
 
         <activity
             android:name="pebble.shrink.FileChooser"
-            android:theme="@android:style/Theme.Holo.Light"
-            android:label="Select a file" />
+            android:label="Select a file"
+            android:theme="@android:style/Theme.Holo.Light" />
 
         <activity
             android:name="pebble.shrink.Decompressor"
             android:label="@string/app_name">
             <intent-filter android:label="@string/df_title">
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.BROWSABLE" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:scheme="file"
+
+                <data
+                    android:host="*"
                     android:mimeType="*/*"
-                    android:host="*" />
+                    android:scheme="file" />
                 <data android:pathPattern=".*\\.dcrz" />
                 <data android:pathPattern=".*\\..*\\.dcrz" />
                 <data android:pathPattern=".*\\..*\\..*\\.dcrz" />

@@ -6,8 +6,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_margin="8dp">
+        android:layout_margin="8dp"
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/tvCFtotalDevices"
@@ -28,17 +28,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:weightSum="2"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:weightSum="2">
 
             <Button
                 android:id="@+id/btCFchooseFile"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="8dp"
                 android:layout_weight="1"
                 android:onClick="onClickChooseFile"
-                android:layout_margin="8dp"
-                android:layout_gravity="center"
                 android:text="@string/cf_choose_file" />
 
             <Spinner
@@ -46,8 +46,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:entries="@array/compression_method"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:entries="@array/compression_method" />
 
         </LinearLayout>
 
@@ -55,8 +55,8 @@
             android:id="@+id/swCFdone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"
+            android:layout_marginTop="10dp"
             android:onClick="onClickReceiverSwitch"
             android:text="@string/cf_switchText" />
 
@@ -65,8 +65,8 @@
             android:id="@+id/btCFcompress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
             android:layout_gravity="center"
+            android:layout_margin="8dp"
             android:onClick="onClickCompress"
             android:text="@string/cf_compress" />
 

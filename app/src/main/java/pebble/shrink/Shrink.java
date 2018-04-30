@@ -5,29 +5,30 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-
-import android.os.Bundle;
 import android.util.Log;
-
-
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import java.util.Arrays;
 
 public class Shrink extends AppCompatActivity {
 
-    private final String TAG = Shrink.this.getClass().getSimpleName();
     private static final int MULTI_PERMISSION_GROUP_ID = 475;
     private static Button btCompress;
+    private static TextView tvTitle;
 
     static {
         System.loadLibrary("dcrz");
     }
+
+    private final String TAG = Shrink.this.getClass().getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,12 +47,13 @@ public class Shrink extends AppCompatActivity {
             if (ActivityCompat.checkSelfPermission(Shrink.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 permissions[i++] = Manifest.permission.READ_EXTERNAL_STORAGE;
             }
-            Log.d(TAG,"not granted is "+i);
             if (i > 0) {
                 ActivityCompat.requestPermissions(Shrink.this, permissions, MULTI_PERMISSION_GROUP_ID);
             }
         }
         btCompress = (Button) findViewById(R.id.btScompress);
+        tvTitle = (TextView) findViewById(R.id.tvtitle);
+        DeviceOperations.setArt(this, new Handler(), tvTitle);
         btCompress.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -92,7 +94,6 @@ public class Shrink extends AppCompatActivity {
      * @param view Current view
      */
     public void onClickShareDevice(View view) {
-        Log.d(TAG, "onclicksharedevice " + view.getId());
         Intent intent = new Intent(Shrink.this, ShareResource.class);
         startActivity(intent);
     }
@@ -111,11 +112,4 @@ public class Shrink extends AppCompatActivity {
                 }
         }
     }
-
-    @Override
-    public void onDestroy() {
-        Log.d(TAG, "on destroy");
-        super.onDestroy();
-    }
-
 }

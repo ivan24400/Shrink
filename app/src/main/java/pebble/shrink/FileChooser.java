@@ -25,15 +25,13 @@ public class FileChooser extends ListActivity {
 
     public static final String FILE_CHOOSER_DCRZ = "pebble.shrink.FileChooser.dcrz";
     public static final String FILE_CHOOSER_ALL = "pebble.shrink.FileChooser.all";
-
+    public static final String EXTRA_FILE_PATH = "pebble.shrink.FileChooser.filepath";
     private static final String TAG = "FileChooser";
+    private static final String homePath = Environment.getExternalStorageDirectory().getAbsolutePath();
     private File dir;
     private boolean isDcrzOnly = false;
-    private static final String homePath = Environment.getExternalStorageDirectory().getAbsolutePath();
     private ArrayList<File> files;
     private FileChooserListAdapter adapter;
-
-    public static final String EXTRA_FILE_PATH = "pebble.shrink.FileChooser.filepath";
 
     @Override
     protected void onCreate(Bundle savedInstance) {
@@ -66,19 +64,19 @@ public class FileChooser extends ListActivity {
         files.clear();
 
         File[] tmpFiles;
-        if(isDcrzOnly) {
-            tmpFiles =  dir.listFiles(new FileFilter() {
+        if (isDcrzOnly) {
+            tmpFiles = dir.listFiles(new FileFilter() {
                 @Override
                 public boolean accept(File pathname) {
-                    if(pathname.isDirectory()){
+                    if (pathname.isDirectory()) {
                         return true;
-                    }else if(pathname.getName().matches(".*\\.dcrz")){
+                    } else if (pathname.getName().matches(".*\\.dcrz")) {
                         return true;
                     }
                     return false;
                 }
             });
-        }else {
+        } else {
             tmpFiles = dir.listFiles();
         }
         if (tmpFiles != null && tmpFiles.length > 0) {
@@ -104,6 +102,16 @@ public class FileChooser extends ListActivity {
             finish();
         } else {
             dir = tmp;
+            refreshFileList();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (dir.equals(new File(homePath))) {
+            super.onBackPressed();
+        } else {
+            dir = dir.getParentFile();
             refreshFileList();
         }
     }
@@ -167,16 +175,6 @@ public class FileChooser extends ListActivity {
             }
 
             return f1.getName().compareToIgnoreCase(f2.getName());
-        }
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (dir.equals(new File(homePath))) {
-            super.onBackPressed();
-        } else {
-            dir = dir.getParentFile();
-            refreshFileList();
         }
     }
 }

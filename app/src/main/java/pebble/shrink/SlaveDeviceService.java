@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,17 +13,16 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class SlaveDeviceService extends Service {
 
-    private static final String TAG = "SlaveDeviceService";
-
     public static final String EXTRA_PORT = "ps.SlaveDeviceService.port";
-
+    private static final String TAG = "SlaveDeviceService";
+    public static long freeSpace, allocatedSpace, compressedSize;
+    public static char batteryClass;
     private static int hbPort;
     private static ScheduledExecutorService executer;
     private static ServerSocket slaveHeart;
@@ -35,9 +33,6 @@ public class SlaveDeviceService extends Service {
     private static boolean isLastChunk = true;
     private static boolean isOperationActive = false;
     private static byte[] buffer = new byte[DataTransfer.BUFFER_SIZE];
-
-    public static long freeSpace, allocatedSpace, compressedSize;
-    public static char batteryClass;
 
     private static void initMetaData() throws IOException {
 
@@ -60,7 +55,7 @@ public class SlaveDeviceService extends Service {
 
         out.write(buffer, 0, DataTransfer.HEADER_SIZE + 4);
         out.flush();
-        Log.d(TAG, "freeSpace: " + freeSpace+" battery: "+batteryClass);
+        Log.d(TAG, "freeSpace: " + freeSpace + " battery: " + batteryClass);
     }
 
     @Override
@@ -108,6 +103,7 @@ public class SlaveDeviceService extends Service {
                         in = slave.getInputStream();
                         out = slave.getOutputStream();
                         isOperationActive = true;
+
                         SlaveDeviceService.batteryClass = ShareResource.mpriority.getSelectedItemPosition() == 0 ? 'B' : 'A';
                         Log.d(TAG, "freespace: " + ShareResource.mfreeSpace.getText().toString().trim().replace("\"", ""));
                         SlaveDeviceService.freeSpace = Long.parseLong(ShareResource.mfreeSpace.getText().toString().trim().replace("\"", ""));
@@ -228,9 +224,9 @@ public class SlaveDeviceService extends Service {
         ShareResource.handler.post(new Runnable() {
             @Override
             public void run() {
-                if(isOperationActive) {
+                if (isOperationActive) {
                     NotificationUtils.updateNotification(getString(R.string.err_connect_failed));
-                }else{
+                } else {
                     NotificationUtils.updateNotification(getString(R.string.completed));
                     isOperationActive = false;
                 }
@@ -245,7 +241,7 @@ public class SlaveDeviceService extends Service {
             e.printStackTrace();
         }
         DataTransfer.deleteFiles();
-        SlaveDeviceService.this.stopForeground(false);
+        NotificationUtils.removeNotification();
     }
 
     @Nullable

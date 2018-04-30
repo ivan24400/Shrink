@@ -8,10 +8,9 @@ import java.util.List;
 
 public class TaskAllocation {
 
-    private static long fileSize, fileSize_t;
-    static List<MasterDevice> list;
-
     private static final String TAG = "TaskAllocation";
+    static List<MasterDevice> list;
+    private static long fileSize, fileSize_t;
 
     public static void setFileSize(long size) {
         Log.d(TAG, "filesize " + size);
@@ -20,6 +19,7 @@ public class TaskAllocation {
 
     /**
      * Allocate file chunk to slave devices
+     *
      * @return allocate error status
      */
     public boolean allocate() {
@@ -35,7 +35,7 @@ public class TaskAllocation {
         }
 
         DistributorService.incrWorker();
-        for (int index=0; index < list.size(); index++) {
+        for (int index = 0; index < list.size(); index++) {
             if ((fileSize - list.get(index).getFreeSpace()) <= 0) {
                 Log.d(TAG, "index " + index + " final set allocated space " + fileSize);
                 list.get(index).setAllocatedSpace(fileSize);

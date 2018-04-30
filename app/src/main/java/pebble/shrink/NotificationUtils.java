@@ -9,32 +9,27 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
-import android.media.RingtoneManager;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 
 public class NotificationUtils {
 
+    public static final int NOTIFICATION_ID = 24;
     private static final String TAG = "NotificationUtils";
-
+    private static final String CHANNEL_ID = "SHRINK_NOTIFICATION_CHANNEL";
+    public static Notification notification;
     private static NotificationCompat.Builder nbuilder;
     private static NotificationManager nmanager;
-
     private static Service service;
     private static PendingIntent pendingIntent;
 
-    private static final String CHANNEL_ID = "SHRINK_NOTIFICATION_CHANNEL";
-
-    public static Notification notification;
-    public static final int NOTIFICATION_ID = 24;
-
     /**
      * Setup notification
-     * @param s foreground service
+     *
+     * @param s       foreground service
      * @param nintent activity to resume/start when tapped on notification
      */
     public static void initNotification(Service s, Intent nintent) {
@@ -52,6 +47,7 @@ public class NotificationUtils {
 
     /**
      * Create a notification
+     *
      * @param content Content of notification
      * @return Notification object
      */
@@ -97,10 +93,11 @@ public class NotificationUtils {
 
     /**
      * Updates content of notification.
+     *
      * @param content text
      */
     public static void updateNotification(String content) {
-        if(service == null){
+        if (service == null) {
             return;
         }
         Notification not = null;
@@ -119,24 +116,26 @@ public class NotificationUtils {
      */
     public static void removeNotification() {
         if (service != null) {
-            nmanager.cancel(NOTIFICATION_ID);
+            service.stopForeground(false);
             service.stopSelf();
+            nmanager.cancelAll();
         }
     }
 
     /**
      * Display a permission error dialog and quit application
+     *
      * @param c Current context
      */
 
-    public static void errorDialog(final Context c, final String text){
+    public static void errorDialog(final Context c, final String text) {
         AlertDialog.Builder builder = new AlertDialog.Builder(c);
         builder.setTitle(c.getString(R.string.app_name))
                 .setMessage(text)
                 .setOnDismissListener(new DialogInterface.OnDismissListener() {
                     @Override
                     public void onDismiss(DialogInterface dialog) {
-                        ((AppCompatActivity)c).finish();
+                        ((AppCompatActivity) c).finish();
                     }
                 });
         builder.show();
