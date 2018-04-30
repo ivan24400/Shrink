@@ -61,7 +61,7 @@
     <string name="err_file_not_selected">First select a file !</string>
     <string name="err_invalid_file">Invalid File !</string>
     <string name="err_wifi_failed">WiFi failed !</string>
-    <string name="err_disable_wifiap">Disable WiFi Hotspot first !</string>
+    <string name="err_disable_wifiap">Turn off WiFi Hotspot first !</string>
     <string name="err_wifiap_failed">WiFi hotspot failed !</string>
     <string name="err_file_not_found">File not found !</string>
     <string name="err_dcmp_failed">Decompression Failed !</string>

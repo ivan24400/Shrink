@@ -12,10 +12,10 @@ import java.io.OutputStream;
 
 public class DataTransfer {
 
-    public static final int READY = 1;
-    public static final int HEARTBEAT_TIMEOUT = 1000;
-    public static final int BUFFER_SIZE = 4096;
-    public static final int HEADER_SIZE = 9; // freeSpace = 8, battery = 1 && allocatedSpace = 8, algorithm = 1
+    static final int READY = 1;
+    static final int HEARTBEAT_TIMEOUT = 1000;
+    static final int BUFFER_SIZE = 4096;
+    static final int HEADER_SIZE = 9; // freeSpace = 8, battery = 1 && allocatedSpace = 8, algorithm = 1
     private static final String TAG = "DataTransfer";
     private static FileInputStream inputFile;
     private static FileOutputStream outputFile;
@@ -23,7 +23,7 @@ public class DataTransfer {
     private static int readBytes = 0;
     private static byte[] buffer = new byte[BUFFER_SIZE];
 
-    public static OutputStream getOutputStream() {
+    static OutputStream getOutputStream() {
         return outputFile;
     }
 
@@ -37,9 +37,9 @@ public class DataTransfer {
      * @param isMaster is master or slave mode
      * @param input    input file name
      * @param output   output file name
-     * @throws IOException
+     * @throws IOException input output exception
      */
-    public static void initFiles(final boolean isMaster, final String input, final String output) throws IOException {
+    static void initFiles(final boolean isMaster, final String input, final String output) throws IOException {
         Log.d(TAG, "input " + input + ", output " + output + " ismaster " + WifiOperations.isMaster);
         inputFileName = input;
         outputFileName = output;
@@ -62,9 +62,9 @@ public class DataTransfer {
      *
      * @param size number of bytes to send
      * @param out  stream to send data
-     * @throws IOException
+     * @throws IOException input output exception
      */
-    public synchronized static void transferChunk(long size, OutputStream out) throws IOException, ArrayIndexOutOfBoundsException {
+    synchronized static void transferChunk(long size, OutputStream out) throws IOException, ArrayIndexOutOfBoundsException {
         Log.d(TAG, "transferChunk " + size);
         if (out == null || size == 0 || inputFile == null) {
             return;
@@ -86,9 +86,9 @@ public class DataTransfer {
      *
      * @param size number of bytes to receive
      * @param in   stream to receive data from
-     * @throws IOException
+     * @throws IOException input output exception
      */
-    public synchronized static void receiveChunk(long size, InputStream in) throws IOException, ArrayIndexOutOfBoundsException {
+    synchronized static void receiveChunk(long size, InputStream in) throws IOException, ArrayIndexOutOfBoundsException {
         Log.d(TAG, "receive Chunk " + size);
 
         if (in == null || size == 0) {
@@ -108,7 +108,7 @@ public class DataTransfer {
     }
 
     // Big Endian
-    public static void writeLong(long data, OutputStream out) throws IOException {
+    static void writeLong(long data, OutputStream out) throws IOException {
         int shift = 56;
         while (shift >= 0) {
             byte datum = (byte) ((data >> shift) & 0xff); // Big Endian
@@ -118,7 +118,7 @@ public class DataTransfer {
     }
 
     // Big Endian
-    public static long readLong(InputStream in) throws IOException {
+    static long readLong(InputStream in) throws IOException {
         int i = 0;
         long result = 0;
         while (i < 8) {
@@ -131,7 +131,7 @@ public class DataTransfer {
     /**
      * Close input and output file streams
      */
-    public static void releaseFiles(boolean deleteOutputFile) {
+    static void releaseFiles(boolean deleteOutputFile) {
         try {
             if (inputFile != null) {
                 inputFile.close();
@@ -150,7 +150,7 @@ public class DataTransfer {
     /**
      * Delete input and output files
      */
-    public static void deleteFiles() {
+    static void deleteFiles() {
         releaseFiles(false);
         /*
            if( (new File(inputFileName)).delete() || (new File(outputFileName)).delete() ){

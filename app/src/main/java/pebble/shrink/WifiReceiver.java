@@ -7,8 +7,6 @@ import android.net.wifi.WifiManager;
 
 public class WifiReceiver extends BroadcastReceiver {
 
-    private static final String TAG = "WifiReceiver";
-
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals("android.net.wifi.WIFI_AP_STATE_CHANGED")) {

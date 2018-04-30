@@ -19,10 +19,11 @@ import java.util.concurrent.TimeUnit;
 
 public class SlaveDeviceService extends Service {
 
-    public static final String EXTRA_PORT = "ps.SlaveDeviceService.port";
     private static final String TAG = "SlaveDeviceService";
-    public static long freeSpace, allocatedSpace, compressedSize;
-    public static char batteryClass;
+
+    static final String EXTRA_PORT = "ps.SlaveDeviceService.port";
+    static long freeSpace, allocatedSpace, compressedSize;
+    static char batteryClass;
     private static int hbPort;
     private static ScheduledExecutorService executer;
     private static ServerSocket slaveHeart;
@@ -61,19 +62,15 @@ public class SlaveDeviceService extends Service {
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
 
-        (new Thread(new Runnable() {
+        Intent intent1 = new Intent(SlaveDeviceService.this, ShareResource.class);
+        NotificationUtils.initNotification(SlaveDeviceService.this, intent1);
 
+        (new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    ShareResource.handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            Intent intent1 = new Intent(SlaveDeviceService.this, ShareResource.class);
-                            NotificationUtils.initNotification(SlaveDeviceService.this, intent1);
-                        }
-                    });
+                SlaveDeviceService.this.startForeground(NotificationUtils.NOTIFICATION_ID, NotificationUtils.notification);
 
+                try {
                     Runnable hb = new Runnable() {
                         @Override
                         public void run() {
@@ -96,7 +93,6 @@ public class SlaveDeviceService extends Service {
 
                     Log.d(TAG, "device slave " + addr + " @ " + port);
 
-                    try {
                         slaveHeart = new ServerSocket(0);
                         hbPort = slaveHeart.getLocalPort();
                         slave = new Socket(addr, port);
@@ -116,9 +112,7 @@ public class SlaveDeviceService extends Service {
 
                         executer = Executors.newSingleThreadScheduledExecutor();
                         executer.scheduleAtFixedRate(hb, 0, DataTransfer.HEARTBEAT_TIMEOUT, TimeUnit.MILLISECONDS);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+
 
                     // Receiving allocated space and algorithm type
                     in.read(buffer, 0, DataTransfer.HEADER_SIZE);
@@ -241,7 +235,14 @@ public class SlaveDeviceService extends Service {
             e.printStackTrace();
         }
         DataTransfer.deleteFiles();
-        NotificationUtils.removeNotification();
+        SlaveDeviceService.this.stopForeground(false);
+        SlaveDeviceService.this.stopSelf();
+
+        Intent intent = new Intent(this,Shrink.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra(Shrink.EXIT_APP,true);
+        ShareResource.activity.startActivity(intent);
+        ShareResource.activity.finish();
     }
 
     @Nullable

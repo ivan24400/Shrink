@@ -12,7 +12,7 @@ public class TaskAllocation {
     static List<MasterDevice> list;
     private static long fileSize, fileSize_t;
 
-    public static void setFileSize(long size) {
+    static void setFileSize(long size) {
         Log.d(TAG, "filesize " + size);
         fileSize = size;
     }
@@ -22,7 +22,7 @@ public class TaskAllocation {
      *
      * @return allocate error status
      */
-    public boolean allocate() {
+    boolean allocate() {
         list = DistributorService.deviceList;
 
         Collections.sort(list, new SortDevices());

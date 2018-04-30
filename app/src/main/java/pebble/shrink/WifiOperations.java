@@ -14,7 +14,7 @@ import java.lang.reflect.Method;
 public class WifiOperations {
 
     private static final String TAG = "WifiOperations";
-    public static boolean isMaster = false;
+    static boolean isMaster = false;
     private static Activity activity;
     private static WifiManager manager;
     private static WifiConfiguration configuration;
@@ -29,13 +29,13 @@ public class WifiOperations {
         }
     }
 
-    public static void initWifiOperations(Activity c) {
+    static void initWifiOperations(Activity c) {
         activity = c;
         manager = (WifiManager) activity.getBaseContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
     }
 
 
-    public static void setWifiSsid(String ssid) {
+    static void setWifiSsid(String ssid) {
         Log.d(TAG, "set wifi ssid " + ssid);
         configuration = new WifiConfiguration();
         configuration.SSID = "\"" + ssid + "\"";
@@ -44,7 +44,7 @@ public class WifiOperations {
 
     }
 
-    public static boolean isWifiApOn() {
+    static boolean isWifiApOn() {
         try {
             if (WifiManager.WIFI_STATE_ENABLED == ((int) getWifiApState.invoke(manager) % 10)) {
                 return true;
@@ -55,7 +55,7 @@ public class WifiOperations {
         return false;
     }
 
-    public static void setWifiApSsid(String ssid) {
+    static void setWifiApSsid(String ssid) {
         Log.d(TAG, "set wifi ssid: " + ssid);
         if (manager == null) {
             manager = (WifiManager) activity.getBaseContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
@@ -69,7 +69,7 @@ public class WifiOperations {
         }
     }
 
-    public static void setWifiApEnabled(boolean state) {
+    static void setWifiApEnabled(boolean state) {
         isMaster = true;
         if (manager == null) {
             manager = (WifiManager) activity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
@@ -85,7 +85,6 @@ public class WifiOperations {
                         Toast.makeText(activity, R.string.err_os_not_supported, Toast.LENGTH_SHORT).show();
                     }
                 });
-                return;
             } else if (setWifiApEnabled == null || configuration == null && state) {
                 activity.runOnUiThread(new Runnable() {
                     @Override
@@ -93,7 +92,6 @@ public class WifiOperations {
                         Toast.makeText(activity, R.string.err_invalid_config, Toast.LENGTH_SHORT).show();
                     }
                 });
-                return;
             } else {
                 boolean ret = (Boolean) setWifiApEnabled.invoke(manager, configuration, state);
                 if (!ret) {
@@ -110,11 +108,11 @@ public class WifiOperations {
         }
     }
 
-    public static WifiManager getWifiManager() {
+    static WifiManager getWifiManager() {
         return manager;
     }
 
-    public static void setWifiEnabled(final boolean state) {
+    static void setWifiEnabled(final boolean state) {
         (new Thread(new Runnable() {
             @Override
             public void run() {
@@ -162,7 +160,7 @@ public class WifiOperations {
         })).start();
     }
 
-    public static void startScan() {
+    static void startScan() {
         if (manager != null) {
             if (!manager.isWifiEnabled()) {
                 manager.setWifiEnabled(true);
@@ -176,21 +174,14 @@ public class WifiOperations {
     /**
      * @return is connected to master device
      */
-    public static boolean isConnected() {
-        if (manager != null) {
-            if (manager.getConnectionInfo().getSSID().contains("SHRINK")) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-        return false;
+    static boolean isConnected() {
+        return manager != null &&  manager.getConnectionInfo().getSSID().contains("SHRINK");
     }
 
     /**
      * Shutdown wifi or wifiAP
      */
-    public static void stop() {
+    static void stop() {
         Log.d(TAG, "stop " + isMaster);
         if (manager != null) {
             if (isMaster) {

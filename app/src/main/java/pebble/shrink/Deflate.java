@@ -15,9 +15,9 @@ import java.util.zip.InflaterInputStream;
 public class Deflate {
 
     private static final int DEFLATE_BUFFER_SIZE = 24000;
+    public static boolean isRemote = false;
     private static FileInputStream fin;
     private static FileOutputStream fout;
-    public static boolean isRemote = false;
 
     /**
      * Compress a file with given name.
@@ -25,7 +25,7 @@ public class Deflate {
      * @param input Name of the file to compress
      * @return error code
      */
-    public static int compressFile(boolean append, String input, String output) {
+    static int compressFile(boolean append, String input, String output) {
         try {
             int ret;
             fin = new FileInputStream(input);
@@ -53,7 +53,7 @@ public class Deflate {
      * @param input Name of the file to decompress
      * @return error code
      */
-    public static long decompressFile(long skip, String input, String output) {
+    static long decompressFile(long skip, String input, String output) {
         try {
             fin = new FileInputStream(input);
             fout = new FileOutputStream(output.toString(), isRemote);
@@ -63,7 +63,7 @@ public class Deflate {
             long byteCount = 0;
             byte[] buffer = new byte[DEFLATE_BUFFER_SIZE];
             fin.skip(skip);
-            if(isRemote) {
+            if (isRemote) {
                 byteCount = DataTransfer.readLong(fin) + 8;
                 Log.d("Deflate", "compressed size: " + byteCount);
             }

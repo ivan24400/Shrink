@@ -37,34 +37,33 @@ public class MasterDevice implements Runnable {
     private Socket master, slave;
     private ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
-    public MasterDevice(Context c, Socket s) throws IOException {
+    MasterDevice(Context c, Socket s) throws IOException {
         this.master = s;
         this.context = c;
         sync = new Object();
     }
 
-    public long getAllocatedSpace() {
+    long getAllocatedSpace() {
         return allocatedSpace;
     }
 
-    public void setAllocatedSpace(long as) {
+    void setAllocatedSpace(long as) {
         allocatedSpace = as;
     }
 
-    public long getFreeSpace() {
+    long getFreeSpace() {
         return freeSpace;
     }
 
-    public char getBattery() {
+    char getBattery() {
         return battery;
     }
 
-    public String getName() {
+    String getName() {
         return threadName;
     }
 
-
-    public void setLastChunk(boolean state) {
+    void setLastChunk(boolean state) {
         isLastChunk = state;
     }
 
@@ -73,7 +72,7 @@ public class MasterDevice implements Runnable {
      *
      * @param thread Parent thread
      */
-    public synchronized void notifyMe(Object thread) {
+    synchronized void notifyMe(Object thread) {
         Log.d(TAG, threadName + ": notify Me");
         isFileAvailable = true;
         masterSync = thread;

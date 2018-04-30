@@ -22,25 +22,25 @@ import java.io.File;
 
 public class CompressFile extends AppCompatActivity {
 
+    private String TAG = "CompressFile";
+
     private static final int FILE_CHOOSE_REQUEST = 9;
-    public static TextView tvTotalDevice;
-    public static Button btCompress, btChooseFile;
-    public static String fileToCompress;
-    public static Handler handler;
+    static TextView tvTotalDevice;
+    static Button btCompress, btChooseFile;
+    static String fileToCompress;
+    static Handler handler;
     static Switch swRemote;
-    private static TextView tvFileName;
+    private TextView tvFileName;
     private static int deviceCount = 0;
     private static Spinner spAlgorithm;
-    private static IntentFilter intentFilter;
     private static WifiReceiver wifiReceiver;
-    private String TAG = "CompressFile";
 
     /**
      * Return user selected algorithm
      *
      * @return algorithm
      */
-    public static int getAlgorithm() {
+    static int getAlgorithm() {
         return spAlgorithm.getSelectedItemPosition();
     }
 
@@ -50,7 +50,7 @@ public class CompressFile extends AppCompatActivity {
      * @param c           Current context
      * @param isIncrement to increment or decrement device count
      */
-    public static synchronized void updateDeviceCount(final Context c, final boolean isIncrement) {
+    static synchronized void updateDeviceCount(final Context c, final boolean isIncrement) {
         if (isIncrement) {
             deviceCount++;
         } else if (deviceCount > 0) {
@@ -73,7 +73,7 @@ public class CompressFile extends AppCompatActivity {
      *
      * @param state to enable or disable
      */
-    public static void setWidgetEnabled(boolean state) {
+    static void setWidgetEnabled(boolean state) {
         btCompress.setEnabled(state);
     }
 
@@ -98,7 +98,7 @@ public class CompressFile extends AppCompatActivity {
         WifiOperations.initWifiOperations(CompressFile.this);
 
         wifiReceiver = new WifiReceiver();
-        intentFilter = new IntentFilter();
+        IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("android.net.wifi.WIFI_AP_STATE_CHANGED");
 
         registerReceiver(wifiReceiver, intentFilter);
@@ -239,7 +239,7 @@ public class CompressFile extends AppCompatActivity {
         unregisterReceiver(wifiReceiver);
         deviceCount = 0;
         fileToCompress = null;
-        if(DistributorService.isServerOn) {
+        if (DistributorService.isServerOn) {
             Intent intent = new Intent(this, DistributorService.class);
             intent.setAction(DistributorService.ACTION_STOP_FOREGROUND);
             startService(intent);

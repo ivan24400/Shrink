@@ -13,17 +13,18 @@ import java.util.zip.CRC32;
 
 
 public class CompressionUtils {
-    public static final int DEFLATE = 0;
-    public static final int DCRZ = 1;
-    public static final byte MASK_LAST_CHUNK = (byte) 0x80;
-    public static final String cmethod = "COMPRESSION_METHOD";
-    public static final String cfile = "COMPRESSION_FILE";
-    public static final String ACTION_COMPRESS_LOCAL = "compressionUtils_compress_local";
-    public static final String ACTION_DECOMPRESS_LOCAL = "compressionUtils_decompress_local";
-    private static final int bufferSize = 4096;
-    public static long crc = 0;
-    public static boolean isLocal = false;
     private static String TAG = "CompressionUtils";
+
+    static final int DEFLATE = 0;
+    static final int DCRZ = 1;
+    static final byte MASK_LAST_CHUNK = (byte) 0x80;
+    static final String cmethod = "COMPRESSION_METHOD";
+    static final String cfile = "COMPRESSION_FILE";
+    static final String ACTION_COMPRESS_LOCAL = "compressionUtils_compress_local";
+    static final String ACTION_DECOMPRESS_LOCAL = "compressionUtils_decompress_local";
+    private static final int bufferSize = 4096;
+    static long crc = 0;
+    static boolean isLocal = false;
     private static byte[] buffer = new byte[bufferSize];
 
     /**
@@ -51,7 +52,7 @@ public class CompressionUtils {
      * @param method compression method
      * @param inFile name of file to write header
      */
-    public static void writeHeader(int method, String inFile) {
+    static void writeHeader(int method, String inFile) {
         File in = new File(inFile);
         try {
             if (!in.exists()) {
@@ -69,7 +70,7 @@ public class CompressionUtils {
                     header1 = header1 << 2; // 2 bits = max algorithms is 4
                     out.write(header1);
                     Log.d(TAG, "writeheader headercount: " + header1);
-                }else{
+                } else {
                     out.write(DEFLATE);
                 }
             } else if (method == DCRZ) {
@@ -96,7 +97,7 @@ public class CompressionUtils {
      * @param inFile file to be compressed
      * @return error status
      */
-    public static int compress(int method, boolean isLast, String inFile) {
+    static int compress(int method, boolean isLast, String inFile) {
         Log.d(TAG, "compress: isLocal " + isLocal + " isLast " + isLast);
         StringBuilder outFile = new StringBuilder(inFile);
         outFile.append(".dcrz");
@@ -115,7 +116,7 @@ public class CompressionUtils {
      * @return error status
      * @throws IOException
      */
-    public static int decompress(String infile) throws IOException {
+    static int decompress(String infile) throws IOException {
         long result = 0;
         Log.d(TAG, "infile: " + infile);
         if (!infile.matches(".*\\.dcrz")) {
@@ -156,13 +157,13 @@ public class CompressionUtils {
             i++;
         }
         input.close();
-        Log.d(TAG,"header1: "+header1+" crcIn:"+Long.toHexString(crc));
+        Log.d(TAG, "header1: " + header1 + " crcIn:" + Long.toHexString(crc));
         if ((header1 & 0x01) == DEFLATE) {
             int chunkCount = (header1 & 0xfc) >>> 2; //2 bits = max algorithms is 4
             Log.d(TAG, "chunkCount: " + chunkCount);
-            if(chunkCount != 0){
+            if (chunkCount != 0) {
                 Deflate.isRemote = true;
-            }else{
+            } else {
                 Deflate.isRemote = false;
             }
             long skip = 5; // header size
@@ -183,7 +184,7 @@ public class CompressionUtils {
             Log.d(TAG, "deflate decompress result: " + result);
         } else if ((header1 & 0x01) == DCRZ) {
             result = dcrzDecompress(infile, outFileNameT + outFileExt);
-            Log.d(TAG,"dcrz decompression result: "+result);
+            Log.d(TAG, "dcrz decompression result: " + result);
         }
 
         long crcOutput = computeCrc32(outFileNameT + outFileExt);
@@ -192,7 +193,7 @@ public class CompressionUtils {
             result = -1;
         }
         if (result != 0) {
-            new File(outFileNameT+outFileExt).delete();
+            new File(outFileNameT + outFileExt).delete();
         }
         return (int) result;
     }
@@ -203,7 +204,7 @@ public class CompressionUtils {
      * @param name file name whose crc32 has to generated
      * @return crc32
      */
-    public static long computeCrc32(String name) {
+    static long computeCrc32(String name) {
         long crc = 1;
         try {
             System.out.println(name);
@@ -228,7 +229,7 @@ public class CompressionUtils {
      * @return crc32
      * @throws IOException
      */
-    public static long computeCRC32(InputStream file) throws IOException {
+    static long computeCRC32(InputStream file) throws IOException {
         CRC32 obj = new CRC32();
         int cnt;
         while ((cnt = file.read(buffer, 0, bufferSize)) != -1) {

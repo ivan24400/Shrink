@@ -17,10 +17,10 @@ import android.support.v7.app.AppCompatActivity;
 
 public class NotificationUtils {
 
-    public static final int NOTIFICATION_ID = 24;
+    static final int NOTIFICATION_ID = 24;
     private static final String TAG = "NotificationUtils";
     private static final String CHANNEL_ID = "SHRINK_NOTIFICATION_CHANNEL";
-    public static Notification notification;
+    static Notification notification;
     private static NotificationCompat.Builder nbuilder;
     private static NotificationManager nmanager;
     private static Service service;
@@ -32,7 +32,7 @@ public class NotificationUtils {
      * @param s       foreground service
      * @param nintent activity to resume/start when tapped on notification
      */
-    public static void initNotification(Service s, Intent nintent) {
+    static void initNotification(Service s, Intent nintent) {
         removeNotification();
         service = s;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -51,7 +51,7 @@ public class NotificationUtils {
      * @param content Content of notification
      * @return Notification object
      */
-    public static Notification createNotification(final String content) {
+    static Notification createNotification(final String content) {
 
         nbuilder = new NotificationCompat.Builder(service)
                 .setChannel(CHANNEL_ID)
@@ -87,7 +87,7 @@ public class NotificationUtils {
     }
 
 
-    public static Context getContext() {
+    static Context getContext() {
         return service.getBaseContext();
     }
 
@@ -96,7 +96,7 @@ public class NotificationUtils {
      *
      * @param content text
      */
-    public static void updateNotification(String content) {
+    static void updateNotification(String content) {
         if (service == null) {
             return;
         }
@@ -114,8 +114,8 @@ public class NotificationUtils {
     /**
      * Remove notification
      */
-    public static void removeNotification() {
-        if (service != null) {
+    static void removeNotification() {
+        if (nmanager != null) {
             nmanager.cancelAll();
         }
     }
@@ -126,7 +126,7 @@ public class NotificationUtils {
      * @param c Current context
      */
 
-    public static void errorDialog(final Context c, final String text) {
+    static void errorDialog(final Context c, final String text) {
         AlertDialog.Builder builder = new AlertDialog.Builder(c);
         builder.setTitle(c.getString(R.string.app_name))
                 .setMessage(text)

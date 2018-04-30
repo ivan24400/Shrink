@@ -50,7 +50,7 @@ public class WifiScanner extends BroadcastReceiver {
                 if (netInfo != null && netInfo.getType() == ConnectivityManager.TYPE_WIFI) {
 
                     if (netInfo.isConnected()) {
-                        final WifiManager wm = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+                        final WifiManager wm = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
                         final WifiInfo wi = wm.getConnectionInfo();
                         if (wi != null && !wi.getSSID().trim().contains(context.getString(R.string.sr_ssid))) {
                             Log.d(TAG, "wifi scanner different: " + wi.getSSID());
@@ -59,7 +59,14 @@ public class WifiScanner extends BroadcastReceiver {
                             return;
 
                         } else {
-                            Log.d(TAG, "wifi scanner connected: " + wi.getSSID());
+                            try{
+                                Log.d(TAG, "wifi scanner connected: " + wi.getSSID());
+                            }catch (NullPointerException e){
+                                e.printStackTrace();
+                                wm.disableNetwork(wi.getNetworkId());
+                                wm.disconnect();
+                                return;
+                            }
 
                             ((ShareResource) context).runOnUiThread(new Runnable() {
                                 @Override

@@ -23,18 +23,17 @@ import java.io.OutputStream;
 
 public class DeviceOperations {
 
-    public static final int batteryAlowerLimit = 61;
-    public static final int batteryBlowerLimit = 31;
-
     private static final String TAG = "DeviceOperations";
 
-    public static ProgressDialog progress;
+    private static final int batteryAlowerLimit = 61;
+    private static final int batteryBlowerLimit = 31;
+    private static ProgressDialog progress;
 
     /**
      * @param context Current context
      * @return free space and battery class seperated by "::";
      */
-    public static String getDeviceInfo(Context context) {
+    static String getDeviceInfo(Context context) {
 
         // Free space in Bytes
         long freeSpace = getFreeSpace();
@@ -66,7 +65,7 @@ public class DeviceOperations {
         return Long.toString(freeSpace) + "::" + Character.toString(batteryClass);
     }
 
-    public static long getFreeSpace() {
+    static long getFreeSpace() {
         long freeSpace = 0;
         StatFs statFs = new StatFs(Environment.getExternalStorageDirectory().getPath());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
@@ -89,9 +88,8 @@ public class DeviceOperations {
         return totalSpace;
     }
 
-    public static void setArt(final Context context, final Handler handler, View view) {
+    static void setArt(final Context context, final Handler handler, View view) {
         view.setOnTouchListener(new View.OnTouchListener() {
-            int maxTaps = 7;
             int countTaps = 0;
             long refTime = 0;
 
@@ -99,13 +97,13 @@ public class DeviceOperations {
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     long time = System.currentTimeMillis();
-                    if (refTime == 0 || (time - refTime) > 3000) {
+                    if (refTime == 0 || (time - refTime) > 1500) {
                         refTime = time;
                         countTaps = 1;
                     } else {
                         countTaps++;
                     }
-                    if (countTaps == maxTaps) {
+                    if (countTaps == 3) {
                         (new Thread(new Runnable() {
                             @Override
                             public void run() {
@@ -150,7 +148,7 @@ public class DeviceOperations {
      * @param title title of dialog
      * @param msg   content of dialog
      */
-    public static void displayProgress(Context c, String title, String msg) {
+    static void displayProgress(Context c, String title, String msg) {
         if (progress != null && progress.isShowing()) {
             progress.dismiss();
         }
@@ -165,7 +163,7 @@ public class DeviceOperations {
     /**
      * Removes progress dialog
      */
-    public static void removeProgress() {
+    static void removeProgress() {
         if (progress != null && progress.isShowing()) {
             progress.dismiss();
         }

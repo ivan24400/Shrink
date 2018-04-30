@@ -18,109 +18,19 @@ import java.util.concurrent.TimeUnit;
 
 public class DistributorService extends Service {
 
-    public static final String ACTION_START_FOREGROUND = "ps.DistributorService.start";
-    public static final String ACTION_STOP_FOREGROUND = "ps.DistributorService.stop";
+    private static String TAG = "DistributorService";
+
+    static final String ACTION_START_FOREGROUND = "ps.DistributorService.start";
+    static final String ACTION_STOP_FOREGROUND = "ps.DistributorService.stop";
     private static final int MAX_DEVICES_COUNT = 9;
     public static Object sync = new Object();
 
-    public static boolean isDistributorActive = false;
-    public static boolean isServerOn = false;
-    public static List<MasterDevice> deviceList = new LinkedList<>();
-    private static String TAG = "DistributorService";
+    static boolean isDistributorActive = false;
+    static boolean isServerOn = false;
+    static List<MasterDevice> deviceList = new LinkedList<>();
     private static int workerCount = 0;
     private static ServerSocket server;
     private static ExecutorService executor;
-
-    /**
-     * Increment worker device count
-     */
-    public synchronized static void incrWorker() {
-        workerCount++;
-    }
-
-    /**
-     * decrement worker device count
-     */
-    public synchronized static void dcrWorker() {
-        workerCount--;
-        if (workerCount == 0) {
-            gatherResults();
-        }
-    }
-
-    /**
-     * Start distributing file among slave devices
-     *
-     * @param context Current context
-     */
-    public static void startDistribution(final Context context) {
-
-        (new Thread(new Runnable() {
-            @Override
-            public void run() {
-                // Write Header
-                CompressionUtils.writeHeader(CompressFile.getAlgorithm(), CompressFile.fileToCompress);
-
-                Log.d(TAG, "start distribution: distributing");
-                isDistributorActive = true;
-                CompressFile.handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        CompressFile.setWidgetEnabled(false);
-                        NotificationUtils.updateNotification(context.getString(R.string.distributing));
-                    }
-                });
-                for (int i = 0; i < deviceList.size(); i++) {
-                    if (deviceList.get(i).getAllocatedSpace() == 0) {
-                        break;
-                    } else {
-                        Log.d(TAG, i + ": distributing to " + deviceList.get(i).getName());
-                        deviceList.get(i).notifyMe(this);
-                    }
-                }
-                Log.d(TAG, "start distribution: compressing");
-                CompressFile.handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        NotificationUtils.updateNotification(context.getString(R.string.compressing));
-                    }
-                });
-            }
-
-        })).start();
-    }
-
-    /**
-     * Receive compressed output from all slave devices
-     */
-    public synchronized static void gatherResults() {
-        Log.d(TAG, "gather results");
-        CompressFile.handler.post(new Runnable() {
-            @Override
-            public void run() {
-                NotificationUtils.updateNotification(NotificationUtils.getContext().getString(R.string.gather));
-            }
-        });
-        (new Thread(new Runnable() {
-            @Override
-            public void run() {
-                for (MasterDevice device : deviceList) {
-                    if (device.getAllocatedSpace() == 0) {
-                        break;
-                    } else {
-                        Log.d(TAG, ":gathering from " + device.getName());
-                        device.notifyMe(this);
-                    }
-                }
-                isDistributorActive = false;
-                try {
-                    server.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        })).start();
-    }
 
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
@@ -146,7 +56,6 @@ public class DistributorService extends Service {
                                 sync.wait();
                             }
                         }
-                        DataTransfer.initFiles(true, CompressFile.fileToCompress, CompressFile.fileToCompress + ".dcrz");
 
                         executor = Executors.newFixedThreadPool(MAX_DEVICES_COUNT);
                         server = new ServerSocket(0);
@@ -185,14 +94,114 @@ public class DistributorService extends Service {
         return START_NOT_STICKY;
     }
 
+
+    /**
+     * Increment worker device count
+     */
+    synchronized static void incrWorker() {
+        workerCount++;
+    }
+
+    /**
+     * decrement worker device count
+     */
+    synchronized static void dcrWorker() {
+        workerCount--;
+        if (workerCount == 0) {
+            gatherResults();
+        }
+    }
+
+    /**
+     * Start distributing file among slave devices
+     *
+     * @param context Current context
+     */
+    static void startDistribution(final Context context) {
+
+        (new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try{
+                    DataTransfer.initFiles(true, CompressFile.fileToCompress, CompressFile.fileToCompress + ".dcrz");
+
+                    // Write Header
+                    CompressionUtils.writeHeader(CompressFile.getAlgorithm(), CompressFile.fileToCompress);
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
+
+
+                Log.d(TAG, "start distribution: distributing");
+                isDistributorActive = true;
+                CompressFile.handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        CompressFile.setWidgetEnabled(false);
+                        NotificationUtils.updateNotification(context.getString(R.string.distributing));
+                    }
+                });
+                for (int i = 0; i < deviceList.size(); i++) {
+                    if (deviceList.get(i).getAllocatedSpace() == 0) {
+                        break;
+                    } else {
+                        Log.d(TAG, i + ": distributing to " + deviceList.get(i).getName());
+                        deviceList.get(i).notifyMe(this);
+                    }
+                }
+                Log.d(TAG, "start distribution: compressing");
+                CompressFile.handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        NotificationUtils.updateNotification(context.getString(R.string.compressing));
+                    }
+                });
+            }
+
+        })).start();
+    }
+
+    /**
+     * Receive compressed output from all slave devices
+     */
+    synchronized static void gatherResults() {
+        Log.d(TAG, "gather results");
+        CompressFile.handler.post(new Runnable() {
+            @Override
+            public void run() {
+                NotificationUtils.updateNotification(NotificationUtils.getContext().getString(R.string.gather));
+            }
+        });
+        (new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (MasterDevice device : deviceList) {
+                    if (device.getAllocatedSpace() == 0) {
+                        break;
+                    } else {
+                        Log.d(TAG, ":gathering from " + device.getName());
+                        device.notifyMe(this);
+                    }
+                }
+                isDistributorActive = false;
+                try {
+                    server.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        })).start();
+    }
+
     /**
      * Stop all threads including this
      */
-    public synchronized void stop() {
+    synchronized void stop() {
         if (DistributorService.this != null) {
             CompressFile.handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    CompressFile.setWidgetEnabled(true);
                     if (isDistributorActive) {
                         NotificationUtils.updateNotification(DistributorService.this.getString(R.string.err_device_failed));
                     } else {
@@ -207,7 +216,6 @@ public class DistributorService extends Service {
             }
 
             isDistributorActive = false;
-            CompressFile.setWidgetEnabled(true);
             WifiOperations.stop();
 
             try {

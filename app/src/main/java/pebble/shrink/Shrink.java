@@ -21,6 +21,7 @@ import java.util.Arrays;
 public class Shrink extends AppCompatActivity {
 
     private static final int MULTI_PERMISSION_GROUP_ID = 475;
+    static final String EXIT_APP = "pebble.shrink.exit";
     private static Button btCompress;
     private static TextView tvTitle;
 
@@ -35,6 +36,10 @@ public class Shrink extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.shrink_activity);
 
+        if(getIntent().getBooleanExtra(EXIT_APP,false)){
+            finish();
+            return;
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             String[] permissions = new String[3];
             int i = 0;

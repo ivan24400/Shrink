@@ -19,36 +19,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class ShareResource extends AppCompatActivity {
+
+    static final String TAG = "Share Resource";
     static final String tmp_file = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Shrink/tmp.dat";
     static final String tmpc_file = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Shrink/tmp.dat.dcrz";
-    static final String TAG = "Share Resource";
-    public static Spinner mpriority;
-    public static Button connect;
-    public static boolean isConnect = false;
-    public static Handler handler;
+
+    static Spinner mpriority;
+    static Button connect;
+    static boolean isConnect = false;
+    static Handler handler;
     static EditText mfreeSpace;
     private static TextView deviceName, deviceStatus, freeSpace;
     private static IntentFilter intentFilter;
     private WifiScanner wifiScanner;
-
-    /**
-     * Modifiy enabled status of widgets
-     *
-     * @param context Current context
-     * @param state   enabled or disabled
-     */
-    public static void setConnected(final Context context, final boolean state) {
-        isConnect = state;
-        mpriority.setEnabled(!state);
-        mfreeSpace.setEnabled(!state);
-        if (state) {
-            deviceStatus.setText(context.getString(R.string.sr_device_status, "Connected"));
-            connect.setText(context.getString(R.string.sr_disconnect));
-        } else {
-            deviceStatus.setText(context.getString(R.string.sr_device_status, "Disconnected"));
-            connect.setText(context.getString(R.string.sr_connect));
-        }
-    }
+    static AppCompatActivity activity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +44,7 @@ public class ShareResource extends AppCompatActivity {
 
         WifiOperations.initWifiOperations(ShareResource.this);
         handler = new Handler(Looper.getMainLooper());
-
+        activity = this;
         deviceName = (TextView) findViewById(R.id.tvSRdeviceName);
         deviceStatus = (TextView) findViewById(R.id.tvSRdeviceStatus);
         freeSpace = (TextView) findViewById(R.id.tvSRfreespace);
@@ -82,7 +66,7 @@ public class ShareResource extends AppCompatActivity {
     /**
      * Initialize text views with their corresponding values
      */
-    public void initDeviceStat() {
+    private void initDeviceStat() {
         (new Thread(new Runnable() {
 
             @Override
@@ -109,6 +93,26 @@ public class ShareResource extends AppCompatActivity {
             }
         })).start();
     }
+
+    /**
+     * Modifiy enabled status of widgets
+     *
+     * @param context Current context
+     * @param state   enabled or disabled
+     */
+    public static void setConnected(final Context context, final boolean state) {
+        isConnect = state;
+        mpriority.setEnabled(!state);
+        mfreeSpace.setEnabled(!state);
+        if (state) {
+            deviceStatus.setText(context.getString(R.string.sr_device_status, "Connected"));
+            connect.setText(context.getString(R.string.sr_disconnect));
+        } else {
+            deviceStatus.setText(context.getString(R.string.sr_device_status, "Disconnected"));
+            connect.setText(context.getString(R.string.sr_connect));
+        }
+    }
+
 
     /**
      * Connect to master device
@@ -148,7 +152,7 @@ public class ShareResource extends AppCompatActivity {
             unregisterReceiver(wifiScanner);
             wifiScanner = null;
         }
-        NotificationUtils.removeNotification();
+        //NotificationUtils.removeNotification();
 
         WifiOperations.stop();
         super.onDestroy();

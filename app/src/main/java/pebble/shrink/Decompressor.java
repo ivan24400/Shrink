@@ -18,10 +18,11 @@ import java.io.File;
 
 
 public class Decompressor extends AppCompatActivity {
-    public static final String ACTION_MAIN = "decompressor.main";
     private static final String TAG = "Decompressor";
+
     private static final int FILE_CHOOSE_REQUEST = 53;
-    public static Handler handler;
+    static final String ACTION_MAIN = "decompressor.main";
+    static Handler handler;
     private static Button decompress, chooseFile;
     private static String filename;
     private static TextView tvFileName;
