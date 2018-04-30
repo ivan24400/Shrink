@@ -173,7 +173,6 @@ public class FileChooser extends ListActivity {
             if (f1.isFile() && f2.isDirectory()) {
                 return 1;
             }
-
             return f1.getName().compareToIgnoreCase(f2.getName());
         }
     }

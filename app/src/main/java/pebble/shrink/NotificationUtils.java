@@ -15,7 +15,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 
-public class NotificationUtils {
+class NotificationUtils {
 
     static final int NOTIFICATION_ID = 24;
     private static final String TAG = "NotificationUtils";
@@ -39,9 +39,7 @@ public class NotificationUtils {
             createNotificationChannel();
         }
         nmanager = (NotificationManager) service.getSystemService(Context.NOTIFICATION_SERVICE);
-
         pendingIntent = PendingIntent.getActivity(service, 0, nintent, 0);
-
         notification = createNotification(service.getString(R.string.initializing));
     }
 
@@ -85,7 +83,6 @@ public class NotificationUtils {
             nmanager.createNotificationChannel(notificationChannel);
         }
     }
-
 
     static Context getContext() {
         return service.getBaseContext();

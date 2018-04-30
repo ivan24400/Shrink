@@ -57,11 +57,10 @@ public class WifiScanner extends BroadcastReceiver {
                             wm.disableNetwork(wi.getNetworkId());
                             wm.disconnect();
                             return;
-
                         } else {
-                            try{
+                            try {
                                 Log.d(TAG, "wifi scanner connected: " + wi.getSSID());
-                            }catch (NullPointerException e){
+                            } catch (NullPointerException e) {
                                 e.printStackTrace();
                                 wm.disableNetwork(wi.getNetworkId());
                                 wm.disconnect();
@@ -81,7 +80,6 @@ public class WifiScanner extends BroadcastReceiver {
                             Intent dintent = new Intent(context, SlaveDeviceService.class);
                             dintent.putExtra(SlaveDeviceService.EXTRA_PORT, Integer.parseInt(wi.getSSID().split("_")[1].replace("\"", "")));
                             context.startService(dintent);
-
                         }
                     }
                 } else {

@@ -18,82 +18,17 @@ import java.util.concurrent.TimeUnit;
 
 public class DistributorService extends Service {
 
-    private static String TAG = "DistributorService";
-
     static final String ACTION_START_FOREGROUND = "ps.DistributorService.start";
     static final String ACTION_STOP_FOREGROUND = "ps.DistributorService.stop";
     private static final int MAX_DEVICES_COUNT = 9;
-    public static Object sync = new Object();
-
+    static Object sync = new Object();
     static boolean isDistributorActive = false;
     static boolean isServerOn = false;
     static List<MasterDevice> deviceList = new LinkedList<>();
+    private static String TAG = "DistributorService";
     private static int workerCount = 0;
     private static ServerSocket server;
     private static ExecutorService executor;
-
-    @Override
-    public int onStartCommand(final Intent intent, int flags, int startId) {
-
-        if (intent.getAction().equals(ACTION_START_FOREGROUND)) {
-
-            Intent nintent = new Intent(DistributorService.this, CompressFile.class);
-            NotificationUtils.initNotification(DistributorService.this, nintent);
-            (new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    DistributorService.this.startForeground(NotificationUtils.NOTIFICATION_ID, NotificationUtils.notification);
-                    try {
-
-                        CompressFile.handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                CompressFile.setWidgetEnabled(false);
-                            }
-                        });
-                        synchronized (sync) {
-                            while (CompressFile.fileToCompress == null) {
-                                sync.wait();
-                            }
-                        }
-
-                        executor = Executors.newFixedThreadPool(MAX_DEVICES_COUNT);
-                        server = new ServerSocket(0);
-                        WifiOperations.setWifiApSsid(DistributorService.this.getString(R.string.sr_ssid) + "_" + server.getLocalPort());
-                        WifiOperations.setWifiApEnabled(true);
-
-                        CompressFile.handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                CompressFile.setWidgetEnabled(true);
-                            }
-                        });
-                        isServerOn = true;
-                        while (true) {
-                            Socket client = server.accept();
-                            CompressFile.updateDeviceCount(DistributorService.this, true);
-                            Log.d(TAG, "Connected " + client.getInetAddress());
-
-                            MasterDevice masterDevice = new MasterDevice(DistributorService.this, client);
-                            deviceList.add(masterDevice);
-                            executor.execute(masterDevice);
-                        }
-                    } catch (Exception e) {
-                        isServerOn = false;
-                        e.printStackTrace();
-                    }
-                    stop();
-                    Log.d(TAG, "after executor shutdown");
-                }
-            })).start();
-        } else if (intent.getAction().equals(ACTION_STOP_FOREGROUND)) {
-            Log.d(TAG, "action stop foreground");
-            stop();
-        }
-
-        return START_NOT_STICKY;
-    }
-
 
     /**
      * Increment worker device count
@@ -122,15 +57,14 @@ public class DistributorService extends Service {
         (new Thread(new Runnable() {
             @Override
             public void run() {
-                try{
+                try {
                     DataTransfer.initFiles(true, CompressFile.fileToCompress, CompressFile.fileToCompress + ".dcrz");
 
                     // Write Header
                     CompressionUtils.writeHeader(CompressFile.getAlgorithm(), CompressFile.fileToCompress);
-                }catch (IOException e){
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
-
 
                 Log.d(TAG, "start distribution: distributing");
                 isDistributorActive = true;
@@ -193,6 +127,66 @@ public class DistributorService extends Service {
         })).start();
     }
 
+    @Override
+    public int onStartCommand(final Intent intent, int flags, int startId) {
+
+        if (intent.getAction().equals(ACTION_START_FOREGROUND)) {
+
+            Intent nintent = new Intent(DistributorService.this, CompressFile.class);
+            NotificationUtils.initNotification(DistributorService.this, nintent);
+            (new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    DistributorService.this.startForeground(NotificationUtils.NOTIFICATION_ID, NotificationUtils.notification);
+                    try {
+                        CompressFile.handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                CompressFile.setWidgetEnabled(false);
+                            }
+                        });
+                        synchronized (sync) {
+                            while (CompressFile.fileToCompress == null) {
+                                sync.wait();
+                            }
+                        }
+
+                        executor = Executors.newFixedThreadPool(MAX_DEVICES_COUNT);
+                        server = new ServerSocket(0);
+                        WifiOperations.setWifiApSsid(DistributorService.this.getString(R.string.sr_ssid) + "_" + server.getLocalPort());
+                        WifiOperations.setWifiApEnabled(true);
+
+                        CompressFile.handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                CompressFile.setWidgetEnabled(true);
+                            }
+                        });
+                        isServerOn = true;
+                        while (true) {
+                            Socket client = server.accept();
+                            CompressFile.updateDeviceCount(DistributorService.this, true);
+                            Log.d(TAG, "Connected " + client.getInetAddress());
+
+                            MasterDevice masterDevice = new MasterDevice(DistributorService.this, client);
+                            deviceList.add(masterDevice);
+                            executor.execute(masterDevice);
+                        }
+                    } catch (Exception e) {
+                        isServerOn = false;
+                        e.printStackTrace();
+                    }
+                    stop();
+                }
+            })).start();
+        } else if (intent.getAction().equals(ACTION_STOP_FOREGROUND)) {
+            Log.d(TAG, "action stop foreground");
+            stop();
+        }
+
+        return START_NOT_STICKY;
+    }
+
     /**
      * Stop all threads including this
      */
@@ -209,6 +203,7 @@ public class DistributorService extends Service {
                     }
                 }
             });
+
             if (isDistributorActive) {
                 DataTransfer.releaseFiles(true);
             } else {

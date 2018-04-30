@@ -20,8 +20,8 @@ import java.util.Arrays;
 
 public class Shrink extends AppCompatActivity {
 
-    private static final int MULTI_PERMISSION_GROUP_ID = 475;
     static final String EXIT_APP = "pebble.shrink.exit";
+    private static final int MULTI_PERMISSION_GROUP_ID = 475;
     private static Button btCompress;
     private static TextView tvTitle;
 
@@ -29,14 +29,14 @@ public class Shrink extends AppCompatActivity {
         System.loadLibrary("dcrz");
     }
 
-    private final String TAG = Shrink.this.getClass().getSimpleName();
+    private final String TAG = "Shrink";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.shrink_activity);
 
-        if(getIntent().getBooleanExtra(EXIT_APP,false)){
+        if (getIntent().getBooleanExtra(EXIT_APP, false)) {
             finish();
             return;
         }

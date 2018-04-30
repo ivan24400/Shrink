@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class DeviceOperations {
+class DeviceOperations {
 
     private static final String TAG = "DeviceOperations";
 
@@ -40,8 +40,8 @@ public class DeviceOperations {
         long totalSpace = getTotalSpace();
 
         // Subtract unavailable minimum storage of android.
-        if ((freeSpace / 2 - (long) 0.1 * totalSpace) > 0) {
-            freeSpace = freeSpace / 2 - (long) 0.1 * totalSpace;
+        if ((freeSpace / 2 - (long) (0.1 * totalSpace)) > 0) {
+            freeSpace = freeSpace / 2 - (long) (0.1 * totalSpace);
         } else {
             freeSpace = freeSpace / 2;
         }

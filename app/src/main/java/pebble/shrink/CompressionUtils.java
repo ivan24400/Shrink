@@ -12,9 +12,7 @@ import java.io.InputStream;
 import java.util.zip.CRC32;
 
 
-public class CompressionUtils {
-    private static String TAG = "CompressionUtils";
-
+class CompressionUtils {
     static final int DEFLATE = 0;
     static final int DCRZ = 1;
     static final byte MASK_LAST_CHUNK = (byte) 0x80;
@@ -23,8 +21,9 @@ public class CompressionUtils {
     static final String ACTION_COMPRESS_LOCAL = "compressionUtils_compress_local";
     static final String ACTION_DECOMPRESS_LOCAL = "compressionUtils_decompress_local";
     private static final int bufferSize = 4096;
-    static long crc = 0;
     static boolean isLocal = false;
+    private static String TAG = "CompressionUtils";
+    private static long crc = 0;
     private static byte[] buffer = new byte[bufferSize];
 
     /**
@@ -204,7 +203,7 @@ public class CompressionUtils {
      * @param name file name whose crc32 has to generated
      * @return crc32
      */
-    static long computeCrc32(String name) {
+    private static long computeCrc32(String name) {
         long crc = 1;
         try {
             System.out.println(name);

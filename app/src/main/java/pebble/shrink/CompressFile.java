@@ -22,18 +22,17 @@ import java.io.File;
 
 public class CompressFile extends AppCompatActivity {
 
-    private String TAG = "CompressFile";
-
     private static final int FILE_CHOOSE_REQUEST = 9;
     static TextView tvTotalDevice;
     static Button btCompress, btChooseFile;
     static String fileToCompress;
     static Handler handler;
     static Switch swRemote;
-    private TextView tvFileName;
     private static int deviceCount = 0;
     private static Spinner spAlgorithm;
     private static WifiReceiver wifiReceiver;
+    private String TAG = "CompressFile";
+    private TextView tvFileName;
 
     /**
      * Return user selected algorithm
@@ -63,7 +62,6 @@ public class CompressFile extends AppCompatActivity {
             @Override
             public void run() {
                 CompressFile.tvTotalDevice.setText(c.getString(R.string.cf_total_devices, deviceCount));
-
             }
         });
     }
@@ -223,7 +221,6 @@ public class CompressFile extends AppCompatActivity {
                     synchronized (DistributorService.sync) {
                         DistributorService.sync.notify();
                     }
-
                 } else {
                     Toast.makeText(this, getString(R.string.err_file_not_found), Toast.LENGTH_SHORT).show();
                 }

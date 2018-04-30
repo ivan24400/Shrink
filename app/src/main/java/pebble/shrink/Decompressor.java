@@ -18,10 +18,9 @@ import java.io.File;
 
 
 public class Decompressor extends AppCompatActivity {
-    private static final String TAG = "Decompressor";
-
-    private static final int FILE_CHOOSE_REQUEST = 53;
     static final String ACTION_MAIN = "decompressor.main";
+    private static final String TAG = "Decompressor";
+    private static final int FILE_CHOOSE_REQUEST = 53;
     static Handler handler;
     private static Button decompress, chooseFile;
     private static String filename;
@@ -66,7 +65,6 @@ public class Decompressor extends AppCompatActivity {
                 Intent intent = new Intent(Decompressor.this, FileChooser.class);
                 intent.setAction(FileChooser.FILE_CHOOSER_DCRZ);
                 startActivityForResult(intent, FILE_CHOOSE_REQUEST);
-
             }
         });
     }

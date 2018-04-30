@@ -19,9 +19,8 @@ import java.util.concurrent.TimeUnit;
 
 public class SlaveDeviceService extends Service {
 
-    private static final String TAG = "SlaveDeviceService";
-
     static final String EXTRA_PORT = "ps.SlaveDeviceService.port";
+    private static final String TAG = "SlaveDeviceService";
     static long freeSpace, allocatedSpace, compressedSize;
     static char batteryClass;
     private static int hbPort;
@@ -69,7 +68,6 @@ public class SlaveDeviceService extends Service {
             @Override
             public void run() {
                 SlaveDeviceService.this.startForeground(NotificationUtils.NOTIFICATION_ID, NotificationUtils.notification);
-
                 try {
                     Runnable hb = new Runnable() {
                         @Override
@@ -93,25 +91,25 @@ public class SlaveDeviceService extends Service {
 
                     Log.d(TAG, "device slave " + addr + " @ " + port);
 
-                        slaveHeart = new ServerSocket(0);
-                        hbPort = slaveHeart.getLocalPort();
-                        slave = new Socket(addr, port);
-                        in = slave.getInputStream();
-                        out = slave.getOutputStream();
-                        isOperationActive = true;
+                    slaveHeart = new ServerSocket(0);
+                    hbPort = slaveHeart.getLocalPort();
+                    slave = new Socket(addr, port);
+                    in = slave.getInputStream();
+                    out = slave.getOutputStream();
+                    isOperationActive = true;
 
-                        SlaveDeviceService.batteryClass = ShareResource.mpriority.getSelectedItemPosition() == 0 ? 'B' : 'A';
-                        Log.d(TAG, "freespace: " + ShareResource.mfreeSpace.getText().toString().trim().replace("\"", ""));
-                        SlaveDeviceService.freeSpace = Long.parseLong(ShareResource.mfreeSpace.getText().toString().trim().replace("\"", ""));
+                    SlaveDeviceService.batteryClass = ShareResource.mpriority.getSelectedItemPosition() == 0 ? 'B' : 'A';
+                    Log.d(TAG, "freespace: " + ShareResource.mfreeSpace.getText().toString().trim().replace("\"", ""));
+                    SlaveDeviceService.freeSpace = Long.parseLong(ShareResource.mfreeSpace.getText().toString().trim().replace("\"", ""));
 
-                        initMetaData();
+                    initMetaData();
 
-                        master = slaveHeart.accept();
-                        Log.d(TAG, "master hb connected " + master.toString());
-                        hbOut = master.getOutputStream();
+                    master = slaveHeart.accept();
+                    Log.d(TAG, "master hb connected " + master.toString());
+                    hbOut = master.getOutputStream();
 
-                        executer = Executors.newSingleThreadScheduledExecutor();
-                        executer.scheduleAtFixedRate(hb, 0, DataTransfer.HEARTBEAT_TIMEOUT, TimeUnit.MILLISECONDS);
+                    executer = Executors.newSingleThreadScheduledExecutor();
+                    executer.scheduleAtFixedRate(hb, 0, DataTransfer.HEARTBEAT_TIMEOUT, TimeUnit.MILLISECONDS);
 
 
                     // Receiving allocated space and algorithm type
@@ -127,7 +125,7 @@ public class SlaveDeviceService extends Service {
                     } else {
                         isLastChunk = false;
                     }
-                    if ((meta & (byte) CompressionUtils.DCRZ) == (byte) (CompressionUtils.DCRZ)) {
+                    if ((meta & 0x01) == (byte) (CompressionUtils.DCRZ)) {
                         algorithm = CompressionUtils.DCRZ;
                     } else {
                         algorithm = CompressionUtils.DEFLATE;
@@ -203,7 +201,6 @@ public class SlaveDeviceService extends Service {
                 } finally {
                     stop();
                 }
-
             }
         })).start();
 
@@ -238,9 +235,9 @@ public class SlaveDeviceService extends Service {
         SlaveDeviceService.this.stopForeground(false);
         SlaveDeviceService.this.stopSelf();
 
-        Intent intent = new Intent(this,Shrink.class);
+        Intent intent = new Intent(this, Shrink.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.putExtra(Shrink.EXIT_APP,true);
+        intent.putExtra(Shrink.EXIT_APP, true);
         ShareResource.activity.startActivity(intent);
         ShareResource.activity.finish();
     }

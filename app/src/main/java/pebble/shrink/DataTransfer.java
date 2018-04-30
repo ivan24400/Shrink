@@ -10,7 +10,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 
-public class DataTransfer {
+class DataTransfer {
 
     static final int READY = 1;
     static final int HEARTBEAT_TIMEOUT = 1000;
@@ -25,10 +25,6 @@ public class DataTransfer {
 
     static OutputStream getOutputStream() {
         return outputFile;
-    }
-
-    public static InputStream getInputStream() {
-        return inputFile;
     }
 
     /**
@@ -153,13 +149,11 @@ public class DataTransfer {
     static void deleteFiles() {
         releaseFiles(false);
         /*
-           if( (new File(inputFileName)).delete() || (new File(outputFileName)).delete() ){
-               Log.d(TAG,"Delete success");
-           }else{
-               Log.d(TAG,"Delete failed");
-           }
-           */
+        if ((new File(inputFileName)).delete() || (new File(outputFileName)).delete()) {
+            Log.d(TAG, "Delete success");
+        } else {
+            Log.d(TAG, "Delete failed");
+        }
+        */
     }
-
-
 }

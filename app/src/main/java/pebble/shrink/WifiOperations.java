@@ -11,7 +11,7 @@ import android.widget.Toast;
 import java.lang.reflect.Method;
 
 
-public class WifiOperations {
+class WifiOperations {
 
     private static final String TAG = "WifiOperations";
     static boolean isMaster = false;
@@ -41,7 +41,6 @@ public class WifiOperations {
         configuration.SSID = "\"" + ssid + "\"";
         configuration.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
         configuration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-
     }
 
     static boolean isWifiApOn() {
@@ -153,7 +152,6 @@ public class WifiOperations {
                         Log.d(TAG, "network enable " + bres);
                         bres = manager.reconnect();
                         Log.d(TAG, "network reconnect " + bres);
-
                     }
                 }
             }
@@ -175,7 +173,7 @@ public class WifiOperations {
      * @return is connected to master device
      */
     static boolean isConnected() {
-        return manager != null &&  manager.getConnectionInfo().getSSID().contains("SHRINK");
+        return manager != null && manager.getConnectionInfo().getSSID().contains("SHRINK");
     }
 
     /**

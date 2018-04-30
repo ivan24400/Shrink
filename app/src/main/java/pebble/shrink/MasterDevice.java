@@ -13,7 +13,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class MasterDevice implements Runnable {
+class MasterDevice implements Runnable {
 
     private static final String TAG = "MasterDevice";
     private String threadName;
@@ -121,6 +121,7 @@ public class MasterDevice implements Runnable {
         if (freeSpace <= 0 || battery >= 'C' || hbPort <= 0) {
             throw new IOException("Invalid values");
         }
+
         slave = new Socket(master.getInetAddress(), hbPort);
         slave.setSoTimeout(DataTransfer.HEARTBEAT_TIMEOUT);
 
@@ -287,7 +288,6 @@ public class MasterDevice implements Runnable {
                     }
                 });
             }
-
         }
     }
 

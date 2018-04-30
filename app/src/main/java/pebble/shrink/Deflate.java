@@ -12,10 +12,10 @@ import java.util.zip.InflaterInputStream;
  * This class compresses or decompress input file
  * using deflate algorithm
  */
-public class Deflate {
+class Deflate {
 
     private static final int DEFLATE_BUFFER_SIZE = 24000;
-    public static boolean isRemote = false;
+    static boolean isRemote = false;
     private static FileInputStream fin;
     private static FileOutputStream fout;
 
@@ -56,7 +56,7 @@ public class Deflate {
     static long decompressFile(long skip, String input, String output) {
         try {
             fin = new FileInputStream(input);
-            fout = new FileOutputStream(output.toString(), isRemote);
+            fout = new FileOutputStream(output, isRemote);
             InflaterInputStream iin = new InflaterInputStream(fin);
 
             int ret;
@@ -79,5 +79,4 @@ public class Deflate {
             return -1;
         }
     }
-
 }

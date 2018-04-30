@@ -18,7 +18,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class ShareResource extends AppCompatActivity {
+class ShareResource extends AppCompatActivity {
 
     static final String TAG = "Share Resource";
     static final String tmp_file = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Shrink/tmp.dat";
@@ -29,10 +29,29 @@ public class ShareResource extends AppCompatActivity {
     static boolean isConnect = false;
     static Handler handler;
     static EditText mfreeSpace;
+    static AppCompatActivity activity;
     private static TextView deviceName, deviceStatus, freeSpace;
     private static IntentFilter intentFilter;
     private WifiScanner wifiScanner;
-    static AppCompatActivity activity;
+
+    /**
+     * Modifiy enabled status of widgets
+     *
+     * @param context Current context
+     * @param state   enabled or disabled
+     */
+    static void setConnected(final Context context, final boolean state) {
+        isConnect = state;
+        mpriority.setEnabled(!state);
+        mfreeSpace.setEnabled(!state);
+        if (state) {
+            deviceStatus.setText(context.getString(R.string.sr_device_status, "Connected"));
+            connect.setText(context.getString(R.string.sr_disconnect));
+        } else {
+            deviceStatus.setText(context.getString(R.string.sr_device_status, "Disconnected"));
+            connect.setText(context.getString(R.string.sr_connect));
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,26 +114,6 @@ public class ShareResource extends AppCompatActivity {
     }
 
     /**
-     * Modifiy enabled status of widgets
-     *
-     * @param context Current context
-     * @param state   enabled or disabled
-     */
-    public static void setConnected(final Context context, final boolean state) {
-        isConnect = state;
-        mpriority.setEnabled(!state);
-        mfreeSpace.setEnabled(!state);
-        if (state) {
-            deviceStatus.setText(context.getString(R.string.sr_device_status, "Connected"));
-            connect.setText(context.getString(R.string.sr_disconnect));
-        } else {
-            deviceStatus.setText(context.getString(R.string.sr_device_status, "Disconnected"));
-            connect.setText(context.getString(R.string.sr_connect));
-        }
-    }
-
-
-    /**
      * Connect to master device
      *
      * @param view Current view
@@ -152,7 +151,6 @@ public class ShareResource extends AppCompatActivity {
             unregisterReceiver(wifiScanner);
             wifiScanner = null;
         }
-        //NotificationUtils.removeNotification();
 
         WifiOperations.stop();
         super.onDestroy();

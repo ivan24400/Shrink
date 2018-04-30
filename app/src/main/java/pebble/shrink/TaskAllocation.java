@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class TaskAllocation {
+class TaskAllocation {
 
     private static final String TAG = "TaskAllocation";
     static List<MasterDevice> list;
