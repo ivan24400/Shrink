@@ -63,14 +63,15 @@ public class CompressionUtils {
             crc = computeCrc32(inFile);
 
             if (method == DEFLATE) {
-                int header1 = 1; // default 1 chunk of entire file
                 if (!isLocal) {
+                    int header1;
                     header1 = DistributorService.deviceList.size();
-                    Log.d(TAG, "writeheader headercount: " + header1);
                     header1 = header1 << 2; // 2 bits = max algorithms is 4
+                    out.write(header1);
+                    Log.d(TAG, "writeheader headercount: " + header1);
+                }else{
+                    out.write(DEFLATE);
                 }
-                header1 = header1 | DEFLATE;
-                out.write(header1);
             } else if (method == DCRZ) {
                 out.write(method);
             }
@@ -149,14 +150,21 @@ public class CompressionUtils {
         FileInputStream input = new FileInputStream(infile);
         int header1 = input.read();
         long i = 0;
+        crc = 0;
         while (i < 4) {
             crc = (crc << 8) | (long) input.read();
             i++;
         }
-
+        input.close();
+        Log.d(TAG,"header1: "+header1+" crcIn:"+Long.toHexString(crc));
         if ((header1 & 0x01) == DEFLATE) {
             int chunkCount = (header1 & 0xfc) >>> 2; //2 bits = max algorithms is 4
             Log.d(TAG, "chunkCount: " + chunkCount);
+            if(chunkCount != 0){
+                Deflate.isRemote = true;
+            }else{
+                Deflate.isRemote = false;
+            }
             long skip = 5; // header size
             do {
                 Log.d(TAG, "current chunk " + chunkCount + " skip: " + skip);
@@ -175,12 +183,16 @@ public class CompressionUtils {
             Log.d(TAG, "deflate decompress result: " + result);
         } else if ((header1 & 0x01) == DCRZ) {
             result = dcrzDecompress(infile, outFileNameT + outFileExt);
+            Log.d(TAG,"dcrz decompression result: "+result);
         }
 
         long crcOutput = computeCrc32(outFileNameT + outFileExt);
-        Log.d(TAG, "result: " + result + " decompress crcInput = " + Long.toString(crc) + "\tdecompress crcOutput = " + Long.toHexString(crcOutput));
+        Log.d(TAG, "result: " + result + " decompress crcInput = " + Long.toHexString(crc) + "\tdecompress crcOutput = " + Long.toHexString(crcOutput));
         if (crc != crcOutput) {
             result = -1;
+        }
+        if (result != 0) {
+            new File(outFileNameT+outFileExt).delete();
         }
         return (int) result;
     }
@@ -202,7 +214,6 @@ public class CompressionUtils {
                 obj.update(buffer, 0, cnt);
             }
             crc = obj.getValue();
-            Log.d(TAG, "compressUtils crc = " + Long.toHexString(crc));
             file.close();
         } catch (IOException e) {
             e.printStackTrace();

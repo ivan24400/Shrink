@@ -231,7 +231,8 @@ public class DistributorService extends Service {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            NotificationUtils.removeNotification();
+            DistributorService.this.stopForeground(false);
+            DistributorService.this.stopSelf();
         }
     }
 

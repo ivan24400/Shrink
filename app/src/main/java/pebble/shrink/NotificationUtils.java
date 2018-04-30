@@ -116,8 +116,6 @@ public class NotificationUtils {
      */
     public static void removeNotification() {
         if (service != null) {
-            service.stopForeground(false);
-            service.stopSelf();
             nmanager.cancelAll();
         }
     }

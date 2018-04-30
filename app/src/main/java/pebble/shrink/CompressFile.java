@@ -239,10 +239,11 @@ public class CompressFile extends AppCompatActivity {
         unregisterReceiver(wifiReceiver);
         deviceCount = 0;
         fileToCompress = null;
-        Intent intent = new Intent(this, DistributorService.class);
-        intent.setAction(DistributorService.ACTION_STOP_FOREGROUND);
-        startService(intent);
-
+        if(DistributorService.isServerOn) {
+            Intent intent = new Intent(this, DistributorService.class);
+            intent.setAction(DistributorService.ACTION_STOP_FOREGROUND);
+            startService(intent);
+        }
         super.onDestroy();
 
     }

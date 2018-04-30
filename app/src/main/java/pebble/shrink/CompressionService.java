@@ -58,7 +58,9 @@ public class CompressionService extends Service {
                             CompressFile.setWidgetEnabled(true);
                         }
                     });
-                    NotificationUtils.removeNotification();
+
+                    CompressionService.this.stopForeground(false);
+                    CompressionService.this.stopSelf();
                 }
             })).start();
 
@@ -104,7 +106,8 @@ public class CompressionService extends Service {
                             }
                         });
                     }
-                    NotificationUtils.removeNotification();
+                    CompressionService.this.stopForeground(false);
+                    CompressionService.this.stopSelf();
                 }
             })).start();
         }

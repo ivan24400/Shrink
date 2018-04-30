@@ -17,6 +17,7 @@ public class Deflate {
     private static final int DEFLATE_BUFFER_SIZE = 24000;
     private static FileInputStream fin;
     private static FileOutputStream fout;
+    public static boolean isRemote = false;
 
     /**
      * Compress a file with given name.
@@ -55,16 +56,17 @@ public class Deflate {
     public static long decompressFile(long skip, String input, String output) {
         try {
             fin = new FileInputStream(input);
-            fout = new FileOutputStream(output.toString(), true);
+            fout = new FileOutputStream(output.toString(), isRemote);
             InflaterInputStream iin = new InflaterInputStream(fin);
 
             int ret;
             long byteCount = 0;
             byte[] buffer = new byte[DEFLATE_BUFFER_SIZE];
             fin.skip(skip);
-            byteCount = DataTransfer.readLong(fin) + 8;
-            Log.d("Deflate", "compressed size: " + byteCount);
-
+            if(isRemote) {
+                byteCount = DataTransfer.readLong(fin) + 8;
+                Log.d("Deflate", "compressed size: " + byteCount);
+            }
             while ((ret = iin.read(buffer, 0, DEFLATE_BUFFER_SIZE)) != -1) {
                 fout.write(buffer, 0, ret);
             }

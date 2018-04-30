@@ -85,7 +85,7 @@ public class Decompressor extends AppCompatActivity {
                 filename = intent.getStringExtra(FileChooser.EXTRA_FILE_PATH);
                 File tmp = new File(filename);
                 if (tmp.exists()) {
-                    tvFileName.setText(getString(R.string.df_filename, filename));
+                    tvFileName.setText(getString(R.string.df_filename, tmp.getName()));
                 } else {
                     Toast.makeText(this, getString(R.string.err_file_not_found), Toast.LENGTH_SHORT).show();
                 }
