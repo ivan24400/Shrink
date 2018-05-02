@@ -18,7 +18,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-class ShareResource extends AppCompatActivity {
+public class ShareResource extends AppCompatActivity {
 
     static final String TAG = "Share Resource";
     static final String tmp_file = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Shrink/tmp.dat";

@@ -148,12 +148,11 @@ class DataTransfer {
      */
     static void deleteFiles() {
         releaseFiles(false);
-        /*
+
         if ((new File(inputFileName)).delete() || (new File(outputFileName)).delete()) {
             Log.d(TAG, "Delete success");
         } else {
             Log.d(TAG, "Delete failed");
         }
-        */
     }
 }

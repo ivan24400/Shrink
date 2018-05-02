@@ -3,7 +3,6 @@
     <string name="app_name">Shrink</string>
     <string name="app_title">Compression</string>
     <string name="app_desc">An application to compress a file both locally and in a distributed way.</string>
-    <string name="info">Info</string>
 
     <!-- Compress file -->
     <string name="cf_title">Compress File</string>
@@ -11,7 +10,6 @@
     <string name="cf_file_name">FileName: %1$s</string>
     <string name="cf_choose_file">Choose File</string>
     <string name="cf_compress">Compress</string>
-    <string name="cf_refresh">Refresh</string>
     <string name="cf_switchText">Remote Compression</string>
 
     <!-- Share Resource -->
@@ -20,11 +18,8 @@
     <string name="sr_device_status">Device Status: %1$s</string>
     <string name="sr_freespace">Free Space: %1$d</string>
     <string name="sr_connect">Connect</string>
-    <string name="sr_output">tmp_file.dcrz</string>
     <string name="sr_disconnect">Disconnect</string>
     <string name="sr_server_ip">192.168.43.1</string>
-    <string name="sr_tmp_file">temp.dat</string>
-    <string name="sr_tmpc_file">temp.dat.dcrz</string>
     <string name="sr_err_maxspace">Invalid free space !</string>
     <string name="sr_ssid">SHRINK</string>
 
@@ -46,10 +41,7 @@
     <string name="fc_cancel">Cancel</string>
 
     <!-- Misc -->
-    <string name="next">Next</string>
-    <string name="log">Logs:</string>
     <string name="empty"></string>
-    <string name="hide">Hide</string>
 
     <!-- Error -->
     <string name="err_connect_failed">Connection interrupted !</string>
@@ -67,7 +59,7 @@
     <string name="err_dcmp_failed">Decompression Failed !</string>
     <string name="err_cmp_failed">Compression Failed !</string>
     <string name="err_insufficient_storage">Not enough free space available !</string>
-    <string name="err_device_failed">A slave was disconnected !</string>
+    <string name="err_device_failed">A peer was disconnected !</string>
     <string name="err_permission_denied">Permission not granted !</string>
 
     <!-- Decompress -->
