@@ -45,9 +45,7 @@ JNIEXPORT jint JNICALL Java_pebble_shrink_CompressionUtils_dcrzCompress
     MY_FREE(ibuffer);
     fclose(in);
     fclose(out);
-    if (error) {
-        remove(output);
-    }
+
     (*env)->ReleaseStringUTFChars(env, _output, output);
     (*env)->ReleaseStringUTFChars(env, _input, input);
 

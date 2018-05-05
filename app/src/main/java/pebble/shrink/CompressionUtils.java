@@ -99,13 +99,17 @@ class CompressionUtils {
     static int compress(int method, boolean isLast, String inFile) {
         Log.d(TAG, "compress: isLocal " + isLocal + " isLast " + isLast);
         StringBuilder outFile = new StringBuilder(inFile);
+        int result = -1;
         outFile.append(".dcrz");
         if (method == DEFLATE) {
-            return Deflate.compressFile(isLocal, inFile, outFile.toString());
+            result = Deflate.compressFile(isLocal, inFile, outFile.toString());
         } else if (method == DCRZ) {
-            return CompressionUtils.dcrzCompress(isLocal, isLast, inFile, outFile.toString());
+            result = CompressionUtils.dcrzCompress(isLocal, isLast, inFile, outFile.toString());
         }
-        return -1;
+        if(result != 0){
+            (new File(outFile.toString())).delete();
+        }
+        return result;
     }
 
     /**
