@@ -76,7 +76,7 @@ public class SlaveDeviceService extends Service {
                     Runnable hb = new Runnable() {
                         @Override
                         public void run() {
-                            if (slaveHeart != null && master != null) {
+                            if (slaveHeart != null && master != null && hbOut != null ) {
                                 try {
                                     hbOut.write(DataTransfer.READY);
                                     hbOut.flush();
@@ -84,6 +84,7 @@ public class SlaveDeviceService extends Service {
                                 } catch (IOException e) {
                                     Log.d(TAG, "master dead");
                                     e.printStackTrace();
+                                    hbOut = null;
                                     stop();
                                 }
                             }
@@ -230,7 +231,7 @@ public class SlaveDeviceService extends Service {
         try {
             if (executer != null) {
                 executer.shutdownNow();
-                executer.awaitTermination(3, TimeUnit.SECONDS);
+                executer.awaitTermination(5, TimeUnit.SECONDS);
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
