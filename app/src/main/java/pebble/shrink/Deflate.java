@@ -15,7 +15,9 @@ import java.util.zip.InflaterInputStream;
 class Deflate {
 
     private static final int DEFLATE_BUFFER_SIZE = 24000;
+
     static boolean isRemote = false;
+
     private static FileInputStream fin;
     private static FileOutputStream fout;
 

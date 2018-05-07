@@ -14,6 +14,7 @@ import java.lang.reflect.Method;
 class WifiOperations {
 
     private static final String TAG = "WifiOperations";
+
     static boolean isMaster = false;
     private static Activity activity;
     private static WifiManager manager;

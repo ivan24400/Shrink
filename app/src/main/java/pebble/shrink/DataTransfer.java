@@ -12,11 +12,13 @@ import java.io.OutputStream;
 
 class DataTransfer {
 
+    private static final String TAG = "DataTransfer";
+
     static final int READY = 1;
     static final int HEARTBEAT_TIMEOUT = 1000;
     static final int BUFFER_SIZE = 4096;
     static final int HEADER_SIZE = 9; // freeSpace = 8, battery = 1 && allocatedSpace = 8, algorithm = 1
-    private static final String TAG = "DataTransfer";
+
     private static FileInputStream inputFile;
     private static FileOutputStream outputFile;
     private static String inputFileName, outputFileName;

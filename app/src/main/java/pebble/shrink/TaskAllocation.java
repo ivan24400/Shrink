@@ -9,6 +9,7 @@ import java.util.List;
 class TaskAllocation {
 
     private static final String TAG = "TaskAllocation";
+
     static List<MasterDevice> list;
     private static long fileSize, fileSize_t;
 

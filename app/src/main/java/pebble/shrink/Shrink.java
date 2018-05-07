@@ -20,6 +20,8 @@ import java.util.Arrays;
 
 public class Shrink extends AppCompatActivity {
 
+    private final String TAG = "Shrink";
+
     static final String EXIT_APP = "pebble.shrink.exit";
     private static final int MULTI_PERMISSION_GROUP_ID = 475;
     private static Button btCompress;
@@ -28,8 +30,6 @@ public class Shrink extends AppCompatActivity {
     static {
         System.loadLibrary("dcrz");
     }
-
-    private final String TAG = "Shrink";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -18,12 +18,17 @@ import java.io.File;
 
 
 public class Decompressor extends AppCompatActivity {
-    static final String ACTION_MAIN = "decompressor.main";
+
     private static final String TAG = "Decompressor";
+
+    static final String ACTION_MAIN = "decompressor.main";
+
     private static final int FILE_CHOOSE_REQUEST = 53;
+
     static Handler handler;
-    private static Button decompress, chooseFile;
+
     private static String filename;
+    private static Button decompress, chooseFile;
     private static TextView tvFileName;
 
     /**
@@ -39,6 +44,7 @@ public class Decompressor extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.decompress_activity);
+
         handler = new Handler(Looper.getMainLooper());
         filename = null;
         decompress = (Button) findViewById(R.id.btDFdecompress);
@@ -103,7 +109,7 @@ public class Decompressor extends AppCompatActivity {
         if (filename != null) {
             Intent intent = new Intent(this, CompressionService.class);
             intent.setAction(CompressionUtils.ACTION_DECOMPRESS_LOCAL);
-            intent.putExtra(CompressionUtils.cfile, filename);
+            intent.putExtra(CompressionUtils.CFILE, filename);
             startService(intent);
         } else {
             Toast.makeText(this, "First choose a file !", Toast.LENGTH_SHORT).show();
@@ -112,7 +118,6 @@ public class Decompressor extends AppCompatActivity {
 
     @Override
     public void onDestroy() {
-        NotificationUtils.removeNotification();
         super.onDestroy();
     }
 }

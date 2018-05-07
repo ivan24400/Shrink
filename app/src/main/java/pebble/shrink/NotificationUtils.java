@@ -18,8 +18,8 @@ import android.support.v7.app.AppCompatActivity;
 class NotificationUtils {
 
     static final int NOTIFICATION_ID = 24;
-    private static final String TAG = "NotificationUtils";
     private static final String CHANNEL_ID = "SHRINK_NOTIFICATION_CHANNEL";
+
     static Notification notification;
     private static NotificationCompat.Builder nbuilder;
     private static NotificationManager nmanager;

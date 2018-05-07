@@ -13,16 +13,20 @@ import java.util.zip.CRC32;
 
 
 class CompressionUtils {
+
+    private static String TAG = "CompressionUtils";
+
+    static final String CMETHOD = "COMPRESSION_METHOD";
+    static final String CFILE = "COMPRESSION_FILE";
+    static final String ACTION_COMPRESS_LOCAL = "compressionUtils_compress_local";
+    static final String ACTION_DECOMPRESS_LOCAL = "compressionUtils_decompress_local";
+
     static final int DEFLATE = 0;
     static final int DCRZ = 1;
     static final byte MASK_LAST_CHUNK = (byte) 0x80;
-    static final String cmethod = "COMPRESSION_METHOD";
-    static final String cfile = "COMPRESSION_FILE";
-    static final String ACTION_COMPRESS_LOCAL = "compressionUtils_compress_local";
-    static final String ACTION_DECOMPRESS_LOCAL = "compressionUtils_decompress_local";
-    private static final int bufferSize = 4096;
     static boolean isLocal = false;
-    private static String TAG = "CompressionUtils";
+
+    private static final int bufferSize = 4096;
     private static long crc = 0;
     private static byte[] buffer = new byte[bufferSize];
 

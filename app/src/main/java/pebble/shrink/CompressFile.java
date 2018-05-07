@@ -22,6 +22,8 @@ import java.io.File;
 
 public class CompressFile extends AppCompatActivity {
 
+    private String TAG = "CompressFile";
+
     private static final int FILE_CHOOSE_REQUEST = 9;
     static TextView tvTotalDevice;
     static Button btCompress, btChooseFile;
@@ -31,7 +33,6 @@ public class CompressFile extends AppCompatActivity {
     private static int deviceCount = 0;
     private static Spinner spAlgorithm;
     private static WifiReceiver wifiReceiver;
-    private String TAG = "CompressFile";
     private TextView tvFileName;
 
     /**
@@ -119,8 +120,8 @@ public class CompressFile extends AppCompatActivity {
                 WifiOperations.setWifiApEnabled(false);
 
                 Intent intent = new Intent(this, CompressionService.class);
-                intent.putExtra(CompressionUtils.cmethod, method);
-                intent.putExtra(CompressionUtils.cfile, fileToCompress);
+                intent.putExtra(CompressionUtils.CMETHOD, method);
+                intent.putExtra(CompressionUtils.CFILE, fileToCompress);
                 intent.setAction(CompressionUtils.ACTION_COMPRESS_LOCAL);
                 intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startService(intent);
@@ -146,7 +147,7 @@ public class CompressFile extends AppCompatActivity {
      */
     public void onClickReceiverSwitch(View view) {
         Intent tintent = new Intent(this, DistributorService.class);
-        tintent.putExtra(CompressionUtils.cmethod, getAlgorithm());
+        tintent.putExtra(CompressionUtils.CMETHOD, getAlgorithm());
 
         if (((Switch) view).isChecked()) {
 

@@ -18,17 +18,21 @@ import java.util.concurrent.TimeUnit;
 
 public class DistributorService extends Service {
 
+    private static String TAG = "DistributorService";
+
     static final String ACTION_START_FOREGROUND = "ps.DistributorService.start";
     static final String ACTION_STOP_FOREGROUND = "ps.DistributorService.stop";
-    private static final int MAX_DEVICES_COUNT = 9;
-    static Object sync = new Object();
-    static boolean isDistributorActive = false;
-    static boolean isServerOn = false;
-    static List<MasterDevice> deviceList = new LinkedList<>();
-    private static String TAG = "DistributorService";
+
     private static int workerCount = 0;
     private static ServerSocket server;
     private static ExecutorService executor;
+    private static final int MAX_DEVICES_COUNT = 9;
+
+    static List<MasterDevice> deviceList = new LinkedList<>();
+    static Object sync = new Object();
+    static boolean isDistributorActive = false;
+    static boolean isServerOn = false;
+    static boolean isPeerFailed = false;
 
     /**
      * Increment worker device count
@@ -113,10 +117,11 @@ public class DistributorService extends Service {
                     if (device.getAllocatedSpace() == 0) {
                         break;
                     } else {
-                        Log.d(TAG, ":gathering from " + device.getName());
+                        Log.d(TAG, "gathering from " + device.getName());
                         device.notifyMe(this);
                     }
                 }
+
                 isDistributorActive = false;
                 try {
                     server.close();
@@ -162,7 +167,10 @@ public class DistributorService extends Service {
                                 CompressFile.setWidgetEnabled(true);
                             }
                         });
+
                         isServerOn = true;
+                        isPeerFailed = false;
+
                         while (true) {
                             Socket client = server.accept();
                             CompressFile.updateDeviceCount(DistributorService.this, true);
@@ -176,7 +184,9 @@ public class DistributorService extends Service {
                         isServerOn = false;
                         e.printStackTrace();
                     }
-                    stop();
+                    if(!isPeerFailed) {
+                        stop();
+                    }
                 }
             })).start();
         } else if (intent.getAction().equals(ACTION_STOP_FOREGROUND)) {
@@ -197,20 +207,15 @@ public class DistributorService extends Service {
                 public void run() {
                     CompressFile.setWidgetEnabled(true);
                     if (isDistributorActive) {
-                        NotificationUtils.updateNotification(DistributorService.this.getString(R.string.err_device_failed));
+                        NotificationUtils.updateNotification(DistributorService.this.getString(R.string.err_cmp_failed));
+                        DataTransfer.releaseFiles(true);
+                        isDistributorActive = false;
                     } else {
                         NotificationUtils.updateNotification(DistributorService.this.getString(R.string.completed));
+                        DataTransfer.releaseFiles(false);
                     }
                 }
             });
-
-            if (isDistributorActive) {
-                DataTransfer.releaseFiles(true);
-            } else {
-                DataTransfer.releaseFiles(false);
-            }
-
-            isDistributorActive = false;
             WifiOperations.stop();
 
             try {
@@ -237,6 +242,20 @@ public class DistributorService extends Service {
             DistributorService.this.stopForeground(false);
             DistributorService.this.stopSelf();
         }
+    }
+
+    synchronized void closeServerSocket(){
+       try {
+           if (server != null && !server.isClosed()) {
+               server.close();
+           }
+           if (executor != null) {
+               executor.shutdownNow();
+               executor.awaitTermination(1, TimeUnit.SECONDS);
+           }
+       }catch(Exception e){
+           e.printStackTrace();
+       }
     }
 
     /**

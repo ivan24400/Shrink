@@ -19,16 +19,20 @@ import java.util.concurrent.TimeUnit;
 
 public class SlaveDeviceService extends Service {
 
-    static final String EXTRA_PORT = "ps.SlaveDeviceService.port";
     private static final String TAG = "SlaveDeviceService";
+
+    static final String EXTRA_PORT = "ps.SlaveDeviceService.port";
+
     static long freeSpace, allocatedSpace, compressedSize;
     static char batteryClass;
     private static int hbPort;
+
     private static ScheduledExecutorService executer;
     private static ServerSocket slaveHeart;
     private static Socket slave, master;
     private static InputStream in;
     private static OutputStream out, hbOut;
+
     private static int algorithm;
     private static boolean isLastChunk = true;
     private static boolean isOperationActive = false;

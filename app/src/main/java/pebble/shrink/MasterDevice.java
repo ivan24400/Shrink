@@ -268,6 +268,7 @@ class MasterDevice implements Runnable {
                         Toast.makeText(context, context.getString(R.string.err_device_failed), Toast.LENGTH_SHORT).show();
                     }
                 });
+                DistributorService.isPeerFailed = true;
                 Intent tintent = new Intent(context, DistributorService.class);
                 tintent.setAction(DistributorService.ACTION_STOP_FOREGROUND);
                 context.startService(tintent);

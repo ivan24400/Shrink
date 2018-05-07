@@ -23,11 +23,14 @@ import java.util.List;
 
 public class FileChooser extends ListActivity {
 
+    private static final String TAG = "FileChooser";
+
     static final String FILE_CHOOSER_DCRZ = "pebble.shrink.FileChooser.dcrz";
     static final String FILE_CHOOSER_ALL = "pebble.shrink.FileChooser.all";
     static final String EXTRA_FILE_PATH = "pebble.shrink.FileChooser.filepath";
-    private static final String TAG = "FileChooser";
+
     private static final String homePath = Environment.getExternalStorageDirectory().getAbsolutePath();
+
     private File dir;
     private boolean isDcrzOnly = false;
     private ArrayList<File> files;

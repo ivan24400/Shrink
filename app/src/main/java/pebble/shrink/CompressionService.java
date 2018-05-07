@@ -42,11 +42,11 @@ public class CompressionService extends Service {
                         }
                     });
 
-                    CompressionUtils.writeHeader(intent.getIntExtra(CompressionUtils.cmethod, 0)
-                            , intent.getStringExtra(CompressionUtils.cfile));
+                    CompressionUtils.writeHeader(intent.getIntExtra(CompressionUtils.CMETHOD, 0)
+                            , intent.getStringExtra(CompressionUtils.CFILE));
 
-                    final int ret = CompressionUtils.compress(intent.getIntExtra(CompressionUtils.cmethod, 0)
-                            , true, intent.getStringExtra(CompressionUtils.cfile));
+                    final int ret = CompressionUtils.compress(intent.getIntExtra(CompressionUtils.CMETHOD, 0)
+                            , true, intent.getStringExtra(CompressionUtils.CFILE));
                     CompressFile.handler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -85,7 +85,7 @@ public class CompressionService extends Service {
                     });
 
                     try {
-                        if (CompressionUtils.decompress(intent.getStringExtra(CompressionUtils.cfile)) != 0) {
+                        if (CompressionUtils.decompress(intent.getStringExtra(CompressionUtils.CFILE)) != 0) {
                             throw new IOException("Decompression Failed");
                         }
 
